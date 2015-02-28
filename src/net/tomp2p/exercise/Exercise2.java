@@ -54,15 +54,16 @@ public class Exercise2 {
      * @return The created peers
      * @throws IOException IOException
      */
-    public static PeerDHT[] createAndAttachPeersDHT( int nr, int port ) throws IOException {
+    public static PeerDHT[] createAndAttachPeersDHT(int nr, int port) throws IOException{
         PeerDHT[] peers = new PeerDHT[nr];
-        for ( int i = 0; i < nr; i++ ) {
-            if ( i == 0 ) {
-                peers[0] = new PeerBuilderDHT(new PeerBuilder( new Number160( RND ) ).ports( port ).start()).start();
+        for (int i = 0; i < nr; i++){
+            if (i == 0){
+                peers[0] = new PeerBuilderDHT(new PeerBuilder(new Number160(RND)).ports(port).start()).start();
             } else {
-                peers[i] = new PeerBuilderDHT(new PeerBuilder( new Number160( RND ) ).masterPeer( peers[0].peer() ).start()).start();
+                peers[i] = new PeerBuilderDHT(new PeerBuilder(new Number160(RND)).masterPeer(peers[0].peer()).start()).start();
             }
         }
+        
         return peers;
     }
     
@@ -72,7 +73,7 @@ public class Exercise2 {
      * 
      * @param peers The peers that should be bootstrapped
      */
-    public static void bootstrap( PeerDHT[] peers ) {
+    public static void bootstrap(PeerDHT[] peers) {
         //make perfect bootstrap, the regular can take a while
         for(int i=0;i<peers.length;i++) {
             for(int j=0;j<peers.length;j++) {
@@ -81,29 +82,49 @@ public class Exercise2 {
         }
     }
     
-    
+    /**
+     * Put data into the DHT.
+     * 
+     * @param pPeer The storing peer
+     * @param pKey The key for storing the data
+     * @param pValue The data to be stored
+     * @throws IOException IOException
+     */
     public static void put(PeerDHT pPeer, Number160 pKey, String pValue) throws IOException{
         FuturePut futurePut = pPeer.put(pKey).data(new Data(pValue)).start();
         futurePut.awaitUninterruptibly();
         
-        System.out.println("Peer " + STORING_PEER + " stored " + "[Key: " + pKey.intValue() + " Value: " + pValue + "]");
+        System.out.println("Peer with id " + pPeer.peerAddress().peerId() + " stored " + "[Key: " + pKey.intValue() + " Value: " + pValue + "]");
     }
     
-    
-    public static void get(PeerDHT pPeer, Number160 pKey) throws ClassNotFoundException, IOException{
+    /**
+     * Put data into the DHT.
+     * 
+     * @param pPeer The peer that searches the information
+     * @param pKey The key for the data
+     * @return returnValue The retrieved data
+     * @throws IOException IOException
+     * @throws ClassNotFoundException ClassNotFoundException.
+     */
+    public static Object get(PeerDHT pPeer, Number160 pKey) throws ClassNotFoundException, IOException{
+        Object returnValue;
+        
         FutureGet futureGet = pPeer.get(pKey).start();
         futureGet.awaitUninterruptibly();
         
         Set<Entry<PeerAddress, Map<Number640, Data>>> replies = futureGet.rawData().entrySet();
         
-        System.out.println("\nThe following peers replied:");
+        System.out.println("\nThe peers with the following id's replied:");
         Iterator<Entry<PeerAddress, Map<Number640, Data>>> iter = replies.iterator();
         while(iter.hasNext()){
             Entry<PeerAddress, Map<Number640, Data>> entry = iter.next();
             System.out.println(entry.getKey().peerId());
         }
-
-        System.out.println("\nPeer " + GETTER_PEER + " received for key " + pKey.intValue() + " the data: " + futureGet.data().object());
+        
+        returnValue = futureGet.data().object();
+        System.out.println("\nPeer with id " + pPeer.peerAddress().peerId() + " received for key " + pKey.intValue() + " the data: " + returnValue);
+        
+        return returnValue;
     }
     
     
