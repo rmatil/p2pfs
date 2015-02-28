@@ -4,7 +4,6 @@ import java.io.IOException;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.Map.Entry;
-import java.util.Random;
 import java.util.Set;
 
 import net.tomp2p.dht.FutureGet;
@@ -20,11 +19,10 @@ import net.tomp2p.storage.Data;
 public class Exercise2 {
     
     public static final int NUMBER_OF_PEERS = 10;
-    public static final int STORING_PEER = 2;
-    public static final int GETTER_PEER = 4;
+    public static final int STORING_PEER_INDEX = 2; // peerIndex is 1 smaller than peerId: peerIndex 0 is peerId 1
+    public static final int GETTER_PEER_INDEX = 4; // peerIndex is 1 smaller than peerId: peerIndex 0 is peerId 1
     public static final Number160 KEY = new Number160(12345);
     public static final int PORT = 4001;
-    static final Random RND = new Random(42L);
     
     public static void main(String[] args) {
         PeerDHT[] peers = null;
@@ -33,8 +31,8 @@ public class Exercise2 {
             peers = createAndAttachPeersDHT(NUMBER_OF_PEERS, PORT);
             bootstrap(peers);
             
-            put(peers[STORING_PEER], KEY, "Max Power");
-            get(peers[GETTER_PEER], KEY);
+            put(peers[STORING_PEER_INDEX], KEY, "Max Power");
+            get(peers[GETTER_PEER_INDEX], KEY);
             
             peersShutdown(peers);
         } catch (IOException pEx) {
@@ -58,9 +56,9 @@ public class Exercise2 {
         PeerDHT[] peers = new PeerDHT[nr];
         for (int i = 0; i < nr; i++){
             if (i == 0){
-                peers[0] = new PeerBuilderDHT(new PeerBuilder(new Number160(RND)).ports(port).start()).start();
+                peers[0] = new PeerBuilderDHT(new PeerBuilder(new Number160(i+1)).ports(port).start()).start();
             } else {
-                peers[i] = new PeerBuilderDHT(new PeerBuilder(new Number160(RND)).masterPeer(peers[0].peer()).start()).start();
+                peers[i] = new PeerBuilderDHT(new PeerBuilder(new Number160(i+1)).masterPeer(peers[0].peer()).start()).start();
             }
         }
         
@@ -94,7 +92,7 @@ public class Exercise2 {
         FuturePut futurePut = pPeer.put(pKey).data(new Data(pValue)).start();
         futurePut.awaitUninterruptibly();
         
-        System.out.println("Peer with id " + pPeer.peerAddress().peerId() + " stored " + "[Key: " + pKey.intValue() + " Value: " + pValue + "]");
+        System.out.println("Peer with id " + pPeer.peerAddress().peerId().intValue() + " stored " + "[Key: " + pKey.intValue() + ", Value: " + pValue + "]");
     }
     
     /**
@@ -114,15 +112,15 @@ public class Exercise2 {
         
         Set<Entry<PeerAddress, Map<Number640, Data>>> replies = futureGet.rawData().entrySet();
         
+        returnValue = futureGet.data().object();
+        System.out.println("\nPeer with id " + pPeer.peerAddress().peerId().intValue() + " received for key " + pKey.intValue() + " the data: " + returnValue);
+        
         System.out.println("\nThe peers with the following id's replied:");
         Iterator<Entry<PeerAddress, Map<Number640, Data>>> iter = replies.iterator();
         while(iter.hasNext()){
             Entry<PeerAddress, Map<Number640, Data>> entry = iter.next();
-            System.out.println(entry.getKey().peerId());
+            System.out.println(entry.getKey().peerId().intValue());
         }
-        
-        returnValue = futureGet.data().object();
-        System.out.println("\nPeer with id " + pPeer.peerAddress().peerId() + " received for key " + pKey.intValue() + " the data: " + returnValue);
         
         return returnValue;
     }
