@@ -1,16 +1,28 @@
 package net.tomp2p.exercise;
 
 import java.io.IOException;
+import java.util.Iterator;
+import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Random;
+import java.util.Set;
 
+import net.tomp2p.dht.FutureGet;
+import net.tomp2p.dht.FuturePut;
 import net.tomp2p.dht.PeerBuilderDHT;
 import net.tomp2p.dht.PeerDHT;
 import net.tomp2p.p2p.PeerBuilder;
 import net.tomp2p.peers.Number160;
+import net.tomp2p.peers.Number640;
+import net.tomp2p.peers.PeerAddress;
+import net.tomp2p.storage.Data;
 
 public class Exercise2 {
     
     public static final int NUMBER_OF_PEERS = 10;
+    public static final int STORING_PEER = 2;
+    public static final int GETTER_PEER = 4;
+    public static final Number160 KEY = new Number160(12345);
     public static final int PORT = 4001;
     static final Random RND = new Random(42L);
     
@@ -21,12 +33,13 @@ public class Exercise2 {
             peers = createAndAttachPeersDHT(NUMBER_OF_PEERS, PORT);
             bootstrap(peers);
             
-            //TODO: put and get
-            
-            //TODO: future.getRawData().entrySet()
+            put(peers[STORING_PEER], KEY, "Max Power");
+            get(peers[GETTER_PEER], KEY);
             
             peersShutdown(peers);
         } catch (IOException pEx) {
+            pEx.printStackTrace();
+        } catch (ClassNotFoundException pEx) {
             pEx.printStackTrace();
         }
         
@@ -53,6 +66,7 @@ public class Exercise2 {
         return peers;
     }
     
+    
     /**
      * Bootstraps peers to the first peer in the array.
      * 
@@ -67,6 +81,37 @@ public class Exercise2 {
         }
     }
     
+    
+    public static void put(PeerDHT pPeer, Number160 pKey, String pValue) throws IOException{
+        FuturePut futurePut = pPeer.put(pKey).data(new Data(pValue)).start();
+        futurePut.awaitUninterruptibly();
+        
+        System.out.println("Peer " + STORING_PEER + " stored " + "[Key: " + pKey.intValue() + " Value: " + pValue + "]");
+    }
+    
+    
+    public static void get(PeerDHT pPeer, Number160 pKey) throws ClassNotFoundException, IOException{
+        FutureGet futureGet = pPeer.get(pKey).start();
+        futureGet.awaitUninterruptibly();
+        
+        Set<Entry<PeerAddress, Map<Number640, Data>>> replies = futureGet.rawData().entrySet();
+        
+        System.out.println("\nThe following peers replied:");
+        Iterator<Entry<PeerAddress, Map<Number640, Data>>> iter = replies.iterator();
+        while(iter.hasNext()){
+            Entry<PeerAddress, Map<Number640, Data>> entry = iter.next();
+            System.out.println(entry.getKey().peerId());
+        }
+
+        System.out.println("\nPeer " + GETTER_PEER + " received for key " + pKey.intValue() + " the data: " + futureGet.data().object());
+    }
+    
+    
+    /**
+     * Shutdown peers.
+     * 
+     * @param pPeers The peers that should be shutdown
+     */
     public static void peersShutdown(PeerDHT[] pPeers){
         for(int i = 0; i < pPeers.length; i++){
             pPeers[i].shutdown();
