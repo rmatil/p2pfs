@@ -4,3 +4,4 @@
 # eclipse
 target/
 bin/
+*.class
