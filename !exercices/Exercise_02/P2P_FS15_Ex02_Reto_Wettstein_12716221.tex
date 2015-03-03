@@ -1,0 +1,231 @@
+%----------------------------------------------------------------------------------------
+%	PACKAGES AND DOCUMENT CONFIGURATIONS
+%----------------------------------------------------------------------------------------
+
+\documentclass{article}
+
+\usepackage[utf8]{inputenc}
+
+\usepackage[version=3]{mhchem} % Package for chemical equation typesetting
+\usepackage{siunitx} % Provides the \SI{}{} and \si{} command for typesetting SI units
+\usepackage{graphicx} % Required for the inclusion of images
+\usepackage{natbib} % Required to change bibliography style to APA
+\usepackage{amsmath} % Required for some math elements 
+\usepackage{enumerate}
+\usepackage{a4wide}
+
+\usepackage{listings}
+\usepackage{color}
+
+\definecolor{dkgreen}{rgb}{0,0.6,0}
+\definecolor{gray}{rgb}{0.5,0.5,0.5}
+\definecolor{mauve}{rgb}{0.58,0,0.82}
+
+\lstset{
+  %frame=tb,
+  language=Java,
+  aboveskip=3mm,
+  belowskip=3mm,
+  showstringspaces=false,
+  columns=flexible,
+  basicstyle={\small\ttfamily},
+  numbers=none,
+  numberstyle=\tiny\color{gray},
+  keywordstyle=\color{blue},
+  commentstyle=\color{dkgreen},
+  stringstyle=\color{mauve},
+  breaklines=true,
+  breakatwhitespace=true,
+  tabsize=3
+}
+
+\setlength\parindent{0pt} % Removes all indentation from paragraphs
+
+\usepackage[bottom=3cm]{geometry}
+
+%\usepackage{times} % Uncomment to use the Times New Roman font
+
+%----------------------------------------------------------------------------------------
+%	DOCUMENT INFORMATION
+%----------------------------------------------------------------------------------------
+
+\title{\vspace{-50pt}\textbf{Overlay Networks, Decentralized Systems and their Application}\\ Exercise 02 \\ University of Zurich} % Title
+
+\author{Reto \textsc{Wettstein}\\12-716-221\\reto.wettstein2@uzh.ch \\ \\ Solved together with Christian \textsc{Tresch} 06-923-627} % Author name
+
+
+\date{\today} % Date for the report
+
+\begin{document}
+
+\maketitle % Insert the title, author and date
+
+
+% If you wish to include an abstract, uncomment the lines below
+% \begin{abstract}
+% Abstract text
+% \end{abstract}
+
+\section{P2P Distributed Hash Tables}
+\begin{enumerate}[1]
+\item \textbf{Answer with true or false:}
+\begin{enumerate}[1]
+	  \item\textbf{A central point will be always required with distributed indexing?} \\ False 
+      \item\textbf{A distributed hash table requires that each node has a unique identifier?} \\ True 
+      \item\textbf{P2P applications generate low amounts of traffic (compared to client-server) since that is the main purpose of having an P2P overlay?} \\ False 
+      \item\textbf{An overlay on top of another overlay is possible} \\ True \\
+\end{enumerate}
+
+\item \textbf{Cite and explain six key differences comparing the three strategies discussed in the lecture slides to store and retrieve data in P2P systems (Central server, Flooding search, Distributed indexing).}
+\begin{enumerate}[]
+	\item\textsc{Central Server}: fuzzy queries, no false negatives, no robustness, not scalable, simple, fast
+	\item\textsc{Flooding Search}: fuzzy queries, false negatives, robustness, not scalable, simple, not fast
+	\item\textsc{Distributed Indexing}: no fuzzy queries, no false negatives, robustness, scalable, complex, quite fast\\
+\end{enumerate}
+
+\item \textbf{What is the complexity of each lookup strategy listed below? And give a brief explanation of the reasons. Give the complexity in big-O notation, e.g. O($N^{2}$).} 
+\begin{enumerate}[]
+	\item\textsc{Central Server}: O(1) $\rightarrow$ just ask the server.
+	\item\textsc{Flooding Search}: O(N) $\rightarrow$ ask every node if it has the data.
+	\item\textsc{Distributed Indexing}: O(log N) $\rightarrow$ any one node needs to coordinate with only a few other nodes in the system because each node is only responsible for a part of the address space.\\
+\end{enumerate}
+
+\item \textbf{How is addressing handled in DHTs? How are identifiers chosen (for nodes and content)?} \\ 
+Addressing in the DHT is the mapping of the content and the nodes into a linear address space with a hash function. This includes the association of parts of the address space to the DHT nodes (each node is only responsible for a part of the value range). This association of the data to nodes may change since nodes may disappear and reappear. A redundant storing is achieved with overlapping of the address parts in different nodes. Real and logical topology are thereby uncorrelated. Identifiers for nodes are random numbers, based on the public key or based on the IP. Identifiers for content can be calculated with hash(x) mod n.\\ 
+
+\item \textbf{What happens if one node that is responsible for a given DHT address space fails? Explain two possible techniques to overcome this problem.} \\ If a node fails, the content corresponding to its address space will no longer be accessible and all routes going through this node will be interrupted. Possible solutions are:
+\begin{enumerate}[]
+	\item\textsc{Possibility 1}: the use of redundant key/value pairs (data stored in more than one node) or
+	\item\textsc{Possibility 2}: the use of redundant/alternative routing paths \\
+\end{enumerate} 
+
+\item \textbf{Compare iterative routing with recursive routing. Give at least one advantage and one disadvantage for each technique.} 
+\begin{enumerate}[]
+	\item\textsc{Recursive Routing}: The query is forwarded from one node to the next closest neighbour nodes until the searched node is found. This node replies to the originator. \\
+{\color{green} +} Online status update \\
+{\color{red} -} No tracking of progress \\
+	\item\textsc{Iterative Routing}: Each node replies to the originator of the query where to look next until the searched node is found. \\  
+{\color{green} +} Control \\
+{\color{red} -} Neighbour maintenance \\
+\end{enumerate} 
+
+\item \textbf{Cite method names, parameters, and return values of the generic interface of distributed hash tables.} 
+\begin{enumerate}[]
+	\item\textsc{put(key, value), no return}: Called to store (redundantly) data with the specified key in the DHT. 
+	\item\textsc{get(key), returns value}: Called to get the data from the corresponding key. It is possible to get more than one result. \\  
+\end{enumerate} 
+
+
+\item \textbf{Considering Kademlia/TomP2P, answer the following:} 
+\begin{enumerate}[1]
+	\item\textbf{How many IDs are possible?} \\ A node ID has a length of 160 bit $\rightarrow$ $2^{160}$ $\approx$ 1.5 x $10^{48}$ different ID's are possible.
+	\item\textbf{Where is a key located?} \\ A key is located on the node whose ID is closest to the key.
+	\item\textbf{What is the XOR distance between 3 and 4?} \\ 3 $\rightarrow$ 011 XOR 100 = 111, 3 bits to represent the XOR. \\
+\end{enumerate}
+\end{enumerate}
+
+\section{Challenge Task Preparation}
+This is my code for the programming task without import statements and javadoc. The output looks like this: 
+\begin{enumerate}[]
+	\item Peer with id 3 stored [Key: 12345, Value: Max Power]
+	\item Peer with id 5 received for key 12345 the data: Max Power
+	\item The peers with the following id's replied: 1, 2, 8
+\end{enumerate}
+
+\begin{lstlisting}
+package net.tomp2p.exercise;
+
+public class Exercise2 {
+
+    public static final int NUMBER_OF_PEERS = 10;
+    public static final int STORING_PEER_INDEX = 2; // peerIndex is 1 smaller than peerId
+    public static final int GETTER_PEER_INDEX = 4; // peerIndex is 1 smaller than peerId
+    public static final Number160 KEY = new Number160(12345);
+    public static final int PORT = 4001;
+
+
+    public static void main(String[] args) {
+        PeerDHT[] peers = null;
+
+        try {
+            peers = createAndAttachPeersDHT(NUMBER_OF_PEERS, PORT);
+            bootstrap(peers);
+
+            put(peers[STORING_PEER_INDEX], KEY, "Max Power");
+            get(peers[GETTER_PEER_INDEX], KEY);
+
+            peersShutdown(peers);
+        } catch (IOException pEx) {
+            pEx.printStackTrace();
+        } catch (ClassNotFoundException pEx) {
+            pEx.printStackTrace();
+        }
+    }
+
+
+    public static PeerDHT[] createAndAttachPeersDHT(int nr, int port)
+            throws IOException {
+        PeerDHT[] peers = new PeerDHT[nr];
+        for (int i = 0; i < nr; i++) {
+            if (i == 0) {
+                peers[0] = new PeerBuilderDHT(new PeerBuilder(new Number160(i + 1)).ports(port).start()).start();
+            } else {
+                peers[i] = new PeerBuilderDHT(new PeerBuilder(new Number160(i + 1)).masterPeer(peers[0].peer()).start()).start();
+            }
+        }
+
+        return peers;
+    }
+
+
+    public static void bootstrap(PeerDHT[] peers) {
+        // make perfect bootstrap, the regular can take a while
+        for (int i = 0; i < peers.length; i++) {
+            for (int j = 0; j < peers.length; j++) {
+                peers[i].peerBean().peerMap().peerFound(peers[j].peerAddress(), null, null, null);
+            }
+        }
+    }
+
+   
+    public static void put(PeerDHT pPeer, Number160 pKey, String pValue)
+            throws IOException {
+        FuturePut futurePut = pPeer.put(pKey).data(new Data(pValue)).start();
+        futurePut.awaitUninterruptibly();
+
+        System.out.println("Peer with id " + pPeer.peerAddress().peerId().intValue() + " stored " + "[Key: " + pKey.intValue() + ", Value: " + pValue + "]");
+    }
+
+   
+    public static Object get(PeerDHT pPeer, Number160 pKey)
+            throws ClassNotFoundException, IOException {
+        Object returnValue;
+
+        FutureGet futureGet = pPeer.get(pKey).start();
+        futureGet.awaitUninterruptibly();
+
+        Set<Entry<PeerAddress, Map<Number640, Data>>> replies = futureGet.rawData().entrySet();
+
+        returnValue = futureGet.data().object();
+        System.out.println("\nPeer with id " + pPeer.peerAddress().peerId().intValue() + " received for key " + pKey.intValue() + " the data: " + returnValue);
+
+        System.out.println("\nThe peers with the following id's replied:");
+        Iterator<Entry<PeerAddress, Map<Number640, Data>>> iter = replies.iterator();
+        while (iter.hasNext()) {
+            Entry<PeerAddress, Map<Number640, Data>> entry = iter.next();
+            System.out.println(entry.getKey().peerId().intValue());
+        }
+
+        return returnValue;
+    }
+
+
+    public static void peersShutdown(PeerDHT[] pPeers) {
+        for (int i = 0; i < pPeers.length; i++) {
+            pPeers[i].shutdown();
+        }
+    }
+}
+\end{lstlisting}
+
+\end{document}
