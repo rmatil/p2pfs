@@ -41,17 +41,15 @@ public class Main {
             
             Thread.sleep(1000);
 
-            //getNonBlocking(peers[GETTER_PEER_INDEX], KEY);
-            get(peers[GETTER_PEER_INDEX], KEY);
-
+            getNonBlocking(peers[GETTER_PEER_INDEX], KEY);
+            
+            Thread.sleep(2000);
             Util.peersShutdown(peers);
         } catch (IOException pEx) {
             pEx.printStackTrace();
         } catch (InterruptedException pEx) {
             pEx.printStackTrace();
-        } catch (ClassNotFoundException pEx) {
-            pEx.printStackTrace();
-        }
+        } 
     }
 
     public static void putNonBlocking(PeerDHT pPeer, String pKey, PeerAddress pValue)
@@ -69,8 +67,6 @@ public class Main {
                 }
             }
         });
-
-        System.out.println("this may happen before put finishes");
     }
 
 
@@ -87,7 +83,6 @@ public class Main {
             }
             
         });
-        System.out.println("this may happen before printing the result");
     }
     
     
