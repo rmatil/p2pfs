@@ -1,7 +1,6 @@
 package net.tomp2p.exercise.retowettstein.ex03;
 
 import java.io.IOException;
-
 import net.tomp2p.dht.FutureGet;
 import net.tomp2p.dht.FuturePut;
 import net.tomp2p.dht.PeerBuilderDHT;
@@ -52,7 +51,15 @@ public class DHTOperations {
         }
     }
 
-
+    
+    /**
+     * Put data into the DHT in an asynchronous way.
+     * 
+     * @param pPeer The storing peer
+     * @param pKey The key for storing the data
+     * @return pValue The address where to find the data
+     * @throws IOException IOException
+     */
     public static void putNonBlocking(PeerDHT pPeer, String pKey, PeerAddress pValue)
             throws IOException {
         FuturePut futurePut = pPeer.put(Number160.createHash(pKey)).data(new Data(pValue)).start();
@@ -70,7 +77,15 @@ public class DHTOperations {
         });
     }
 
-
+    
+    /**
+     * Get the address of the peer storing data and send a message 
+     * to the storing peer in asynchronous way.
+     * 
+     * @param pPeer The peer who does the lookup
+     * @param pKey The key corresponding to the data
+     * @param pMessage THe message to send to the received address
+     */
     public static void getAndSendNonBlocking(PeerDHT pPeer, String pKey, String pMessage) {
         FutureGet futureGet = pPeer.get(Number160.createHash(pKey)).start();
 
@@ -87,7 +102,6 @@ public class DHTOperations {
                     SendOperations.send(pPeer, address, pMessage);
                 }
             }
-
         });
     }
 
