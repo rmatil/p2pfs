@@ -1,19 +1,8 @@
 package net.tomp2p.exercise.retowettstein.ex03;
 
 import java.io.IOException;
-import java.util.Iterator;
-import java.util.Map;
-import java.util.Set;
-import java.util.Map.Entry;
-
-import net.tomp2p.dht.FutureGet;
-import net.tomp2p.dht.FuturePut;
 import net.tomp2p.dht.PeerDHT;
-import net.tomp2p.futures.BaseFutureAdapter;
-import net.tomp2p.peers.Number160;
-import net.tomp2p.peers.Number640;
 import net.tomp2p.peers.PeerAddress;
-import net.tomp2p.storage.Data;
 
 
 /**
@@ -32,19 +21,20 @@ public class Main {
         PeerDHT[] peers = null;
 
         try {
-            peers = Util.createAndAttachPeersDHT(NUMBER_OF_PEERS, PORT);
-            Util.bootstrap(peers);
+            peers = DHTOperations.createAndAttachPeersDHT(NUMBER_OF_PEERS, PORT);
+            DHTOperations.bootstrap(peers);
+            SendOperations.setupReplyHandler(peers);
             
             PeerAddress value = peers[STORING_PEER_INDEX].peerAddress();
+            String message = "Hello World";
 
-            putNonBlocking(peers[STORING_PEER_INDEX], KEY, value);
+            DHTOperations.putNonBlocking(peers[STORING_PEER_INDEX], KEY, value);
+            //Thread.sleep(1000);
+            DHTOperations.getAndSendNonBlocking(peers[GETTER_PEER_INDEX], KEY, message);
             
             Thread.sleep(1000);
-
-            getNonBlocking(peers[GETTER_PEER_INDEX], KEY);
             
-            Thread.sleep(2000);
-            Util.peersShutdown(peers);
+            DHTOperations.peersShutdown(peers);
         } catch (IOException pEx) {
             pEx.printStackTrace();
         } catch (InterruptedException pEx) {
@@ -52,59 +42,4 @@ public class Main {
         } 
     }
 
-    public static void putNonBlocking(PeerDHT pPeer, String pKey, PeerAddress pValue)
-            throws IOException {
-        FuturePut futurePut = pPeer.put(Number160.createHash(pKey)).data(new Data(pValue)).start();
-
-        // non-blocking operation
-        futurePut.addListener(new BaseFutureAdapter<FuturePut>() {
-
-            @Override
-            public void operationComplete(FuturePut future)
-                    throws Exception {
-                if(future.isSuccess()){      
-                    System.out.println("Peer with id " + pPeer.peerAddress().peerId().intValue() + " stored " + "[Key: " + pKey + ", Value: " + pValue + "]");
-                }
-            }
-        });
-    }
-
-
-    //doesnt work yet
-    private static void getNonBlocking(PeerDHT peers, String pKey) {
-        FutureGet futureGet = peers.get(Number160.createHash(pKey)).start();
-        // non-blocking operation
-        futureGet.addListener(new BaseFutureAdapter<FutureGet>() {
-            @Override
-            public void operationComplete(FutureGet future) throws Exception {
-                if(future.isSuccess()){   
-                    System.out.println("result non-blocking: " + future.data().object());
-                }
-            }
-            
-        });
-    }
-    
-    
-    public static Object get(PeerDHT pPeer, String pKey)
-            throws ClassNotFoundException, IOException {
-        Object returnValue;
-
-        FutureGet futureGet = pPeer.get(Number160.createHash(pKey)).start();
-        futureGet.awaitUninterruptibly();
-
-        Set<Entry<PeerAddress, Map<Number640, Data>>> replies = futureGet.rawData().entrySet();
-
-        returnValue = futureGet.data().object();
-        System.out.println("Peer with id " + pPeer.peerAddress().peerId().intValue() + " received for key " + pKey + " the data: " + returnValue);
-
-        System.out.print("The peers with the following id's replied: ");
-        Iterator<Entry<PeerAddress, Map<Number640, Data>>> iter = replies.iterator();
-        while (iter.hasNext()) {
-            Entry<PeerAddress, Map<Number640, Data>> entry = iter.next();
-            System.out.print(entry.getKey().peerId().intValue() + " ");
-        }
-
-        return returnValue;
-    }
 }

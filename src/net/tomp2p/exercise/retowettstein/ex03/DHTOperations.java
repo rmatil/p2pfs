@@ -2,18 +2,19 @@ package net.tomp2p.exercise.retowettstein.ex03;
 
 import java.io.IOException;
 
+import net.tomp2p.dht.FutureGet;
+import net.tomp2p.dht.FuturePut;
 import net.tomp2p.dht.PeerBuilderDHT;
 import net.tomp2p.dht.PeerDHT;
+import net.tomp2p.futures.BaseFutureAdapter;
 import net.tomp2p.p2p.PeerBuilder;
 import net.tomp2p.peers.Number160;
+import net.tomp2p.peers.PeerAddress;
+import net.tomp2p.storage.Data;
 
-/**
- * @author Reto Wettstein 12-716-221
- * @author Christian Tresch 06-923-627
- */
-public class Util {
 
-    
+public class DHTOperations {
+
     /**
      * Create peers with a port and attach it to the first peer in the array.
      * 
@@ -35,8 +36,8 @@ public class Util {
 
         return peers;
     }
-    
-    
+
+
     /**
      * Bootstraps peers to the first peer in the array.
      * 
@@ -50,8 +51,47 @@ public class Util {
             }
         }
     }
-    
-    
+
+
+    public static void putNonBlocking(PeerDHT pPeer, String pKey, PeerAddress pValue)
+            throws IOException {
+        FuturePut futurePut = pPeer.put(Number160.createHash(pKey)).data(new Data(pValue)).start();
+
+        // non-blocking operation
+        futurePut.addListener(new BaseFutureAdapter<FuturePut>() {
+
+            @Override
+            public void operationComplete(FuturePut future)
+                    throws Exception {
+                if (future.isSuccess()) {
+                    System.out.println("PEER " + pPeer.peerAddress().peerId().intValue() + ": stored " + "[Key: " + pKey + ", Value: " + pValue + "]");
+                }
+            }
+        });
+    }
+
+
+    public static void getAndSendNonBlocking(PeerDHT pPeer, String pKey, String pMessage) {
+        FutureGet futureGet = pPeer.get(Number160.createHash(pKey)).start();
+
+        // non-blocking operation
+        futureGet.addListener(new BaseFutureAdapter<FutureGet>() {
+
+            @Override
+            public void operationComplete(FutureGet future)
+                    throws Exception {
+                if (future.isSuccess()) {
+                    PeerAddress address = (PeerAddress) future.data().object();
+                    System.out.println("PEER " + pPeer.peerAddress().peerId().intValue() + ": looked up [Key: " + pKey + "], received [Value: " + address + "]");
+                    
+                    SendOperations.send(pPeer, address, pMessage);
+                }
+            }
+
+        });
+    }
+
+
     /**
      * Shutdown peers.
      * 
