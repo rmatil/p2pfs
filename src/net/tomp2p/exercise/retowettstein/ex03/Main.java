@@ -1,6 +1,8 @@
 package net.tomp2p.exercise.retowettstein.ex03;
 
 import java.io.IOException;
+
+import net.tomp2p.dht.FutureGet;
 import net.tomp2p.dht.PeerDHT;
 import net.tomp2p.peers.PeerAddress;
 
@@ -30,7 +32,11 @@ public class Main {
 
             DHTOperations.putNonBlocking(peers[STORING_PEER_INDEX], KEY, value);
             Thread.sleep(1000);
-            DHTOperations.getAndSendNonBlocking(peers[GETTER_PEER_INDEX], KEY, message);
+            FutureGet futureGet = DHTOperations.getNonBlocking(peers[GETTER_PEER_INDEX], KEY);
+            
+            futureGet.await();
+            PeerAddress address = (PeerAddress) futureGet.data().object();
+            SendOperations.send(peers[GETTER_PEER_INDEX], address, message);
             
             Thread.sleep(1000);
             
@@ -38,6 +44,8 @@ public class Main {
         } catch (IOException pEx) {
             pEx.printStackTrace();
         } catch (InterruptedException pEx) {
+            pEx.printStackTrace();
+        } catch (ClassNotFoundException pEx) {
             pEx.printStackTrace();
         } 
     }

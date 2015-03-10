@@ -86,7 +86,7 @@ public class DHTOperations {
      * @param pKey The key corresponding to the data
      * @param pMessage THe message to send to the received address
      */
-    public static void getAndSendNonBlocking(PeerDHT pPeer, String pKey, String pMessage) {
+    public static FutureGet getNonBlocking(PeerDHT pPeer, String pKey) {
         FutureGet futureGet = pPeer.get(Number160.createHash(pKey)).start();
 
         // non-blocking operation
@@ -98,11 +98,11 @@ public class DHTOperations {
                 if (future.isSuccess()) {
                     PeerAddress address = (PeerAddress) future.data().object();
                     System.out.println("PEER " + pPeer.peerAddress().peerId().intValue() + ": looked up [Key: " + pKey + "], received [Value: " + address + "]");
-                    
-                    SendOperations.send(pPeer, address, pMessage);
                 }
             }
         });
+        
+        return futureGet;
     }
 
 
