@@ -60,7 +60,7 @@ public class DHTOperations {
      * @return pValue The address where to find the data
      * @throws IOException IOException
      */
-    public static void putNonBlocking(PeerDHT pPeer, String pKey, PeerAddress pValue)
+    public static FuturePut putNonBlocking(PeerDHT pPeer, String pKey, PeerAddress pValue)
             throws IOException {
         FuturePut futurePut = pPeer.put(Number160.createHash(pKey)).data(new Data(pValue)).start();
 
@@ -75,6 +75,8 @@ public class DHTOperations {
                 }
             }
         });
+        
+        return futurePut;
     }
 
     

@@ -3,6 +3,7 @@ package net.tomp2p.exercise.retowettstein.ex03;
 import java.io.IOException;
 
 import net.tomp2p.dht.FutureGet;
+import net.tomp2p.dht.FuturePut;
 import net.tomp2p.dht.PeerDHT;
 import net.tomp2p.peers.PeerAddress;
 
@@ -30,11 +31,12 @@ public class Main {
             PeerAddress value = peers[STORING_PEER_INDEX].peerAddress();
             String message = "Hello World";
 
-            DHTOperations.putNonBlocking(peers[STORING_PEER_INDEX], KEY, value);
-            Thread.sleep(1000);
-            FutureGet futureGet = DHTOperations.getNonBlocking(peers[GETTER_PEER_INDEX], KEY);
+            FuturePut futurePut = DHTOperations.putNonBlocking(peers[STORING_PEER_INDEX], KEY, value);
+            futurePut.await();
             
+            FutureGet futureGet = DHTOperations.getNonBlocking(peers[GETTER_PEER_INDEX], KEY);
             futureGet.await();
+            
             PeerAddress address = (PeerAddress) futureGet.data().object();
             SendOperations.send(peers[GETTER_PEER_INDEX], address, message);
             
