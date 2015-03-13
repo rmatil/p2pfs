@@ -1,10 +1,14 @@
- *.class
- **/.classpath
- **/.project
- **/.settings
- **/target
- **/bin
- **/local.properties
- *.DS_Store
- *~
- *.jar
+**/.classpath
+**/.project
+**/.settings
+**/target
+**/bin
+**/android/gen
+**/local.properties
+*.mp3
+*.DS_Store
+*~
+*.apk
+*.ap
+*/android/gen
+*.jar
