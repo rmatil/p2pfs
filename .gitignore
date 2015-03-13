@@ -1,7 +1,10 @@
- # OS X
- .DS_Store
- 
- # eclipse
- target/
- bin/
  *.class
+ **/.classpath
+ **/.project
+ **/.settings
+ **/target
+ **/bin
+ **/local.properties
+ *.DS_Store
+ *~
+ *.jar
