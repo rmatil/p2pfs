@@ -34,5 +34,10 @@
 <artifactId>junit</artifactId>
 <version>4.11</version>
 </dependency>
+<dependency>
+<groupId>com.sun.jna</groupId>
+<artifactId>jna</artifactId>
+<version>3.0.9</version>
+</dependency>
 </dependencies>
 </project>
