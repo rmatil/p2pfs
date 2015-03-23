@@ -1,5 +1,11 @@
 package net.tomp2p.bootstrapserver;
 
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStreamReader;
+import java.net.Inet4Address;
+import java.net.URL;
+
 
 public class BootstrapPeer {
     
@@ -7,11 +13,31 @@ public class BootstrapPeer {
     
     public static void main(String args[]){
         
-        BoostrapServerAccess bsa = new BoostrapServerAccess(BOOTSTRAP_SERVER);
+        BoostrapServerAccess boostrapServerAccess = new BoostrapServerAccess(BOOTSTRAP_SERVER);
         
-        System.out.println(bsa.get());
+        // 2 ways to get the ip address
+        String myIP = "";
+        String myIP2 = "";
+        BufferedReader bufferedReader;
+        try {
+            // way 1
+            URL ipRequest = new URL("http://checkip.amazonaws.com");
+            bufferedReader = new BufferedReader(new InputStreamReader(ipRequest.openStream()));
+            myIP = bufferedReader.readLine(); 
+            bufferedReader.close();
+            
+            // way 2
+            myIP2 = Inet4Address.getLocalHost().getHostAddress();
+        } catch (IOException pEx) {
+            pEx.printStackTrace();
+        }
+
+        System.out.println(myIP);
+        System.out.println(myIP2);
+        
+        System.out.println(boostrapServerAccess.get());
         System.out.println("");
-        System.out.println(bsa.post("address", "192.168.1.11"));
+        System.out.println(boostrapServerAccess.post("address", myIP));
     }
 
 }
