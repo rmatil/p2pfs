@@ -15,8 +15,6 @@ public class BoostrapServerAccess {
     public static final String GET_URL          = "/ip-addresses?token=tabequals4";
     public static final String POST_URL         = "/ip-addresses/new?token=tabequals4";
 
-
-
     public String get() {
         String stringURL = BOOTSTRAP_SERVER + GET_URL;
         String result = "";
@@ -49,14 +47,14 @@ public class BoostrapServerAccess {
         return result;
     }
 
-    public StringBuffer post(String pKey, String pValue) {
+    public StringBuffer post(String pAddress, int pPort) {
         String postURL = BOOTSTRAP_SERVER + POST_URL;
         StringBuffer result = new StringBuffer();
 
         URL stringURL;
         HttpURLConnection connection;
 
-        String content = pKey + "=" + pValue;
+        String content = "address=" + pAddress + "&port=" + pPort;
         try {
 
             stringURL = new URL(postURL);

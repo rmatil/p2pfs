@@ -32,10 +32,11 @@ public class BootstrapPeer {
 
         System.out.println(myIP);
         System.out.println(myIP2);
+        System.out.println("");
         
         System.out.println(boostrapServerAccess.get());
         System.out.println("");
-        System.out.println(boostrapServerAccess.post("address", myIP));
+        System.out.println(boostrapServerAccess.post(myIP, 4000));
     }
 
 }
