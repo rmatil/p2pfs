@@ -12,11 +12,12 @@ import java.net.URL;
 public class BoostrapServerAccess {
 
     public static final String BOOTSTRAP_SERVER = "http://188.226.178.35";
-    public static final String GET_URL          = "/ip-addresses?token=tabequals4";
-    public static final String POST_URL         = "/ip-addresses/new?token=tabequals4";
+    public static final String TOKEN            = "?token=tabequals4";
+    public static final String GET_URL          = "/ip-addresses";
+    public static final String POST_URL         = "/ip-addresses/new";
 
     public String get() {
-        String stringURL = BOOTSTRAP_SERVER + GET_URL;
+        String stringURL = BOOTSTRAP_SERVER + GET_URL + TOKEN;
         String result = "";
 
         URL getURL;
@@ -48,7 +49,7 @@ public class BoostrapServerAccess {
     }
 
     public StringBuffer post(String pAddress, int pPort) {
-        String postURL = BOOTSTRAP_SERVER + POST_URL;
+        String postURL = BOOTSTRAP_SERVER + POST_URL + TOKEN;
         StringBuffer result = new StringBuffer();
 
         URL stringURL;
