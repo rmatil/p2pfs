@@ -11,3 +11,4 @@
 *.ap
 */android/gen
 *.jar
+/target/
