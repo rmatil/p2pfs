@@ -40,6 +40,7 @@ public class FSPeer {
         System.out.println("Server started Listening to: " + DiscoverNetworks.discoverInterfaces(b));
         System.out.println("address visible to outside is " + peer.peerAddress());
 
+//        // this prints the peers which connected to me
 //        while (true) {
 //            for (PeerAddress pa : peer.peerBean().peerMap().all()) {
 //                System.out.println("PeerAddress: " + pa);
@@ -49,9 +50,10 @@ public class FSPeer {
 //        }
     }
 
-    public void startPeer(String myIP, String ipAddressToConnectTo, int myPort, int connectionPort)
+    public boolean startPeer(String myIP, String connectionIpAddress, int myPort, int connectionPort)
             throws Exception {
         Random rnd = new Random();
+        
         Bindings b = new Bindings().addProtocol(StandardProtocolFamily.INET).addAddress(
                 InetAddress.getByName(myIP));
         
@@ -60,7 +62,7 @@ public class FSPeer {
         System.out.println("Client started and Listening to: " + DiscoverNetworks.discoverInterfaces(b));
         System.out.println("address visible to outside is " + peer.peerAddress());
 
-        InetAddress address = Inet4Address.getByName(ipAddressToConnectTo);
+        InetAddress address = Inet4Address.getByName(connectionIpAddress);
         PeerAddress pa = new PeerAddress(Number160.ZERO, address, connectionPort, connectionPort);
 
         System.out.println("PeerAddress: " + pa);
@@ -78,8 +80,10 @@ public class FSPeer {
 
         if (futureDiscover.isSuccess()) {
             System.out.println("found that my outside address is " + futureDiscover.peerAddress());
+            return true;
         } else {
             System.out.println("failed " + futureDiscover.failedReason());
+            return false;
         }
     }
 
