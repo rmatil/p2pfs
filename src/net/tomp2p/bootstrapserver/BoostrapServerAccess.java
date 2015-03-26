@@ -15,6 +15,7 @@ public class BoostrapServerAccess {
     public static final String TOKEN            = "?token=tabequals4";
     public static final String GET_URL          = "/ip-addresses";
     public static final String POST_URL         = "/ip-addresses/new";
+    public static final String REMOVE_URL       = "/ip-addresses/remove";
 
     public String get() {
         String stringURL = BOOTSTRAP_SERVER + GET_URL + TOKEN;
@@ -80,6 +81,48 @@ public class BoostrapServerAccess {
             bufferedReader.close();
 
             System.out.println("POST: " + connection.getResponseCode());
+        } catch (IOException e) {
+            e.printStackTrace();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+        return result;
+    }
+    
+    public StringBuffer remove(String pAddress, int pPort){
+        String removeURL = BOOTSTRAP_SERVER + REMOVE_URL + TOKEN;
+        StringBuffer result = new StringBuffer();
+
+        URL stringURL;
+        HttpURLConnection connection;
+
+        String content = "address=" + pAddress + "&port=" + pPort;
+        
+        try {
+
+            stringURL = new URL(removeURL);
+            connection = (HttpURLConnection) stringURL.openConnection();
+            connection.setRequestMethod("POST");
+            connection.setRequestProperty("Content-Type", "application/x-www-form-urlencoded");
+            connection.setDoOutput(true);
+            connection.setDoInput(true);
+
+            DataOutputStream dataOutputStream = new DataOutputStream(connection.getOutputStream());
+            dataOutputStream.writeBytes(content);
+            dataOutputStream.flush();
+            dataOutputStream.close();
+
+            BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(connection.getInputStream()));
+            String inputLine;
+
+            while ((inputLine = bufferedReader.readLine()) != null) {
+                result.append(inputLine);
+            }
+
+            bufferedReader.close();
+
+            System.out.println("REMOVE: " + connection.getResponseCode());
         } catch (IOException e) {
             e.printStackTrace();
         } catch (Exception e) {

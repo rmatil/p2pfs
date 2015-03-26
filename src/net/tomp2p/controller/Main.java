@@ -50,7 +50,9 @@ public class Main {
 //            // fsPeer.startAsBootstrapPeer(myIP, myPort);
 //            fsPeer.startPeer(myIP, myIP, myPort, myPort);
             
-            InputReader.readAndProcess(fsPeer);         
+            InputReader.readAndProcess(fsPeer);    
+            
+            boostrapServerAccess.remove(myIP, myPort);
             fsPeer.shutdown();
         } catch (Exception pEx) {
             pEx.printStackTrace();
