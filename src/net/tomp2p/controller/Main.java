@@ -32,7 +32,7 @@ public class Main {
                 boolean success = false;
                 int counter = 0;
                 
-                while(!success || counter < size){
+                while(!success && counter < size){
                   success = fsPeer.startPeer(myIP, ipList.get(0).get("address"), 4000, Integer.parseInt(ipList.get(0).get("port")));
                   counter++;
                 }
