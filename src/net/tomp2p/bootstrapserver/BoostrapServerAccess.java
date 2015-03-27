@@ -8,16 +8,49 @@ import java.net.HttpURLConnection;
 import java.net.URL;
 
 
-
+/**
+ * Handles IP address storing / removal on the bootstrap server
+ * 
+ * @author Reto
+ *
+ */
 public class BoostrapServerAccess {
 
+    /**
+     * The url to the bootstrap server
+     */
     public static final String BOOTSTRAP_SERVER = "http://188.226.178.35";
+
+    /**
+     * The authentication token to access any
+     * operation on the bootstrap server
+     */
     public static final String TOKEN            = "?token=tabequals4";
+
+    /**
+     * The URL to get a list of all IP addresses
+     * currently connected with the P2P network
+     */
     public static final String GET_URL          = "/ip-addresses";
+
+    /**
+     * The URL to which new addresses can be posted
+     */
     public static final String POST_URL         = "/ip-addresses/new";
+
+    /**
+     * The URL on which the removal of
+     * IP addresses are handled
+     */
     public static final String REMOVE_URL       = "/ip-addresses/remove";
 
-    public String get() {
+    /**
+     * Returns a string containing the JSON representation
+     * of IP-port address pairs of all connected peers
+     * 
+     * @return The JSON string
+     */
+    public String getIpAddressList() {
         String stringURL = BOOTSTRAP_SERVER + GET_URL + TOKEN;
         String result = "";
 
@@ -39,7 +72,7 @@ public class BoostrapServerAccess {
 
             bufferedReader.close();
 
-            System.out.println("GET: " + connection.getResponseCode());
+            System.out.println("[GET][" + connection.getResponseCode() + "]:  " + stringURL);
         } catch (IOException e) {
             e.printStackTrace();
         } catch (Exception e) {
@@ -49,18 +82,27 @@ public class BoostrapServerAccess {
         return result;
     }
 
-    public StringBuffer post(String pAddress, int pPort) {
+    /**
+     * Stores the given IP address and the given port on
+     * the bootstrap server
+     * 
+     * @param pAddress The IP address
+     * @param pPort The corresponding port
+     * 
+     * @return The updated list of connected peers
+     */
+    public StringBuffer postIpPortPair(String pAddress, int pPort) {
         String postURL = BOOTSTRAP_SERVER + POST_URL + TOKEN;
         StringBuffer result = new StringBuffer();
 
-        URL stringURL;
+        URL getURL;
         HttpURLConnection connection;
 
         String content = "address=" + pAddress + "&port=" + pPort;
         try {
 
-            stringURL = new URL(postURL);
-            connection = (HttpURLConnection) stringURL.openConnection();
+            getURL = new URL(postURL);
+            connection = (HttpURLConnection) getURL.openConnection();
             connection.setRequestMethod("POST");
             connection.setRequestProperty("Content-Type", "application/x-www-form-urlencoded");
             connection.setDoOutput(true);
@@ -80,7 +122,7 @@ public class BoostrapServerAccess {
 
             bufferedReader.close();
 
-            System.out.println("POST: " + connection.getResponseCode());
+            System.out.println("[POST][" + connection.getResponseCode() + "]: " + postURL);
         } catch (IOException e) {
             e.printStackTrace();
         } catch (Exception e) {
@@ -89,8 +131,16 @@ public class BoostrapServerAccess {
 
         return result;
     }
-    
-    public StringBuffer remove(String pAddress, int pPort){
+
+    /**
+     * Removes the specified IP-port pair from the bootstrap server
+     * 
+     * @param pAddress The IP address to remove
+     * @param pPort The corresponding port
+     * 
+     * @return The updated list of connected peers
+     */
+    public StringBuffer removeIpPortPair(String pAddress, int pPort) {
         String removeURL = BOOTSTRAP_SERVER + REMOVE_URL + TOKEN;
         StringBuffer result = new StringBuffer();
 
@@ -98,9 +148,8 @@ public class BoostrapServerAccess {
         HttpURLConnection connection;
 
         String content = "address=" + pAddress + "&port=" + pPort;
-        
-        try {
 
+        try {
             stringURL = new URL(removeURL);
             connection = (HttpURLConnection) stringURL.openConnection();
             connection.setRequestMethod("POST");
@@ -122,7 +171,7 @@ public class BoostrapServerAccess {
 
             bufferedReader.close();
 
-            System.out.println("REMOVE: " + connection.getResponseCode());
+            System.out.println("[POST][" + connection.getResponseCode() + "]: " + removeURL);
         } catch (IOException e) {
             e.printStackTrace();
         } catch (Exception e) {

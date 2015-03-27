@@ -24,48 +24,63 @@ import net.tomp2p.peers.PeerAddress;
 import net.tomp2p.storage.Data;
 
 
+/**
+ * The file system peer
+ * 
+ * @author Reto
+ */
 public class FSPeer {
-    
+
     private PeerDHT peer;
 
+    /**
+     * Starts this peer as the first, i.e. bootstrap peer
+     * 
+     * @param myIP The IP Address of this peer
+     * @param myPort The corresponding port
+     * 
+     * @throws Exception
+     */
     public void startAsBootstrapPeer(String myIP, int myPort)
             throws Exception {
-        
+
         Random rnd = new Random(43L);
         Bindings b = new Bindings().addProtocol(StandardProtocolFamily.INET).addAddress(
                 InetAddress.getByName(myIP));
-       
+
         // b.addInterface("eth0");
         peer = new PeerBuilderDHT(new PeerBuilder(new Number160(rnd)).ports(myPort).bindings(b).start()).start();
-        System.out.println("Server started Listening to: " + DiscoverNetworks.discoverInterfaces(b));
-        System.out.println("address visible to outside is " + peer.peerAddress());
-
-//        // this prints the peers which connected to me
-//        while (true) {
-//            for (PeerAddress pa : peer.peerBean().peerMap().all()) {
-//                System.out.println("PeerAddress: " + pa);
-//            }
-//
-//            Thread.sleep(1500);
-//        }
+        System.out.println("[Peer@" + myIP + "]: Server started listening to: " + DiscoverNetworks.discoverInterfaces(b));
+        System.out.println("[Peer@" + myIP + "]: Address visible to outside is " + peer.peerAddress());
     }
 
-    public boolean startPeer(String myIP, String connectionIpAddress, int myPort, int connectionPort)
+    /**
+     * Starts this peer with the given parameters
+     * 
+     * @param myIP The IP address of this peer
+     * @param myPort The port of this peer
+     * @param connectionIpAddress The IP address to which this peer should be connected
+     * @param connectionPort The port to which this peer should be connected
+     * @return True, if started successfully, false otherwise
+     * 
+     * @throws Exception
+     */
+    public boolean startPeer(String myIP, int myPort, String connectionIpAddress, int connectionPort)
             throws Exception {
+
         Random rnd = new Random();
-        
         Bindings b = new Bindings().addProtocol(StandardProtocolFamily.INET).addAddress(
                 InetAddress.getByName(myIP));
-        
+
         // b.addInterface("eth0");
         peer = new PeerBuilderDHT(new PeerBuilder(new Number160(rnd)).ports(myPort).bindings(b).start()).start();
-        System.out.println("Client started and Listening to: " + DiscoverNetworks.discoverInterfaces(b));
-        System.out.println("address visible to outside is " + peer.peerAddress());
+        System.out.println("[Peer@" + myIP + "]: Client started and listening to: " + DiscoverNetworks.discoverInterfaces(b));
+        System.out.println("[Peer@" + myIP + "]: Address visible to outside is " + peer.peerAddress());
 
         InetAddress address = Inet4Address.getByName(connectionIpAddress);
-        PeerAddress pa = new PeerAddress(Number160.ZERO, address, connectionPort, connectionPort);
+        PeerAddress connectionPeerAddress = new PeerAddress(Number160.ZERO, address, connectionPort, connectionPort);
 
-        System.out.println("PeerAddress: " + pa);
+        System.out.println("[Peer@" + myIP + "]: Connected to " + connectionPeerAddress);
 
         // Future Discover
         FutureDiscover futureDiscover = peer.peer().discover().inetAddress(address).ports(connectionPort).start();
@@ -79,30 +94,59 @@ public class FSPeer {
         System.out.println(addressList.size());
 
         if (futureDiscover.isSuccess()) {
-            System.out.println("found that my outside address is " + futureDiscover.peerAddress());
+            System.out.println("[Peer@" + myIP + "]: Outside IP address is " + futureDiscover.peerAddress());
             return true;
-        } else {
-            System.out.println("failed " + futureDiscover.failedReason());
-            return false;
         }
+
+        System.out.println("[Peer@" + myIP + "]: Failed " + futureDiscover.failedReason());
+        return false;
     }
 
-    public void shutdown(){
+    /**
+     * Shuts down this peer
+     */
+    public void shutdown() {
         peer.shutdown();
     }
-    
+
+    /**
+     * Prints a list of connected peers to
+     * stdout
+     * 
+     * @throws InterruptedException
+     */
+    public void printConnectedPeers()
+            throws InterruptedException {
+
+        System.out.println("Listing connected peers: ");
+        for (PeerAddress pa : peer.peerBean().peerMap().all()) {
+            System.out.println("[ConnectedPeer]: " + pa);
+        }
+        System.out.println("Done");
+    }
+
+    /**
+     * Tries to fetch the IP address of this peer in the local network
+     * 
+     * @return The found IP address
+     */
     public String findLocalIp() {
         String ip = "";
-        
+
         try {
             ip = Inet4Address.getLocalHost().getHostAddress();
-        } catch (IOException pEx){
+        } catch (IOException pEx) {
             pEx.printStackTrace();
         }
         return ip;
     }
 
-    
+
+    /**
+     * Tries to fetch the IP address seen from outside
+     * 
+     * @return The IP Address
+     */
     public String findExternalIp() {
         BufferedReader bufferedReader;
         String ip = "";
@@ -118,15 +162,33 @@ public class FSPeer {
 
         return ip;
     }
-    
-    public Object get(Number160 pKey) throws ClassNotFoundException, IOException{
+
+    /**
+     * Gets the value stored on the given key
+     * 
+     * @param pKey The key to retrieve its value from
+     * @return An object containing the stored data
+     * 
+     * @throws ClassNotFoundException
+     * @throws IOException
+     */
+    public Object get(Number160 pKey)
+            throws ClassNotFoundException, IOException {
         FutureGet futureGet = peer.get(pKey).start();
         futureGet.awaitUninterruptibly();
-        
+
         return futureGet.data().object();
     }
-    
-    public void put(Number160 pKey, Data pValue) throws IOException {
+
+    /**
+     * Stores the given data on the given key
+     * 
+     * @param pKey The key to store the data
+     * @param pValue The data to store
+     * 
+     * @throws IOException
+     */
+    public void put(Number160 pKey, Data pValue) {
         FuturePut futurePut = peer.put(pKey).data(pValue).start();
         futurePut.awaitUninterruptibly();
     }
