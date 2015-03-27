@@ -59,6 +59,7 @@ public class DhtOperationsCommand {
                     System.out.println("> " + peer.get(new Number160().createHash(inputArray[1])));
                 } else if (inputArray[0].equals(QUIT)) {
                     System.out.println("> terminating input console...");
+                    System.out.println();
                 } else {
                     System.out.println("usage: put:<key>:<value>, get:<key> or 'q' for quit");
                 }

@@ -4,10 +4,11 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
-import net.tomp2p.bootstrapserver.BoostrapServerAccess;
+import net.tomp2p.bootstrapserver.BootstrapServerAccess;
 import net.tomp2p.fspeer.FSPeer;
 import net.tomp2p.util.DhtOperationsCommand;
 import net.tomp2p.util.IpAddressJsonParser;
+import net.tomp2p.util.ShutdownHookThread;
 
 import org.json.simple.parser.ParseException;
 
@@ -15,7 +16,7 @@ import org.json.simple.parser.ParseException;
 public class Main {
 
     public static void main(String[] args) {
-        BoostrapServerAccess boostrapServerAccess = new BoostrapServerAccess();
+        BootstrapServerAccess boostrapServerAccess = new BootstrapServerAccess();
         FSPeer fsPeer = new FSPeer();
 
         // 2 ways to get the ip address
@@ -31,7 +32,6 @@ public class Main {
         }
 
         int nrOfIpAddresses = ipList.size();
-
         boostrapServerAccess.postIpPortPair(myIP, 4000);
 
         try {
@@ -47,9 +47,9 @@ public class Main {
                 }
 
                 if (success) {
-                    System.out.println("Bootstrap succesfull");
+                    System.out.println("[Peer@" + myIP + "]: Bootstrap successfull");
                 } else {
-                    System.out.println("No connection possible");
+                    System.out.println("[Peer@" + myIP + "]: No connection possible");
                 }
             }
 
@@ -66,8 +66,10 @@ public class Main {
         } catch (Exception pEx) {
             pEx.printStackTrace();
         }
-
-
+        
+        // Add shutdown hook so that IP address gets removed from server when 
+        // user does not terminate program correctly on 
+        Runtime.getRuntime().addShutdownHook(new ShutdownHookThread(myIP, myPort));
     }
 
 }

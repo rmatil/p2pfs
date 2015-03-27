@@ -91,7 +91,7 @@ public class FSPeer {
         futureBootstrap.awaitUninterruptibly();
 
         Collection<PeerAddress> addressList = peer.peerBean().peerMap().all();
-        System.out.println(addressList.size());
+        System.out.println("[Peer@" + myIP + "]: Address list size: " + addressList.size());
 
         if (futureDiscover.isSuccess()) {
             System.out.println("[Peer@" + myIP + "]: Outside IP address is " + futureDiscover.peerAddress());
