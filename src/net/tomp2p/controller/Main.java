@@ -58,6 +58,10 @@ public class Main {
 //            int myPort = 4000;
 //            // fsPeer.startAsBootstrapPeer(myIP, myPort);
 //            fsPeer.startPeer(myIP, myIP, myPort, myPort);
+            
+            // Add shutdown hook so that IP address gets removed from server when 
+            // user does not terminate program correctly on 
+            Runtime.getRuntime().addShutdownHook(new ShutdownHookThread(myIP, myPort));
 
             DhtOperationsCommand.readAndProcess(fsPeer);
 
@@ -66,10 +70,6 @@ public class Main {
         } catch (Exception pEx) {
             pEx.printStackTrace();
         }
-        
-        // Add shutdown hook so that IP address gets removed from server when 
-        // user does not terminate program correctly on 
-        Runtime.getRuntime().addShutdownHook(new ShutdownHookThread(myIP, myPort));
     }
 
 }
