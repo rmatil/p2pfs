@@ -14,7 +14,7 @@ import java.net.URL;
  * @author Reto
  *
  */
-public class BoostrapServerAccess {
+public class BootstrapServerAccess {
 
     /**
      * The url to the bootstrap server
