@@ -181,4 +181,16 @@ public class BootstrapServerAccess {
         return result;
     }
 
+    public void sendSingleKeepAliveMessage() {
+        keepAlive.sendMsg();
+    }
+
+    public void heartBeat() {
+        keepAlive.exec();
+    }
+
+    public void feelTheRhythmFeelTheRhymeItBobsledTime() {
+        heartBeat();
+    }
+
 }
