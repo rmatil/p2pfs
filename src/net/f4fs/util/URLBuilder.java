@@ -101,7 +101,7 @@ public class URLBuilder {
             sb.append(_protocol).append("://").append(_host);
 
             if (_port >= 0) {
-                sb.append("/").append(_port);
+                sb.append(":").append(_port);
             }
 
             if (_path != null) {
