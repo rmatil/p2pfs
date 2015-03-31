@@ -1,4 +1,4 @@
-package net.tomp2p.fspeer;
+package net.f4fs.fspeer;
 
 import java.io.BufferedReader;
 import java.io.IOException;
