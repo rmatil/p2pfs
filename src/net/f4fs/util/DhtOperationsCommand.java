@@ -1,9 +1,9 @@
-package net.tomp2p.util;
+package net.f4fs.util;
 
 import java.io.IOException;
 import java.util.Scanner;
 
-import net.tomp2p.fspeer.FSPeer;
+import net.f4fs.fspeer.FSPeer;
 import net.tomp2p.peers.Number160;
 import net.tomp2p.storage.Data;
 

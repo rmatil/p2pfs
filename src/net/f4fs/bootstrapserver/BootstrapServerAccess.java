@@ -1,4 +1,4 @@
-package net.tomp2p.bootstrapserver;
+package net.f4fs.bootstrapserver;
 
 import java.io.BufferedReader;
 import java.io.DataOutputStream;
