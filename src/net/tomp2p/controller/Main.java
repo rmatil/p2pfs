@@ -24,7 +24,7 @@ public class Main {
         // String myIP = fsPeer.findExternalIp();
         int myPort = 4000;
 
-        List<Map<String, String>> ipList = new ArrayList<Map<String, String>>();
+        List<Map<String, String>> ipList = new ArrayList<>();
         try {
             ipList = IpAddressJsonParser.parse(boostrapServerAccess.getIpAddressList());
         } catch (ParseException e) {
