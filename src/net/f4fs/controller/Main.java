@@ -5,6 +5,7 @@ import java.util.List;
 import java.util.Map;
 
 import net.f4fs.bootstrapserver.BootstrapServerAccess;
+import net.f4fs.config.Config;
 import net.f4fs.fspeer.FSPeer;
 import net.f4fs.util.DhtOperationsCommand;
 import net.f4fs.util.IpAddressJsonParser;
@@ -20,11 +21,10 @@ public class Main {
         FSPeer fsPeer = new FSPeer();
 
         // 2 ways to get the ip address
-        String myIP = fsPeer.findLocalIp();
-        // String myIP = fsPeer.findExternalIp();
-        int myPort = 4000;
+        String localIp = fsPeer.findLocalIp();
+        // String localIp = fsPeer.findExternalIp();
 
-        List<Map<String, String>> ipList = new ArrayList<Map<String, String>>();
+        List<Map<String, String>> ipList = new ArrayList<>();
         try {
             ipList = IpAddressJsonParser.parse(boostrapServerAccess.getIpAddressList());
         } catch (ParseException e) {
@@ -32,40 +32,43 @@ public class Main {
         }
 
         int nrOfIpAddresses = ipList.size();
-        boostrapServerAccess.postIpPortPair(myIP, 4000);
+        boostrapServerAccess.postIpPortPair(localIp, Config.DEFAULT.getPort());
 
         try {
             if (nrOfIpAddresses == 0) {
-                fsPeer.startAsBootstrapPeer(myIP, myPort);
+                fsPeer.startAsBootstrapPeer(localIp, Config.DEFAULT.getPort());
             } else {
                 boolean success = false;
                 int counter = 0;
 
-                while (!success && counter < nrOfIpAddresses) {
-                    success = fsPeer.startPeer(myIP, 4000, ipList.get(0).get("address"), Integer.parseInt(ipList.get(0).get("port")));
+                while (!success && (counter < nrOfIpAddresses)) {
+                    success = fsPeer.startPeer(localIp,
+                                               Config.DEFAULT.getPort(),
+                                               ipList.get(0).get("address"),
+                                               Integer.parseInt(ipList.get(0).get("port")));
                     counter++;
                 }
 
                 if (success) {
-                    System.out.println("[Peer@" + myIP + "]: Bootstrap successfull");
+                    System.out.println("[Peer@" + localIp + "]: Bootstrap successfull");
                 } else {
-                    System.out.println("[Peer@" + myIP + "]: No connection possible");
+                    System.out.println("[Peer@" + localIp + "]: No connection possible");
                 }
             }
 
 //            // for testing on own pc
-//            String myIP = "172.20.10.5";
+//            String localIp = "172.20.10.5";
 //            int myPort = 4000;
-//            // fsPeer.startAsBootstrapPeer(myIP, myPort);
-//            fsPeer.startPeer(myIP, myIP, myPort, myPort);
+//            // fsPeer.startAsBootstrapPeer(localIp, myPort);
+//            fsPeer.startPeer(localIp, localIp, myPort, myPort);
             
             // Add shutdown hook so that IP address gets removed from server when 
             // user does not terminate program correctly on 
-            Runtime.getRuntime().addShutdownHook(new ShutdownHookThread(myIP, myPort));
+            Runtime.getRuntime().addShutdownHook(new ShutdownHookThread(localIp, Config.DEFAULT.getPort()));
 
             DhtOperationsCommand.readAndProcess(fsPeer);
 
-            boostrapServerAccess.removeIpPortPair(myIP, myPort);
+            boostrapServerAccess.removeIpPortPair(localIp, Config.DEFAULT.getPort());
             fsPeer.shutdown();
         } catch (Exception pEx) {
             pEx.printStackTrace();

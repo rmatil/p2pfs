@@ -12,3 +12,8 @@
 */android/gen
 *.jar
 /target/
+
+# intellij idea stuff
+.idea/
+ComSys_Challenge_Task.eml
+ComSys_Challenge_Task.iml
