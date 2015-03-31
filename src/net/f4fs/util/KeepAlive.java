@@ -58,7 +58,7 @@ public class KeepAlive {
                 .host(_targetIp)
                 .appendAuthToken()
                 .path(Config.DEFAULT.getKeepAlivePath())
-                .toString();
+                .build();
 
         URL getURL;
         HttpURLConnection connection;
