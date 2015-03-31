@@ -114,13 +114,9 @@ public class URLBuilder {
 
                 ArrayList<String> params = new ArrayList<>(getQueryParams().size());
 
-                //getQueryParams().entrySet().stream().forEach((entry) -> {
-                //    params.add(entry.getKey() + "=" + entry.getValue());
-                //});
-
-                for(Map.Entry<String, String> entry : getQueryParams().entrySet()) {
+                getQueryParams().entrySet().stream().forEach((entry) -> {
                     params.add(entry.getKey() + "=" + entry.getValue());
-                }
+                });
 
                 sb.append(String.join("&", params));
             }
