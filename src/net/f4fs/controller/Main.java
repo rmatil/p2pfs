@@ -5,6 +5,7 @@ import java.util.List;
 import java.util.Map;
 
 import net.f4fs.bootstrapserver.BootstrapServerAccess;
+import net.f4fs.filesystem.P2PFS;
 import net.f4fs.fspeer.FSPeer;
 import net.f4fs.util.DhtOperationsCommand;
 import net.f4fs.util.IpAddressJsonParser;
@@ -34,6 +35,7 @@ public class Main {
         int nrOfIpAddresses = ipList.size();
         boostrapServerAccess.postIpPortPair(myIP, 4000);
 
+        // start as bootsrap peer or connect to other peers
         try {
             if (nrOfIpAddresses == 0) {
                 fsPeer.startAsBootstrapPeer(myIP, myPort);
@@ -42,7 +44,7 @@ public class Main {
                 int counter = 0;
 
                 while (!success && counter < nrOfIpAddresses) {
-                    success = fsPeer.startPeer(myIP, 4000, ipList.get(0).get("address"), Integer.parseInt(ipList.get(0).get("port")));
+                    success = fsPeer.startPeer(myIP, 4000, ipList.get(counter).get("address"), Integer.parseInt(ipList.get(counter).get("port")));
                     counter++;
                 }
 
@@ -63,7 +65,12 @@ public class Main {
             // user does not terminate program correctly on 
             Runtime.getRuntime().addShutdownHook(new ShutdownHookThread(myIP, myPort));
 
-            DhtOperationsCommand.readAndProcess(fsPeer);
+            // start file system with the connected peer
+//            new P2PFS(fsPeer).log(true).mount("./P2PFS");
+            new P2PFS(fsPeer).mount("./P2PFS");
+            
+//            // probably not needed anymore
+//            DhtOperationsCommand.readAndProcess(fsPeer);
 
             boostrapServerAccess.removeIpPortPair(myIP, myPort);
             fsPeer.shutdown();
@@ -71,5 +78,4 @@ public class Main {
             pEx.printStackTrace();
         }
     }
-
 }
