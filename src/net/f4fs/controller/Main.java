@@ -15,6 +15,9 @@ import org.json.simple.parser.ParseException;
 
 
 public class Main {
+    
+    public static final String MOUNT_POINT = "./P2PFS";
+    public static final int MY_PORT = 4000;
 
     public static void main(String[] args) {
         BootstrapServerAccess boostrapServerAccess = new BootstrapServerAccess();
@@ -23,7 +26,6 @@ public class Main {
         // 2 ways to get the ip address
         String myIP = fsPeer.findLocalIp();
         // String myIP = fsPeer.findExternalIp();
-        int myPort = 4000;
 
         List<Map<String, String>> ipList = new ArrayList<Map<String, String>>();
         try {
@@ -35,10 +37,10 @@ public class Main {
         int nrOfIpAddresses = ipList.size();
         boostrapServerAccess.postIpPortPair(myIP, 4000);
 
-        // start as bootsrap peer or connect to other peers
+        // start as bootstrap peer or connect to other peers
         try {
             if (nrOfIpAddresses == 0) {
-                fsPeer.startAsBootstrapPeer(myIP, myPort);
+                fsPeer.startAsBootstrapPeer(myIP, MY_PORT);
             } else {
                 boolean success = false;
                 int counter = 0;
@@ -63,16 +65,16 @@ public class Main {
             
             // Add shutdown hook so that IP address gets removed from server when 
             // user does not terminate program correctly on 
-            Runtime.getRuntime().addShutdownHook(new ShutdownHookThread(myIP, myPort));
+            Runtime.getRuntime().addShutdownHook(new ShutdownHookThread(myIP, MY_PORT));
 
             // start file system with the connected peer
-//            new P2PFS(fsPeer).log(true).mount("./P2PFS");
-            new P2PFS(fsPeer).mount("./P2PFS");
+//            new P2PFS(fsPeer).log(true).mount(mountPoint);
+            new P2PFS(fsPeer).mount(MOUNT_POINT);
             
 //            // probably not needed anymore
 //            DhtOperationsCommand.readAndProcess(fsPeer);
 
-            boostrapServerAccess.removeIpPortPair(myIP, myPort);
+            boostrapServerAccess.removeIpPortPair(myIP, MY_PORT);
             fsPeer.shutdown();
         } catch (Exception pEx) {
             pEx.printStackTrace();

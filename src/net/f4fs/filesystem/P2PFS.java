@@ -1,5 +1,6 @@
 package net.f4fs.filesystem;
 
+import java.io.IOException;
 import java.nio.ByteBuffer;
 
 import net.f4fs.fspeer.FSPeer;
@@ -9,6 +10,8 @@ import net.fusejna.StructFuseFileInfo.FileInfoWrapper;
 import net.fusejna.StructStat.StatWrapper;
 import net.fusejna.types.TypeMode.ModeWrapper;
 import net.fusejna.util.FuseFilesystemAdapterFull;
+import net.tomp2p.peers.Number160;
+import net.tomp2p.storage.Data;
 
 /*
  * TODO: 
@@ -17,11 +20,18 @@ import net.fusejna.util.FuseFilesystemAdapterFull;
  */
 public class P2PFS extends FuseFilesystemAdapterFull {
    
+    
     private final MemoryDirectory rootDirectory = new MemoryDirectory("");
     private FSPeer mPeer;
     
-    public P2PFS(FSPeer pPeer){
+    public P2PFS(FSPeer pPeer) throws IOException{
         mPeer = pPeer;
+        
+        String filename = "README.txt";
+        String filecontent = "Welcome to the p2p filesystem of f4fs.";
+        rootDirectory.add(new MemoryFile(filename, filecontent));
+        
+        mPeer.put(Number160.createHash(filename), new Data(filecontent));
     }
     
     @Override
@@ -42,7 +52,6 @@ public class P2PFS extends FuseFilesystemAdapterFull {
             return 0;
         }
         
-        System.out.println("BLABLA");
         return -ErrorCodes.ENOENT();
     }
 
