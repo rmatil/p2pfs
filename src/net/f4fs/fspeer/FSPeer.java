@@ -9,6 +9,7 @@ import java.net.URL;
 import java.util.Collection;
 import java.util.Random;
 
+import net.f4fs.util.RandomDevice;
 import net.tomp2p.connection.Bindings;
 import net.tomp2p.connection.DiscoverNetworks;
 import net.tomp2p.connection.StandardProtocolFamily;
@@ -44,12 +45,11 @@ public class FSPeer {
     public void startAsBootstrapPeer(String myIP, int myPort)
             throws Exception {
 
-        Random rnd = new Random(43L);
         Bindings b = new Bindings().addProtocol(StandardProtocolFamily.INET).addAddress(
                 InetAddress.getByName(myIP));
 
         // b.addInterface("eth0");
-        peer = new PeerBuilderDHT(new PeerBuilder(new Number160(rnd)).ports(myPort).bindings(b).start()).start();
+        peer = new PeerBuilderDHT(new PeerBuilder(new Number160(RandomDevice.INSTANCE.getRand())).ports(myPort).bindings(b).start()).start();
         System.out.println("[Peer@" + myIP + "]: Server started listening to: " + DiscoverNetworks.discoverInterfaces(b));
         System.out.println("[Peer@" + myIP + "]: Address visible to outside is " + peer.peerAddress());
     }
@@ -68,12 +68,11 @@ public class FSPeer {
     public boolean startPeer(String myIP, int myPort, String connectionIpAddress, int connectionPort)
             throws Exception {
 
-        Random rnd = new Random();
         Bindings b = new Bindings().addProtocol(StandardProtocolFamily.INET).addAddress(
                 InetAddress.getByName(myIP));
 
         // b.addInterface("eth0");
-        peer = new PeerBuilderDHT(new PeerBuilder(new Number160(rnd)).ports(myPort).bindings(b).start()).start();
+        peer = new PeerBuilderDHT(new PeerBuilder(new Number160(RandomDevice.INSTANCE.getRand())).ports(myPort).bindings(b).start()).start();
         System.out.println("[Peer@" + myIP + "]: Client started and listening to: " + DiscoverNetworks.discoverInterfaces(b));
         System.out.println("[Peer@" + myIP + "]: Address visible to outside is " + peer.peerAddress());
 
