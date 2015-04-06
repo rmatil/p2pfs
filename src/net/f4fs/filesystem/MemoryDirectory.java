@@ -8,34 +8,30 @@ import net.fusejna.StructStat.StatWrapper;
 import net.fusejna.types.TypeMode.NodeType;
 
 
-public class MemoryDirectory extends AMemoryPath{
+public class MemoryDirectory
+        extends AMemoryPath {
 
     private final List<AMemoryPath> contents = new ArrayList<AMemoryPath>();
 
-    public MemoryDirectory(final String name)
-    {
+    public MemoryDirectory(final String name) {
         super(name);
     }
 
-    public MemoryDirectory(final String name, final MemoryDirectory parent)
-    {
+    public MemoryDirectory(final String name, final MemoryDirectory parent) {
         super(name, parent);
     }
 
-    public synchronized void add(final AMemoryPath p)
-    {
+    public synchronized void add(final AMemoryPath p) {
         contents.add(p);
         p.setParent(this);
     }
 
-    public synchronized void deleteChild(final AMemoryPath child)
-    {
+    public synchronized void deleteChild(final AMemoryPath child) {
         contents.remove(child);
     }
 
     @Override
-    protected AMemoryPath find(String path)
-    {
+    protected AMemoryPath find(String path) {
         if (super.find(path) != null) {
             return super.find(path);
         }
@@ -63,23 +59,19 @@ public class MemoryDirectory extends AMemoryPath{
     }
 
     @Override
-    protected void getattr(final StatWrapper stat)
-    {
+    protected void getattr(final StatWrapper stat) {
         stat.setMode(NodeType.DIRECTORY);
     }
 
-    public synchronized void mkdir(final String lastComponent)
-    {
+    public synchronized void mkdir(final String lastComponent) {
         contents.add(new MemoryDirectory(lastComponent, this));
     }
 
-    public synchronized void mkfile(final String lastComponent)
-    {
+    public synchronized void mkfile(final String lastComponent) {
         contents.add(new MemoryFile(lastComponent, this));
     }
 
-    public synchronized void read(final DirectoryFiller filler)
-    {
+    public synchronized void read(final DirectoryFiller filler) {
         for (final AMemoryPath p : contents) {
             filler.add(p.getName());
         }

@@ -9,7 +9,7 @@ import java.util.concurrent.TimeUnit;
  * Created by samuel on 31.03.15.
  */
 public enum Config {
-    DEFAULT("http", "188.226.178.35", 4000, "tabequals4", "ip-addresses", "ip-addresses/new", "ip-addresses/remove", "keepAlive", 5, TimeUnit.MINUTES, "./P2PFS");
+    DEFAULT("http", "188.226.178.35", 4000, "tabequals4", "ip-addresses", "ip-addresses/new", "ip-addresses/remove", "keepAlive", 5, TimeUnit.MINUTES, "./P2PFS", false);
 
     private String   _protocol;
 
@@ -56,9 +56,11 @@ public enum Config {
      * Default mount point for the filesystem
      */
     private String   _mountPoint;
+    
+    private boolean _startCommandLineInterface;
 
     Config(String protocol, String host, int port, String authToken, String getPath, String postPath, String removePath, String keepAlivePath, int keepAliveMsgPeriod,
-            TimeUnit keepAliveMsgPeriod_T, String mountPoint) {
+            TimeUnit keepAliveMsgPeriod_T, String mountPoint, boolean startCommandLineInterface) {
         _protocol = protocol;
         _port = port;
         _keepAliveMsgPeriod = keepAliveMsgPeriod;
@@ -70,6 +72,7 @@ public enum Config {
         _removePath = removePath;
         _keepAlivePath = keepAlivePath;
         _mountPoint = mountPoint;
+        _startCommandLineInterface = startCommandLineInterface;
     }
 
     public String getProtocol() {
@@ -118,5 +121,9 @@ public enum Config {
 
     public String getMountPoint() {
         return _mountPoint;
+    }
+    
+    public boolean getStartCommandLineInterface() {
+        return _startCommandLineInterface;
     }
 }

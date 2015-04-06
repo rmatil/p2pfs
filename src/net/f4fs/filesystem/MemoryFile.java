@@ -7,39 +7,35 @@ import net.fusejna.StructStat.StatWrapper;
 import net.fusejna.types.TypeMode.NodeType;
 
 
-public class MemoryFile extends AMemoryPath{
+public class MemoryFile
+        extends AMemoryPath {
+
     private ByteBuffer contents = ByteBuffer.allocate(0);
 
-    public MemoryFile(final String name)
-    {
+    public MemoryFile(final String name) {
         super(name);
     }
 
-    public MemoryFile(final String name, final MemoryDirectory parent)
-    {
+    public MemoryFile(final String name, final MemoryDirectory parent) {
         super(name, parent);
     }
 
-    public MemoryFile(final String name, final String text)
-    {
+    public MemoryFile(final String name, final String text) {
         super(name);
         try {
             final byte[] contentBytes = text.getBytes("UTF-8");
             contents = ByteBuffer.wrap(contentBytes);
-        }
-        catch (final UnsupportedEncodingException e) {
+        } catch (final UnsupportedEncodingException e) {
             // Not going to happen
         }
     }
 
     @Override
-    protected void getattr(final StatWrapper stat)
-    {
+    protected void getattr(final StatWrapper stat) {
         stat.setMode(NodeType.FILE).size(contents.capacity());
     }
 
-    public int read(final ByteBuffer buffer, final long size, final long offset)
-    {
+    public int read(final ByteBuffer buffer, final long size, final long offset) {
         final int bytesToRead = (int) Math.min(contents.capacity() - offset, size);
         final byte[] bytesRead = new byte[bytesToRead];
         synchronized (this) {
@@ -51,8 +47,7 @@ public class MemoryFile extends AMemoryPath{
         return bytesToRead;
     }
 
-    public synchronized void truncate(final long size)
-    {
+    public synchronized void truncate(final long size) {
         if (size < contents.capacity()) {
             // Need to create a new, smaller buffer
             final ByteBuffer newContents = ByteBuffer.allocate((int) size);
@@ -63,8 +58,7 @@ public class MemoryFile extends AMemoryPath{
         }
     }
 
-    public int write(final ByteBuffer buffer, final long bufSize, final long writeOffset)
-    {
+    public int write(final ByteBuffer buffer, final long bufSize, final long writeOffset) {
         final int maxWriteIndex = (int) (writeOffset + bufSize);
         final byte[] bytesToWrite = new byte[(int) bufSize];
         synchronized (this) {
