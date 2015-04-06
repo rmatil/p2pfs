@@ -15,7 +15,6 @@ import net.tomp2p.storage.Data;
 import net.tomp2p.test.ExampleUtils;
 import net.tomp2p.utils.Pair;
 
-// Only works after TomP2P maven snapshot is updated!
 public class VDHTOperations {
 
 	private static Pair<Number640, Data> retrieve(PeerDHT peerDHT, Number160 pKey)
@@ -56,7 +55,7 @@ public class VDHTOperations {
 				return;
 			}
 			FuturePut fp = pPeerDHT.put(pKey)
-					.data(Number160.ZERO, pair.element1().prepareFlag(), // TODO: contentKey
+					.data(Number160.ZERO, pair.element1().prepareFlag(),
 							pair.element0()).start().awaitUninterruptibly();
 			pair2 = checkVersions(fp.rawResult());
 			// 1 is PutStatus.OK_PREPARED
