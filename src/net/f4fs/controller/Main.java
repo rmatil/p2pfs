@@ -16,9 +16,6 @@ import org.json.simple.parser.ParseException;
 
 public class Main {
     
-    public static final String MOUNT_POINT = "./P2PFS";
-    public static final int MY_PORT = 4000;
-
     public static void main(String[] args) {
         BootstrapServerAccess boostrapServerAccess = new BootstrapServerAccess();
         FSPeer fsPeer = new FSPeer();
@@ -73,7 +70,7 @@ public class Main {
 
             // start file system with the connected peer
 //            new P2PFS(fsPeer).log(true).mount(mountPoint);
-            new P2PFS(fsPeer).mount(MOUNT_POINT);
+            new P2PFS(fsPeer).mount(Config.DEFAULT.getMountPoint());
             
 //            // probably not needed anymore
 //            DhtOperationsCommand.readAndProcess(fsPeer);
