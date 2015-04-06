@@ -1,4 +1,4 @@
-package net.tomp2p.vdht;
+package net.f4fs.vdht;
 
 import java.io.IOException;
 import java.util.Map;
@@ -23,7 +23,7 @@ public class VDHTOperations {
 			ClassNotFoundException, IOException {
 		Pair<Number640, Data> pair = null;
 		for (int i = 0; i < 5; i++) {
-			FutureGet fg = peerDHT.get(pKey).contentKey(Number160.ZERO).getLatest().start() //TODO: contentKey
+			FutureGet fg = peerDHT.get(pKey).getLatest().start()
 					.awaitUninterruptibly();
 			// check if all the peers agree on the same latest version, if not
 			// wait a little and try again
@@ -86,8 +86,7 @@ public class VDHTOperations {
 			IOException {
 		Pair<Number640, Data> pair = null;
 		for (int i = 0; i < 5; i++) {
-			FutureGet fg = peerDHT.get(Number160.ONE)
-					.contentKey(Number160.ZERO).getLatest().start()
+			FutureGet fg = peerDHT.get(Number160.ONE).getLatest().start()
 					.awaitUninterruptibly();
 			// check if all the peers agree on the same latest version, if not
 			// wait a little and try again
@@ -205,8 +204,7 @@ public class VDHTOperations {
 		cl.await();
 		
 		// get latest version
-		FutureGet fg = peers[5].get(Number160.ONE).contentKey(Number160.ZERO)
-				.getLatest().start().awaitUninterruptibly();
+		FutureGet fg = peers[5].get(Number160.ONE).getLatest().start().awaitUninterruptibly();
 		// you will see all three versions, however, not in the right order
 		System.out.println("res: "
 				+ fg.rawData().values().iterator().next().values().iterator()
