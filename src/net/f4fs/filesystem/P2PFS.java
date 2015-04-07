@@ -22,18 +22,17 @@ import net.tomp2p.storage.Data;
 public class P2PFS
         extends FuseFilesystemAdapterFull {
 
+    FSPeer _peer;
     private final MemoryDirectory rootDirectory = new MemoryDirectory("");
-    private FSPeer                mPeer;
 
-    public P2PFS(FSPeer pPeer)
+    public P2PFS(FSPeer peer)
             throws IOException {
-        mPeer = pPeer;
-
+       
+        _peer = peer;
+        
         String filename = "README.txt";
         String filecontent = "Welcome to the p2p filesystem of f4fs.";
         rootDirectory.add(new MemoryFile(filename, filecontent));
-
-        mPeer.put(Number160.createHash(filename), new Data(filecontent));
     }
 
     @Override
@@ -49,6 +48,9 @@ public class P2PFS
         final AMemoryPath parent = getParentPath(path);
         if (parent instanceof MemoryDirectory) {
             ((MemoryDirectory) parent).mkfile(getLastComponent(path));
+            
+            _peer.put(Number160.createHash(path), new Data()); 
+            System.out.println("CREATE");
             return 0;
         }
 
@@ -79,7 +81,7 @@ public class P2PFS
         return rootDirectory.find(path.substring(0, path.lastIndexOf("/")));
     }
 
-    private AMemoryPath getPath(final String path) {
+    public AMemoryPath getPath(final String path) {
         return rootDirectory.find(path);
     }
 
@@ -111,8 +113,8 @@ public class P2PFS
         if (!(p instanceof MemoryFile)) {
             return -ErrorCodes.EISDIR();
         }
-
-        System.out.println("BLABLA2");
+        
+        System.out.println("READ");
         return ((MemoryFile) p).read(buffer, size, offset);
     }
 
@@ -194,6 +196,14 @@ public class P2PFS
         if (!(p instanceof MemoryFile)) {
             return -ErrorCodes.EISDIR();
         }
+        
+        try {
+            _peer.put(Number160.createHash(path), new Data(buf));
+        } catch (IOException pEx) {
+            pEx.printStackTrace();
+        }
+        
+        System.out.println("WRITE");
         return ((MemoryFile) p).write(buf, bufSize, writeOffset);
     }
 }

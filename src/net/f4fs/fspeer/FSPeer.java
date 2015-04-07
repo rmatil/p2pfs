@@ -6,8 +6,9 @@ import java.io.InputStreamReader;
 import java.net.Inet4Address;
 import java.net.InetAddress;
 import java.net.URL;
+import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Random;
+import java.util.List;
 
 import net.f4fs.util.RandomDevice;
 import net.tomp2p.connection.Bindings;
@@ -177,6 +178,14 @@ public class FSPeer {
         futureGet.awaitUninterruptibly();
 
         return futureGet.data().object();
+    }
+    
+    public List<String> getAllKeys(){
+        List<String> keys = new ArrayList<>();
+        
+        //TODO: get all keys
+        
+        return keys;
     }
 
     /**

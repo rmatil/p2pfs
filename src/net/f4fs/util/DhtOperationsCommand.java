@@ -28,7 +28,7 @@ public class DhtOperationsCommand {
      * @param peer The peer on which to store / retrieve values
      */
     @SuppressWarnings("static-access")
-    public static void readAndProcess(FSPeer peer) {
+    public static void startCommandLineInterface(FSPeer peer) {
         String input = "";
         Scanner scanner = new Scanner(System.in);
 
