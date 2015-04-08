@@ -54,16 +54,17 @@ public class Main {
                 if (success) {
                     System.out.println("[Peer@" + myIp + "]: Bootstrap successfull");
                     
-                    // start file system with the connected peer
-                    new P2PFS(fsPeer).mount(Config.DEFAULT.getMountPoint());
-                    
-                    // start command line interface
-                    if (Config.DEFAULT.getStartCommandLineInterface()) {
-                        DhtOperationsCommand.startCommandLineInterface(fsPeer);   
-                    }
                 } else {
                     System.out.println("[Peer@" + myIp + "]: No connection possible");
                 }
+            }
+            
+            // start file system with the connected peer
+            new P2PFS(fsPeer).mount(Config.DEFAULT.getMountPoint());
+            
+            // start command line interface
+            if (Config.DEFAULT.getStartCommandLineInterface()) {
+                DhtOperationsCommand.startCommandLineInterface(fsPeer);   
             }
 
             // Add shutdown hook so that IP address gets removed from server when
