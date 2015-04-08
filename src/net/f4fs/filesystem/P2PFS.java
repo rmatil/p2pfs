@@ -8,6 +8,7 @@ import net.fusejna.DirectoryFiller;
 import net.fusejna.ErrorCodes;
 import net.fusejna.StructFuseFileInfo.FileInfoWrapper;
 import net.fusejna.StructStat.StatWrapper;
+import net.fusejna.StructStatvfs.StatvfsWrapper;
 import net.fusejna.types.TypeMode.ModeWrapper;
 import net.fusejna.util.FuseFilesystemAdapterFull;
 import net.tomp2p.peers.Number160;
@@ -33,6 +34,7 @@ public class P2PFS
         String filename = "README.txt";
         String filecontent = "Welcome to the p2p filesystem of f4fs.";
         rootDirectory.add(new MemoryFile(filename, filecontent));
+        super.log(true);
     }
 
     @Override
@@ -66,6 +68,7 @@ public class P2PFS
         }
         return -ErrorCodes.ENOENT();
     }
+    
 
     private String getLastComponent(String path) {
         while (path.substring(path.length() - 1).equals("/")) {
@@ -205,5 +208,16 @@ public class P2PFS
         
         System.out.println("WRITE");
         return ((MemoryFile) p).write(buf, bufSize, writeOffset);
+    }
+    
+    @Override
+    public int statfs(final String path, final StatvfsWrapper wrapper) {
+        wrapper.bsize(512L);
+        wrapper.blocks(1000L);
+        wrapper.bfree(200L);
+        wrapper.bavail(180L);
+        wrapper.files(5L);
+        wrapper.ffree(29L);
+        return 0;
     }
 }
