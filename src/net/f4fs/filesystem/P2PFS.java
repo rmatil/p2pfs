@@ -1,5 +1,6 @@
 package net.f4fs.filesystem;
 
+import java.io.File;
 import java.io.IOException;
 import java.nio.ByteBuffer;
 
@@ -219,5 +220,14 @@ public class P2PFS
         wrapper.files(5L);
         wrapper.ffree(29L);
         return 0;
+    }
+    
+    public P2PFS createIfNotExists(String mountPoint) {
+        File file = new File(mountPoint);
+        if (!file.exists()) {
+            file.mkdir();
+        }
+        
+        return this;
     }
 }
