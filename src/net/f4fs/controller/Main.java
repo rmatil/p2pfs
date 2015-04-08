@@ -37,10 +37,12 @@ public class Main {
 
         // Connect to other peers if any are available, otherwise start as bootstrap peer
         try {
+            boolean success = false;
+
             if (nrOfIpAddresses == 0) {
                 fsPeer.startAsBootstrapPeer(myIp, Config.DEFAULT.getPort());
+                success = true;
             } else {
-                boolean success = false;
                 int counter = 0;
 
                 while (!success && (counter < nrOfIpAddresses)) {
@@ -50,13 +52,12 @@ public class Main {
                             Integer.parseInt(ipList.get(counter).get("port")));
                     counter++;
                 }
-
-                if (success) {
-                    System.out.println("[Peer@" + myIp + "]: Bootstrap successfull");
-                    
-                } else {
-                    System.out.println("[Peer@" + myIp + "]: No connection possible");
-                }
+            }
+            
+            if (!success) {
+                boostrapServerAccess.removeIpPortPair(myIp, Config.DEFAULT.getPort());
+                fsPeer.shutdown();
+                return;
             }
             
             // start file system with the connected peer

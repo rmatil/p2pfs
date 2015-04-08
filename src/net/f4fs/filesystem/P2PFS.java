@@ -213,8 +213,8 @@ public class P2PFS
     
     @Override
     public int statfs(final String path, final StatvfsWrapper wrapper) {
-        wrapper.bsize(512L);
-        wrapper.blocks(1000L);
+        wrapper.bsize(4000L); // block size of 4000 bytes
+        wrapper.blocks(1000L); // TODO: manually update this, when a new peer joins
         wrapper.bfree(200L);
         wrapper.bavail(180L);
         wrapper.files(5L);
