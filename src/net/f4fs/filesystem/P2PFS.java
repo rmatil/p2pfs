@@ -41,12 +41,12 @@ public class P2PFS
     public P2PFS(FSPeer peer)
             throws IOException {
 
-        rootDirectory = new MemoryDirectory("", peer);
-
-        
-        String filename = "README.txt";
-        String filecontent = "Welcome to the p2p filesystem of f4fs.";
-        rootDirectory.add(new MemoryFile(filename, filecontent, peer));
+        rootDirectory = new MemoryDirectory("/", peer);
+//
+//        
+//        String filename = "README.txt";
+//        String filecontent = "Welcome to the p2p filesystem of f4fs.";
+//        rootDirectory.add(new MemoryFile(filename, filecontent, peer));
         super.log(false);
     }
 

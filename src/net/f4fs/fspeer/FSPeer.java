@@ -182,7 +182,7 @@ public class FSPeer {
         return futureGet.data().object();
     }
     
-    public List<String> getAllKeys() throws Exception{
+    public List<String> getAllKeys() throws Exception {
         List<String> keys = new ArrayList<>();
         
         // TODO: Bloom Filter set(...).getAll()

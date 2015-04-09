@@ -4,6 +4,7 @@ import java.io.IOException;
 import java.util.logging.Logger;
 
 import net.f4fs.fspeer.FSPeer;
+import net.f4fs.util.HexFactory;
 import net.fusejna.StructStat.StatWrapper;
 import net.tomp2p.peers.Number160;
 import net.tomp2p.storage.Data;
@@ -23,33 +24,34 @@ public abstract class AMemoryPath {
      */
     private FSPeer          peer;
 
-    public AMemoryPath(final String name, final FSPeer peer)
-    {
+    public AMemoryPath(final String name, final FSPeer peer) {
         this(name, null, peer);
     }
 
-    public AMemoryPath(final String name, final MemoryDirectory parent, final FSPeer peer)
-    {
+    public AMemoryPath(final String name, final MemoryDirectory parent, final FSPeer peer) {
         this.name = name;
         this.parent = parent;
         this.peer = peer;
         
         // Store an empty element
-        peer.put(new Number160(getPath()), new Data());
+        try {
+            peer.put(new Number160(HexFactory.stringToHex(getPath())), new Data(""));
+            logger.info("Created new MemoryPath " + name + " successfully on path " + getPath());
+        } catch (IOException e) {
+            logger.warning("Could not create MemoryPath " + name + ". Message: " + e.getMessage());
+        }
     }
 
-    public synchronized void delete()
-    {
+    public synchronized void delete() {
         if (parent != null) {
             parent.deleteChild(this);
             parent = null;
-            peer.remove(new Number160(this.getPath()));
+            peer.remove(new Number160(HexFactory.stringToHex(getPath())));
             peer = null;
         }
     }
 
-    protected AMemoryPath find(String path)
-    {
+    protected AMemoryPath find(String path) {
         while (path.startsWith("/")) {
             path = path.substring(1);
         }
@@ -72,10 +74,10 @@ public abstract class AMemoryPath {
         }
         
         try {
-             Object content = peer.get(new Number160(this.getPath()));
+             Object content = peer.get(new Number160(HexFactory.stringToHex(getPath())));
 
-             peer.remove(new Number160(this.getPath()));
-             peer.put(new Number160(newName), new Data(content));
+             peer.remove(new Number160(HexFactory.stringToHex(getPath())));
+             peer.put(new Number160(HexFactory.stringToHex(getPath())), new Data(content));
 
              name = newName;
         } catch (ClassNotFoundException | IOException e) {
@@ -93,16 +95,13 @@ public abstract class AMemoryPath {
         return name;
     }
 
-
     public void setName(String pName) {
         name = pName;
     }
 
-
     public MemoryDirectory getParent() {
         return parent;
     }
-
 
     public void setParent(MemoryDirectory pParent) {
         parent = pParent;
@@ -125,7 +124,11 @@ public abstract class AMemoryPath {
         String path = this.name;
         
         if (null != this.parent) {
-            path = this.parent.getPath() + "/" + path;
+            if ("/" != this.parent.getPath()) {
+                path = this.parent.getPath() + "/" + path; 
+            } else {
+                path = "/" + path;
+            }
         }
         
         return path;
