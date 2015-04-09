@@ -52,11 +52,10 @@ public class P2PFS
             throws IOException {
 
         rootDirectory = new MemoryDirectory("/", peer);
-//
-//        
-//        String filename = "README.txt";
-//        String filecontent = "Welcome to the p2p filesystem of f4fs.";
-//        rootDirectory.add(new MemoryFile(filename, filecontent, peer));
+       
+        // start thread to get all file keys from dht
+        // new KeysGetter(this, peer).run();
+
         super.log(false);
     }
 
