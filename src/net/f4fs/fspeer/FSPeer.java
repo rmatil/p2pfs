@@ -19,6 +19,7 @@ import net.tomp2p.dht.FuturePut;
 import net.tomp2p.dht.FutureRemove;
 import net.tomp2p.dht.PeerBuilderDHT;
 import net.tomp2p.dht.PeerDHT;
+import net.tomp2p.dht.RemoveBuilder;
 import net.tomp2p.futures.FutureBootstrap;
 import net.tomp2p.futures.FutureDiscover;
 import net.tomp2p.p2p.PeerBuilder;
@@ -180,7 +181,17 @@ public class FSPeer {
 
         return futureGet.data().object();
     }
-    
+
+
+    public List<String> getAllKeys()
+            throws Exception {
+        List<String> keys = new ArrayList<>();
+
+        // TODO: Bloom Filter set(...).getAll()
+
+        throw new Exception("not implemented");
+    }
+
     /**
      * Stores the given data on the given key
      * 
@@ -193,33 +204,15 @@ public class FSPeer {
         FuturePut futurePut = peer.put(pKey).data(pValue).start();
         futurePut.awaitUninterruptibly();
     }
-    
-    
+
     /**
+     * Removes the assigned data from the peer
      * 
-     * @param pLocationKey
-     * @param pContentKey
-     * @param pValue
+     * @param pKey Key of which the data should be removed
      */
-    public void put(Number160 pLocationKey, Number160 pContentKey, Data pValue) {
-        FuturePut futurePut = peer.put(pLocationKey).data(pContentKey, pValue).start();
-        futurePut.awaitUninterruptibly();
-    }
-    
-    
-    public List<String> getAllKeys(){
-        List<String> keys = new ArrayList<>();
-        
-        //TODO: get all keys
-        
-        return keys;
-    }
-    
-    
-    public void remove(Number160 pKey){
-        FutureRemove futureRemove = peer.remove(pKey).start();
+    public void remove(Number160 pKey) {
+        RemoveBuilder removeBuilder = peer.remove(pKey);
+        FutureRemove futureRemove = removeBuilder.start();
         futureRemove.awaitUninterruptibly();
     }
-
-
 }

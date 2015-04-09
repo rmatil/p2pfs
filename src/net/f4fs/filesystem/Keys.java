@@ -6,7 +6,7 @@ import java.util.List;
 import net.f4fs.fspeer.FSPeer;
 
 
-public class Keys implements Runnable{
+public class Keys implements Runnable {
     
     List<String> keys = new ArrayList<>();
     P2PFS _filesystem;
@@ -17,7 +17,7 @@ public class Keys implements Runnable{
         _peer = peer;
     }
     
-    public void run(){
+    public void run() {
         while(true){
             try {
                 keys = _peer.getAllKeys();
@@ -29,7 +29,7 @@ public class Keys implements Runnable{
                 }
                 
                 Thread.sleep(1000);
-            } catch (InterruptedException pEx) {
+            } catch (Exception pEx) {
                 pEx.printStackTrace();
             }
         }
