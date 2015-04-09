@@ -3,10 +3,13 @@ package net.f4fs.filesystem;
 import java.io.File;
 import java.io.IOException;
 import java.nio.ByteBuffer;
+import java.util.logging.Logger;
 
 import net.f4fs.fspeer.FSPeer;
+import net.f4fs.util.FileUtils;
 import net.fusejna.DirectoryFiller;
 import net.fusejna.ErrorCodes;
+import net.fusejna.FuseException;
 import net.fusejna.StructFuseFileInfo.FileInfoWrapper;
 import net.fusejna.StructStat.StatWrapper;
 import net.fusejna.StructStatvfs.StatvfsWrapper;
@@ -25,12 +28,33 @@ import net.tomp2p.storage.Data;
  * like this it is possible to get all keys with new GetBuilder(hash('keys')).keys() --> returns a map with all [hash(path), path]
  * 
  */
+
 public class P2PFS
         extends FuseFilesystemAdapterFull {
 
+    /**
+     * The peer which mounted this file system
+     */
     FSPeer _peer;
+    
+    /**
+     * Root directory relative to the mount point
+     */
     private final MemoryDirectory rootDirectory = new MemoryDirectory("");
+    
+    /**
+     * Logger instance
+     */
+    private static final Logger logger = Logger.getLogger("P2PFS.class");
 
+    /**
+     * Creates a new instance of this file system. 
+     * Enables logging 
+     * 
+     * @param peer Peer which mounts this filesystem
+     * 
+     * @throws IOException
+     */
     public P2PFS(FSPeer peer)
             throws IOException {
        
@@ -43,11 +67,90 @@ public class P2PFS
         //super.log(true);
     }
 
+    /**
+     * Check file access permissions. All path segments get
+     * checked for the provided access permissions
+     * 
+     * @param path Path to access
+     * @param access Access mode flags
+     */
     @Override
     public int access(final String path, final int access) {
         return 0;
     }
+    
+    /**
+     * Removes the mount point directory on disk.
+     * Gets called in {@link net.fusejna.FuseFilesystem#_destroy} after the Filesystem
+     * is unmounted. 
+     */
+    @Override
+    public void afterUnmount(final File mountPoint) {
+        if (mountPoint.exists()) {
+            FileUtils.deleteFileOrFolder(mountPoint);
+        }
+    }
 
+    /**
+     * Gets called in {@link net.fusejna.FuseFilesystem#mount} before FuseJna
+     * explicitly mounts the file system
+     */
+    @Override
+    public void beforeMount(final File mountPoint) {}
+
+    /**
+     * Used to map a block number offset in a file to 
+     * the physical block offset on the block device 
+     * backing the file system. This is intended for 
+     * filesystems that are stored on an actual block 
+     * device, with the 'blkdev' option passed.
+     */
+    @Override
+    public int bmap(final String path, final FileInfoWrapper info)
+    {
+        return 0;
+    }
+
+    
+    /**
+     * Change permissions represented by mode on the 
+     * file / directory / simlink / device on path
+     * 
+     * @param path The path to the file of which permissions should be changed
+     * @param mode Permissions which should get applied
+     */
+    @Override
+    public int chmod(final String path, final ModeWrapper mode) {
+        // TODO: set permissions
+        // TODO: how to store file permissions in dht?
+        return 0;
+    }
+
+    /**
+     * Changes the ownership 
+     * of the file / directory / simlink / device specified at path
+     * 
+     * @param path Path to file to change ownership
+     * @param uid Id of the user
+     * @param gid Id of the group
+     */
+    @Override
+    public int chown(final String path, final long uid, final long gid) {
+        // TODO: set ownership
+        // TODO: how to store file ownership in dht?
+        return 0;
+    }
+
+    /**
+     * Create a file with the path indicated, then open a 
+     * handle for reading and/or writing with the supplied 
+     * mode flags. Can also return a file handle like open() 
+     * as part of the call.
+     * 
+     * @param path Path to file to create
+     * @param mode Create mask
+     * @param info Open mode flags
+     */
     @Override
     public int create(final String path, final ModeWrapper mode, final FileInfoWrapper info) {
         if (getPath(path) != null) {
@@ -58,12 +161,22 @@ public class P2PFS
             ((MemoryDirectory) parent).mkfile(getLastComponent(path));
             
             _peer.put(Number160.createHash(path), new Data()); 
+            logger.info("Created file on path: " + path);
+
             return 0;
         }
 
+        logger.warning("File could not be created. No such file or directory (Error code " + -ErrorCodes.ENOENT() + ").");
         return -ErrorCodes.ENOENT();
     }
 
+    /**
+     * Sets different statistics about the entity located at path
+     * like remaining capacity in the given StatWrapper.
+     * 
+     * @param path The path to the file of which the information gets obtained
+     * @param stat The wrapper in which the particular information gets stored
+     */
     @Override
     public int getattr(final String path, final StatWrapper stat) {
         final AMemoryPath p = getPath(path);
@@ -116,11 +229,15 @@ public class P2PFS
     public int read(final String path, final ByteBuffer buffer, final long size, final long offset, final FileInfoWrapper info) {
         final AMemoryPath p = getPath(path);
         if (p == null) {
+            logger.warning("Failed to read file on " + path + ". No such file or directory (Error code " + -ErrorCodes.ENOENT() + ").");
             return -ErrorCodes.ENOENT();
         }
         if (!(p instanceof MemoryFile)) {
+            logger.warning("Failed to read file on " + path + ". Path is a directory (Error code " + -ErrorCodes.EISDIR() + ").");
             return -ErrorCodes.EISDIR();
         }
+        
+        logger.info("Read file on path " + path);
         
         return ((MemoryFile) p).read(buffer, size, offset);
     }
@@ -198,18 +315,25 @@ public class P2PFS
             final FileInfoWrapper wrapper) {
         final AMemoryPath p = getPath(path);
         if (p == null) {
+            logger.warning("Could not write to file on path " + path + ". No such file or directory (Error code " + -ErrorCodes.ENOENT() + ").");
             return -ErrorCodes.ENOENT();
         }
         if (!(p instanceof MemoryFile)) {
+            logger.warning("Could not write to file on path " + path + ". Path is a directory (Error code " + -ErrorCodes.EISDIR() + ").");
             return -ErrorCodes.EISDIR();
         }
         
         try {
             _peer.put(Number160.createHash(path), new Data(buf));
         } catch (IOException pEx) {
+            logger.warning("Could not write file to DHT. " + pEx.getMessage());
             pEx.printStackTrace();
+            
+            return -ErrorCodes.EPIPE();
         }
         
+        logger.info("Wrote to file on path " + path);
+
         return ((MemoryFile) p).write(buf, bufSize, writeOffset);
     }
     
@@ -224,11 +348,23 @@ public class P2PFS
         return 0;
     }
     
-    public P2PFS createIfNotExists(String mountPoint) {
+    /**
+     * Creates the provided mount point if it does not exists already.
+     * Then mounts the filesystem at the mountpoint
+     * 
+     * @param mountPoint The mountpoint where to mount the FS 
+     * @return The mounted P2PFS
+     * 
+     * @throws FuseException
+     */
+    public P2PFS mountAndCreateIfNotExists(String mountPoint) throws FuseException {
         File file = new File(mountPoint);
         if (!file.exists()) {
+            logger.info("Created mount point directory at path " + mountPoint + ".");
             file.mkdir();
         }
+        
+        this.mount(file);
         
         return this;
     }

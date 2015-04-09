@@ -58,7 +58,7 @@ public class Main {
             }
             
             // start file system with the connected peer
-            new P2PFS(fsPeer).createIfNotExists(Config.DEFAULT.getMountPoint()).mount(Config.DEFAULT.getMountPoint());
+            new P2PFS(fsPeer).mountAndCreateIfNotExists(Config.DEFAULT.getMountPoint());
             
             // maybe start command line interface
             if (Config.DEFAULT.getStartCommandLineInterface()) {
