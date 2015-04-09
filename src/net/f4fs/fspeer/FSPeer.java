@@ -16,6 +16,7 @@ import net.tomp2p.connection.DiscoverNetworks;
 import net.tomp2p.connection.StandardProtocolFamily;
 import net.tomp2p.dht.FutureGet;
 import net.tomp2p.dht.FuturePut;
+import net.tomp2p.dht.FutureRemove;
 import net.tomp2p.dht.PeerBuilderDHT;
 import net.tomp2p.dht.PeerDHT;
 import net.tomp2p.futures.FutureBootstrap;
@@ -180,14 +181,6 @@ public class FSPeer {
         return futureGet.data().object();
     }
     
-    public List<String> getAllKeys(){
-        List<String> keys = new ArrayList<>();
-        
-        //TODO: get all keys
-        
-        return keys;
-    }
-
     /**
      * Stores the given data on the given key
      * 
@@ -200,5 +193,33 @@ public class FSPeer {
         FuturePut futurePut = peer.put(pKey).data(pValue).start();
         futurePut.awaitUninterruptibly();
     }
+    
+    
+    /**
+     * 
+     * @param pLocationKey
+     * @param pContentKey
+     * @param pValue
+     */
+    public void put(Number160 pLocationKey, Number160 pContentKey, Data pValue) {
+        FuturePut futurePut = peer.put(pLocationKey).data(pContentKey, pValue).start();
+        futurePut.awaitUninterruptibly();
+    }
+    
+    
+    public List<String> getAllKeys(){
+        List<String> keys = new ArrayList<>();
+        
+        //TODO: get all keys
+        
+        return keys;
+    }
+    
+    
+    public void remove(Number160 pKey){
+        FutureRemove futureRemove = peer.remove(pKey).start();
+        futureRemove.awaitUninterruptibly();
+    }
+
 
 }

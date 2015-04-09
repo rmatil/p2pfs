@@ -20,6 +20,10 @@ import net.tomp2p.storage.Data;
  * TODO: 
  * Put and Get of files into file system
  * 
+ * IDEA: storing each path as [location key: hash('keys')], [content key: hash(path)] and [value: path]
+ * and storing the path a second time as [location key: path] and [value: file_content]
+ * like this it is possible to get all keys with new GetBuilder(hash('keys')).keys() --> returns a map with all [hash(path), path]
+ * 
  */
 public class P2PFS
         extends FuseFilesystemAdapterFull {
@@ -35,7 +39,8 @@ public class P2PFS
         String filename = "README.txt";
         String filecontent = "Welcome to the p2p filesystem of f4fs.";
         rootDirectory.add(new MemoryFile(filename, filecontent));
-        super.log(true);
+        
+        //super.log(true);
     }
 
     @Override
@@ -53,7 +58,6 @@ public class P2PFS
             ((MemoryDirectory) parent).mkfile(getLastComponent(path));
             
             _peer.put(Number160.createHash(path), new Data()); 
-            System.out.println("CREATE");
             return 0;
         }
 
@@ -118,7 +122,6 @@ public class P2PFS
             return -ErrorCodes.EISDIR();
         }
         
-        System.out.println("READ");
         return ((MemoryFile) p).read(buffer, size, offset);
     }
 
@@ -207,7 +210,6 @@ public class P2PFS
             pEx.printStackTrace();
         }
         
-        System.out.println("WRITE");
         return ((MemoryFile) p).write(buf, bufSize, writeOffset);
     }
     

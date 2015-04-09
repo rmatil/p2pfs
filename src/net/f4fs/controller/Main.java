@@ -1,6 +1,5 @@
 package net.f4fs.controller;
 
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -12,8 +11,6 @@ import net.f4fs.fspeer.FSPeer;
 import net.f4fs.util.DhtOperationsCommand;
 import net.f4fs.util.IpAddressJsonParser;
 import net.f4fs.util.ShutdownHookThread;
-import net.fusejna.FuseException;
-
 import org.json.simple.parser.ParseException;
 
 
@@ -63,7 +60,7 @@ public class Main {
             // start file system with the connected peer
             new P2PFS(fsPeer).createIfNotExists(Config.DEFAULT.getMountPoint()).mount(Config.DEFAULT.getMountPoint());
             
-            // start command line interface
+            // maybe start command line interface
             if (Config.DEFAULT.getStartCommandLineInterface()) {
                 DhtOperationsCommand.startCommandLineInterface(fsPeer);   
             }
