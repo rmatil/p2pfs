@@ -49,7 +49,7 @@ public class VDHTOperations {
 			throws ClassNotFoundException, InterruptedException, IOException {
 		Pair<Number640, Byte> pair2 = null;
 		for (int i = 0; i < 5; i++) {
-			Pair<Number160, Data> pair = getAndUpdate(pPeerDHT, pValue);
+			Pair<Number160, Data> pair = getAndUpdate(pPeerDHT, pKey, pValue);
 			if (pair == null) {
 				System.out.println("we cannot handle this kind of inconsistency automatically, handing over the the API dev");
 				return;
@@ -80,12 +80,12 @@ public class VDHTOperations {
 
 	// get the latest version and do modification. In this case, append the
 	// string
-	private static Pair<Number160, Data> getAndUpdate(PeerDHT peerDHT,
+	private static Pair<Number160, Data> getAndUpdate(PeerDHT peerDHT, Number160 pKey,
 			Data data) throws InterruptedException, ClassNotFoundException,
 			IOException {
 		Pair<Number640, Data> pair = null;
 		for (int i = 0; i < 5; i++) {
-			FutureGet fg = peerDHT.get(Number160.ONE).getLatest().start()
+			FutureGet fg = peerDHT.get(pKey).getLatest().start()
 					.awaitUninterruptibly();
 			// check if all the peers agree on the same latest version, if not
 			// wait a little and try again
