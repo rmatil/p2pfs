@@ -15,8 +15,22 @@ import net.tomp2p.storage.Data;
 import net.tomp2p.test.ExampleUtils;
 import net.tomp2p.utils.Pair;
 
+/**
+ * VDHTOperations adds automated versioning functionality to the integrated peerDHT.
+ * Handling the inter-peer negotiations for consensus.
+ * Based on the VDHT example of Thomas Bocek's TomP2P.
+ * 
+ * @author Christian
+ */
 public class VDHTOperations {
 
+	
+    /**
+     * Retrieves the latest VDHT entry according to the specified key.
+     * 
+     * @param pPeerDHT local DHT of the peer
+     * @param pLocationKey location key of the requested entry
+     */
 	private static Pair<Number640, Data> retrieve(PeerDHT pPeerDHT,	Number160 pLocationKey)
 			throws InterruptedException, ClassNotFoundException, IOException {
 		Pair<Number640, Data> pair = null;
@@ -39,6 +53,13 @@ public class VDHTOperations {
 		return null;
 	}
 
+    /**
+     * Retrieves a specific version of a VDHT entry.
+     * 
+     * @param pPeerDHT local DHT of the peer
+     * @param pLocationKey location key of the requested entry
+     * @param pVersionKey version key of the requested entry
+     */
 	private static Pair<Number640, Data> retrieve(PeerDHT pPeerDHT, Number160 pLocationKey,	Number160 pVersionKey)
 			throws InterruptedException, ClassNotFoundException, IOException {
 		Pair<Number640, Data> pair = null;
@@ -61,7 +82,13 @@ public class VDHTOperations {
 		return null;
 	}
 
-
+    /**
+     * Stores a data entry in the VDHT at the specified location key.
+     * 
+     * @param pPeerDHT local DHT of the peer
+     * @param pLocationKey location key of the data to save
+     * @param pFileData data to be stored at specified location
+     */
 	private static void store(PeerDHT pPeerDHT, Number160 pLocationKey,	Data pFileData)
 			throws ClassNotFoundException, InterruptedException, IOException {
 		Pair<Number640, Byte> pair2 = null;
@@ -97,8 +124,7 @@ public class VDHTOperations {
 		}
 	}
 
-	// get the latest version and do modification. In this case, append the
-	// string
+	// get the latest version and do modification.
 	private static Pair<Number160, Data> getAndUpdate(PeerDHT peerDHT, Number160 pLocationKey, Data pFileData)
 			throws InterruptedException, ClassNotFoundException, IOException {
 		Pair<Number640, Data> pair = null;
@@ -129,6 +155,7 @@ public class VDHTOperations {
 		return null;
 	}
 
+	// check if all other peers agree with the local version.
 	private static <K> Pair<Number640, K> checkVersions(Map<PeerAddress, Map<Number640, K>> rawData) {
 		Number640 latestKey = null;
 		K latestData = null;
