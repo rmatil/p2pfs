@@ -60,10 +60,10 @@ public class MemoryFile
             contents = ByteBuffer.wrap(contentBytes);
 
             String stringContent = new String(contents.array(), StandardCharsets.UTF_8);
-            super.getPeer().put(new Number160(HexFactory.stringToHex(getPath())), new Data(stringContent));
+            super.getPeer().putData(new Number160(HexFactory.stringToHex(getPath())), new Data(stringContent));
         } catch (final IOException e) {
             logger.warning("Could not create file " + name + ". Message: " + e.getMessage());
-            super.getPeer().remove(new Number160(HexFactory.stringToHex(getPath())));
+            super.getPeer().removeData(new Number160(HexFactory.stringToHex(getPath())));
         }
     }
 
@@ -86,7 +86,7 @@ public class MemoryFile
         final byte[] bytesRead = new byte[bytesToRead];
         synchronized (this) {
             try {
-                String stringContent = (String) super.getPeer().get(new Number160(HexFactory.stringToHex(getPath())));
+                String stringContent = (String) super.getPeer().getData(new Number160(HexFactory.stringToHex(getPath())));
 
                 // replace current content with the content stored in the DHT
                 ByteBuffer byteBuffer = ByteBuffer.allocate(stringContent.getBytes().length);
@@ -127,7 +127,7 @@ public class MemoryFile
             String stringContent = new String(bytesRead, StandardCharsets.UTF_8);
             try {
                 // try to update the shortened value
-                super.getPeer().put(new Number160(HexFactory.stringToHex(getPath())), new Data(stringContent));
+                super.getPeer().putData(new Number160(HexFactory.stringToHex(getPath())), new Data(stringContent));
                 // only if DHT update succeeds update the value on disk
                 newContents.put(bytesRead);
                 contents = newContents;
@@ -163,7 +163,7 @@ public class MemoryFile
             String stringContent = new String(bytesToWrite, StandardCharsets.UTF_8);
             try {
                 // try to update the value in the DHT
-                super.getPeer().put(new Number160(HexFactory.stringToHex(getPath())), new Data(stringContent));
+                super.getPeer().putData(new Number160(HexFactory.stringToHex(getPath())), new Data(stringContent));
                 // only if DHT update succeeds udpate the value on disk
                 contents.position((int) writeOffset);
                 contents.put(bytesToWrite);

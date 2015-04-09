@@ -9,7 +9,7 @@ import java.util.concurrent.TimeUnit;
  * Created by samuel on 31.03.15.
  */
 public enum Config {
-    DEFAULT("http", "188.226.178.35", 4000, "tabequals4", "ip-addresses", "ip-addresses/new", "ip-addresses/remove", "keepAlive", 5, TimeUnit.MINUTES, "./P2PFS2", true);
+    DEFAULT("http", "188.226.178.35", 4000, "tabequals4", "ip-addresses", "ip-addresses/new", "ip-addresses/remove", "keepAlive", 5, TimeUnit.MINUTES, "./P2PFS2", true, "keys");
 
     private String   _protocol;
 
@@ -58,9 +58,11 @@ public enum Config {
     private String   _mountPoint;
     
     private boolean _startCommandLineInterface;
+    
+    private String _getKeyForAllKeys;
 
     Config(String protocol, String host, int port, String authToken, String getPath, String postPath, String removePath, String keepAlivePath, int keepAliveMsgPeriod,
-            TimeUnit keepAliveMsgPeriod_T, String mountPoint, boolean startCommandLineInterface) {
+            TimeUnit keepAliveMsgPeriod_T, String mountPoint, boolean startCommandLineInterface, String getKeyForAllKeys) {
         _protocol = protocol;
         _port = port;
         _keepAliveMsgPeriod = keepAliveMsgPeriod;
@@ -73,6 +75,7 @@ public enum Config {
         _keepAlivePath = keepAlivePath;
         _mountPoint = mountPoint;
         _startCommandLineInterface = startCommandLineInterface;
+        _getKeyForAllKeys = getKeyForAllKeys;
     }
 
     public String getProtocol() {
@@ -125,5 +128,9 @@ public enum Config {
     
     public boolean getStartCommandLineInterface() {
         return _startCommandLineInterface;
+    }
+    
+    public String getKeyForAllKeys(){
+        return _getKeyForAllKeys;
     }
 }

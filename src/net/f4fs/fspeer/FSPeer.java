@@ -8,8 +8,11 @@ import java.net.InetAddress;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 
+import net.f4fs.config.Config;
 import net.f4fs.util.RandomDevice;
 import net.tomp2p.connection.Bindings;
 import net.tomp2p.connection.DiscoverNetworks;
@@ -19,11 +22,11 @@ import net.tomp2p.dht.FuturePut;
 import net.tomp2p.dht.FutureRemove;
 import net.tomp2p.dht.PeerBuilderDHT;
 import net.tomp2p.dht.PeerDHT;
-import net.tomp2p.dht.RemoveBuilder;
 import net.tomp2p.futures.FutureBootstrap;
 import net.tomp2p.futures.FutureDiscover;
 import net.tomp2p.p2p.PeerBuilder;
 import net.tomp2p.peers.Number160;
+import net.tomp2p.peers.Number640;
 import net.tomp2p.peers.PeerAddress;
 import net.tomp2p.storage.Data;
 
@@ -174,7 +177,7 @@ public class FSPeer {
      * @throws ClassNotFoundException
      * @throws IOException
      */
-    public Object get(Number160 pKey)
+    public Object getData(Number160 pKey)
             throws ClassNotFoundException, IOException {
         FutureGet futureGet = peer.get(pKey).start();
         futureGet.awaitUninterruptibly();
@@ -183,13 +186,30 @@ public class FSPeer {
     }
 
 
+    /**
+     * Gets all keys of all files stored in the dht
+     * 
+     * @param pLocationKey
+     * @return keys List with all keys to the files in the dht
+     * 
+     * @throws Exception
+     */
     public List<String> getAllKeys()
             throws Exception {
         List<String> keys = new ArrayList<>();
 
-        // TODO: Bloom Filter set(...).getAll()
+        FutureGet futureGet = peer.get(Number160.createHash(Config.DEFAULT.getKeyForAllKeys())).all().start();
+        futureGet.awaitUninterruptibly();
+        
+        Map<Number640, Data> map = futureGet.dataMap();
+        Collection<Data> collection = map.values();
+        
+        Iterator<Data> iter = collection.iterator();
+        while(iter.hasNext()){
+            keys.add((String) iter.next().object());
+        }
 
-        throw new Exception("not implemented");
+        return keys;
     }
 
     /**
@@ -200,8 +220,21 @@ public class FSPeer {
      * 
      * @throws IOException
      */
-    public void put(Number160 pKey, Data pValue) {
+    public void putData(Number160 pKey, Data pValue) {
         FuturePut futurePut = peer.put(pKey).data(pValue).start();
+        futurePut.awaitUninterruptibly();
+    }
+    
+   /** Stores the given data with the given content key on the default location key
+    * 
+    * @param pLocationKey The key on which machine to store
+    * @param pContentKey The key to store the data
+    * @param pValue The data to store
+    * 
+    * @throws IOException
+    */
+    public void putKey(Number160 pContentKey, Data pValue) {
+        FuturePut futurePut = peer.put(Number160.createHash(Config.DEFAULT.getKeyForAllKeys())).data(pContentKey, pValue).start();
         futurePut.awaitUninterruptibly();
     }
 
@@ -210,9 +243,19 @@ public class FSPeer {
      * 
      * @param pKey Key of which the data should be removed
      */
-    public void remove(Number160 pKey) {
-        RemoveBuilder removeBuilder = peer.remove(pKey);
-        FutureRemove futureRemove = removeBuilder.start();
+    public void removeData(Number160 pKey) {
+        FutureRemove futureRemove = peer.remove(pKey).start();
+        futureRemove.awaitUninterruptibly();
+    }
+    
+    /**
+     * Removes the file key from the file keys which are stored with the default location key 
+     * 
+     * @param pLocationKey
+     * @param pContentKey
+     */
+    public void removeKey(Number160 pContentKey) {
+        FutureRemove futureRemove = peer.remove(Number160.createHash(Config.DEFAULT.getKeyForAllKeys())).contentKey(pContentKey).start();
         futureRemove.awaitUninterruptibly();
     }
 }

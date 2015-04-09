@@ -35,7 +35,7 @@ public abstract class AMemoryPath {
         
         // Store an empty element
         try {
-            peer.put(new Number160(HexFactory.stringToHex(getPath())), new Data(""));
+            peer.putData(new Number160(HexFactory.stringToHex(getPath())), new Data(""));
             logger.info("Created new MemoryPath " + name + " successfully on path " + getPath());
         } catch (IOException e) {
             logger.warning("Could not create MemoryPath " + name + ". Message: " + e.getMessage());
@@ -46,7 +46,7 @@ public abstract class AMemoryPath {
         if (parent != null) {
             parent.deleteChild(this);
             parent = null;
-            peer.remove(new Number160(HexFactory.stringToHex(getPath())));
+            peer.removeData(new Number160(HexFactory.stringToHex(getPath())));
             peer = null;
         }
     }
@@ -74,10 +74,10 @@ public abstract class AMemoryPath {
         }
         
         try {
-             Object content = peer.get(new Number160(HexFactory.stringToHex(getPath())));
+             Object content = peer.getData(new Number160(HexFactory.stringToHex(getPath())));
 
-             peer.remove(new Number160(HexFactory.stringToHex(getPath())));
-             peer.put(new Number160(HexFactory.stringToHex(getPath())), new Data(content));
+             peer.removeData(new Number160(HexFactory.stringToHex(getPath())));
+             peer.putData(new Number160(HexFactory.stringToHex(getPath())), new Data(content));
 
              name = newName;
         } catch (ClassNotFoundException | IOException e) {

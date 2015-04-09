@@ -35,13 +35,13 @@ public class MemoryDirectory
         // TODO: what about the content if p is a file?
 
         // remove dir from old place
-        super.getPeer().remove(new Number160(HexFactory.stringToHex(getPath())));
+        super.getPeer().removeData(new Number160(HexFactory.stringToHex(getPath())));
 
         try {
             // update the value of getPath of p
             p.setParent(this);
             // try to store the new memory segment in DHT
-            super.getPeer().put(new Number160(HexFactory.stringToHex(getPath())), new Data(""));
+            super.getPeer().putData(new Number160(HexFactory.stringToHex(getPath())), new Data(""));
 
             contents.add(p);
             logger.info("Added MemoryPath " + p.getPath() + " to " + getPath());
