@@ -92,7 +92,7 @@ public class VDHTOperations {
 			Thread.sleep(RND.nextInt(500));
 		}
 		if (pair2 != null && pair2.element1() == 1) {
-			FuturePut fp = pPeerDHT.put(Number160.ONE)
+			FuturePut fp = pPeerDHT.put(pLocationKey)
 					.versionKey(pair2.element0().versionKey()).putConfirm()
 					.data(new Data()).start().awaitUninterruptibly();
 			System.out.println("stored!: " + fp.failedReason());
