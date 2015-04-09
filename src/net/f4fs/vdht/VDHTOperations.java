@@ -17,9 +17,8 @@ import net.tomp2p.utils.Pair;
 
 public class VDHTOperations {
 
-	private static Pair<Number640, Data> retrieve(PeerDHT pPeerDHT,
-			Number160 pLocationKey) throws InterruptedException,
-			ClassNotFoundException, IOException {
+	private static Pair<Number640, Data> retrieve(PeerDHT pPeerDHT,	Number160 pLocationKey)
+			throws InterruptedException, ClassNotFoundException, IOException {
 		Pair<Number640, Data> pair = null;
 		for (int i = 0; i < 5; i++) {
 			FutureGet fg = pPeerDHT.get(pLocationKey).getLatest().start()
@@ -40,9 +39,8 @@ public class VDHTOperations {
 		return null;
 	}
 
-	private static Pair<Number640, Data> retrieve(PeerDHT pPeerDHT, Number160 pLocationKey,
-			Number160 pVersionKey) throws InterruptedException,
-			ClassNotFoundException, IOException {
+	private static Pair<Number640, Data> retrieve(PeerDHT pPeerDHT, Number160 pLocationKey,	Number160 pVersionKey)
+			throws InterruptedException, ClassNotFoundException, IOException {
 		Pair<Number640, Data> pair = null;
 		for (int i = 0; i < 5; i++) {
 			FutureGet fg = pPeerDHT.get(pLocationKey).versionKey(pVersionKey).start()
@@ -64,16 +62,14 @@ public class VDHTOperations {
 	}
 
 
-	private static void store(PeerDHT pPeerDHT, Number160 pLocationKey,
-			Data pFileData) throws ClassNotFoundException,
-			InterruptedException, IOException {
+	private static void store(PeerDHT pPeerDHT, Number160 pLocationKey,	Data pFileData)
+			throws ClassNotFoundException, InterruptedException, IOException {
 		Pair<Number640, Byte> pair2 = null;
 		for (int i = 0; i < 5; i++) {
 			Pair<Number160, Data> pair = getAndUpdate(pPeerDHT, pLocationKey,
 					pFileData);
 			if (pair == null) {
-				System.out
-						.println("we cannot handle this kind of inconsistency automatically, handing over the the API dev");
+				System.out.println("we cannot handle this kind of inconsistency automatically, handing over the the API dev");
 				return;
 			}
 			FuturePut fp = pPeerDHT
@@ -97,15 +93,13 @@ public class VDHTOperations {
 					.data(new Data()).start().awaitUninterruptibly();
 			System.out.println("stored!: " + fp.failedReason());
 		} else {
-			System.out
-					.println("we cannot handle this kind of inconsistency automatically, handing over the the API dev");
+			System.out.println("we cannot handle this kind of inconsistency automatically, handing over the the API dev");
 		}
 	}
 
 	// get the latest version and do modification. In this case, append the
 	// string
-	private static Pair<Number160, Data> getAndUpdate(PeerDHT peerDHT,
-			Number160 pLocationKey, Data pFileData)
+	private static Pair<Number160, Data> getAndUpdate(PeerDHT peerDHT, Number160 pLocationKey, Data pFileData)
 			throws InterruptedException, ClassNotFoundException, IOException {
 		Pair<Number640, Data> pair = null;
 		for (int i = 0; i < 5; i++) {
@@ -135,8 +129,7 @@ public class VDHTOperations {
 		return null;
 	}
 
-	private static <K> Pair<Number640, K> checkVersions(
-			Map<PeerAddress, Map<Number640, K>> rawData) {
+	private static <K> Pair<Number640, K> checkVersions(Map<PeerAddress, Map<Number640, K>> rawData) {
 		Number640 latestKey = null;
 		K latestData = null;
 		for (Map.Entry<PeerAddress, Map<Number640, K>> entry : rawData
@@ -156,12 +149,13 @@ public class VDHTOperations {
 		return new Pair<Number640, K>(latestKey, latestData);
 	}
 
+	
 	// STANDALONE TEST RUN SECTION ***
 
 	private static final Random RND = new Random(42L);
 
-	public static void main(String[] args) throws IOException,
-			ClassNotFoundException, InterruptedException {
+	public static void main(String[] args)
+			throws IOException, ClassNotFoundException, InterruptedException {
 		PeerDHT master = null;
 		final int nrPeers = 100;
 		final int port = 4001;
