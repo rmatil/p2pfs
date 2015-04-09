@@ -17,8 +17,8 @@ import net.tomp2p.utils.Pair;
 
 public class VDHTOperations {
 
-	private static Pair<Number640, Data> retrieve(PeerDHT pPeerDHT, Number160 pLocationKey)
-			throws InterruptedException,
+	private static Pair<Number640, Data> retrieve(PeerDHT pPeerDHT,
+			Number160 pLocationKey) throws InterruptedException,
 			ClassNotFoundException, IOException {
 		Pair<Number640, Data> pair = null;
 		for (int i = 0; i < 5; i++) {
@@ -40,21 +40,44 @@ public class VDHTOperations {
 		return null;
 	}
 
-	private static void retrieve(PeerDHT pPeerDHT, Number160 pLocationKey,
-			Number160 pVersionKey) {
-		//TODO: Retrieve particular version
+	private static Pair<Number640, Data> retrieve(PeerDHT pPeerDHT, Number160 pLocationKey,
+			Number160 pVersionKey) throws InterruptedException,
+			ClassNotFoundException, IOException {
+		Pair<Number640, Data> pair = null;
+		for (int i = 0; i < 5; i++) {
+			FutureGet fg = pPeerDHT.get(pLocationKey).versionKey(pVersionKey).start()
+					.awaitUninterruptibly();
+			// check if all the peers agree on the same latest version, if not
+			// wait a little and try again
+			pair = checkVersions(fg.rawData());
+			if (pair != null) {
+				break;
+			}
+			System.out.println("get delay or fork - get");
+			Thread.sleep(RND.nextInt(500));
+		}
+		// we got the latest data
+		if (pair != null) {
+			return pair;
+		}
+		return null;
 	}
 
-	private static void store(PeerDHT pPeerDHT, Number160 pLocationKey, Data pFileData)
-			throws ClassNotFoundException, InterruptedException, IOException {
+
+	private static void store(PeerDHT pPeerDHT, Number160 pLocationKey,
+			Data pFileData) throws ClassNotFoundException,
+			InterruptedException, IOException {
 		Pair<Number640, Byte> pair2 = null;
 		for (int i = 0; i < 5; i++) {
-			Pair<Number160, Data> pair = getAndUpdate(pPeerDHT, pLocationKey, pFileData);
+			Pair<Number160, Data> pair = getAndUpdate(pPeerDHT, pLocationKey,
+					pFileData);
 			if (pair == null) {
-				System.out.println("we cannot handle this kind of inconsistency automatically, handing over the the API dev");
+				System.out
+						.println("we cannot handle this kind of inconsistency automatically, handing over the the API dev");
 				return;
 			}
-			FuturePut fp = pPeerDHT.put(pLocationKey)
+			FuturePut fp = pPeerDHT
+					.put(pLocationKey)
 					.data(Number160.ZERO, pair.element1().prepareFlag(),
 							pair.element0()).start().awaitUninterruptibly();
 			pair2 = checkVersions(fp.rawResult());
@@ -74,15 +97,16 @@ public class VDHTOperations {
 					.data(new Data()).start().awaitUninterruptibly();
 			System.out.println("stored!: " + fp.failedReason());
 		} else {
-			System.out.println("we cannot handle this kind of inconsistency automatically, handing over the the API dev");
+			System.out
+					.println("we cannot handle this kind of inconsistency automatically, handing over the the API dev");
 		}
 	}
 
 	// get the latest version and do modification. In this case, append the
 	// string
-	private static Pair<Number160, Data> getAndUpdate(PeerDHT peerDHT, Number160 pLocationKey,
-			Data pFileData) throws InterruptedException, ClassNotFoundException,
-			IOException {
+	private static Pair<Number160, Data> getAndUpdate(PeerDHT peerDHT,
+			Number160 pLocationKey, Data pFileData)
+			throws InterruptedException, ClassNotFoundException, IOException {
 		Pair<Number640, Data> pair = null;
 		for (int i = 0; i < 5; i++) {
 			FutureGet fg = peerDHT.get(pLocationKey).getLatest().start()
@@ -202,16 +226,17 @@ public class VDHTOperations {
 
 		// wait until all 3 threads are finished
 		cl.await();
-		
+
 		// get latest version
-		FutureGet fg = peers[5].get(Number160.ONE).getLatest().start().awaitUninterruptibly();
+		FutureGet fg = peers[5].get(Number160.ONE).getLatest().start()
+				.awaitUninterruptibly();
 		// you will see all three versions, however, not in the right order
 		System.out.println("res: "
 				+ fg.rawData().values().iterator().next().values().iterator()
 						.next().object());
 
 		Pair<Number640, Data> finalPair = retrieve(peers[1], Number160.ONE);
-		System.out.println("retrieve: "+finalPair.element1().object());
+		System.out.println("retrieve: " + finalPair.element1().object());
 	}
 
 }
