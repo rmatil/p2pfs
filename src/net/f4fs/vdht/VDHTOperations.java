@@ -45,7 +45,7 @@ public class VDHTOperations {
 		//TODO: Retrieve particular version
 	}
 
-	private static void store(PeerDHT pPeerDHT, Number160 pKey, String pValue) //TODO: Change to Data/File
+	private static void store(PeerDHT pPeerDHT, Number160 pKey, Data pValue)
 			throws ClassNotFoundException, InterruptedException, IOException {
 		Pair<Number640, Byte> pair2 = null;
 		for (int i = 0; i < 5; i++) {
@@ -81,7 +81,7 @@ public class VDHTOperations {
 	// get the latest version and do modification. In this case, append the
 	// string
 	private static Pair<Number160, Data> getAndUpdate(PeerDHT peerDHT,
-			String data) throws InterruptedException, ClassNotFoundException, // TODO: Change to Data
+			Data data) throws InterruptedException, ClassNotFoundException, // TODO: Change to Data
 			IOException {
 		Pair<Number640, Data> pair = null;
 		for (int i = 0; i < 5; i++) {
@@ -99,7 +99,7 @@ public class VDHTOperations {
 		// we got the latest data
 		if (pair != null) {
 			// update operation is append
-			Data newData = new Data(pair.element1().object() + data); //TODO: Remove Update
+			Data newData = data; //Stringtest: new Data(pair.element1().object() + data);
 			Number160 v = pair.element0().versionKey();
 			long version = v.timestamp() + 1;
 			newData.addBasedOn(v);
@@ -167,7 +167,7 @@ public class VDHTOperations {
 			@Override
 			public void run() {
 				try {
-					store(peers[1], Number160.ONE,  " one ");
+					store(peers[1], Number160.ONE, new Data(" one "));
 				} catch (Exception e) {
 					e.printStackTrace();
 				}
@@ -179,7 +179,7 @@ public class VDHTOperations {
 			@Override
 			public void run() {
 				try {
-					store(peers[2], Number160.ONE,  " two ");
+					store(peers[2], Number160.ONE, new Data(" two "));
 				} catch (Exception e) {
 					e.printStackTrace();
 				}
@@ -191,7 +191,7 @@ public class VDHTOperations {
 			@Override
 			public void run() {
 				try {
-					store(peers[3], Number160.ONE, " three ");
+					store(peers[3], Number160.ONE, new Data(" three "));
 				} catch (Exception e) {
 					e.printStackTrace();
 				}
