@@ -10,6 +10,7 @@ import net.f4fs.util.HexFactory;
 import net.fusejna.ErrorCodes;
 import net.fusejna.StructStat.StatWrapper;
 import net.fusejna.types.TypeMode.NodeType;
+import net.tomp2p.dht.FutureGet;
 import net.tomp2p.peers.Number160;
 import net.tomp2p.storage.Data;
 
@@ -86,14 +87,16 @@ public class MemoryFile
         final byte[] bytesRead = new byte[bytesToRead];
         synchronized (this) {
             try {
-                String stringContent = (String) super.getPeer().getData(new Number160(HexFactory.stringToHex(getPath())));
-
+                FutureGet futureGet = super.getPeer().getData(new Number160(HexFactory.stringToHex(getPath())));
+                futureGet.await();
+                String stringContent = (String) futureGet.data().object();
+                
                 // replace current content with the content stored in the DHT
                 ByteBuffer byteBuffer = ByteBuffer.allocate(stringContent.getBytes().length);
                 byteBuffer.put(stringContent.getBytes(StandardCharsets.UTF_8));
                 contents = byteBuffer;
 
-            } catch (ClassNotFoundException | IOException e) {
+            } catch (ClassNotFoundException | IOException | InterruptedException e) {
                 logger.warning("Could not read contents of path segment " + getPath() + ". Message: " + e.getMessage());
                 return -ErrorCodes.EIO();
             }

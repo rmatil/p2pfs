@@ -80,6 +80,7 @@ public class Main {
 //        }
         
         FSPeer peer = new FSPeer();
+        peer.findLocalIp();
         try {
             peer.startAsBootstrapPeer("127.0.0.1", 4000);
             peer.putKey(Number160.createHash("/path/directory1"), new Data("/path/directory1"));

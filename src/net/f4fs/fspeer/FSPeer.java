@@ -177,12 +177,12 @@ public class FSPeer {
      * @throws ClassNotFoundException
      * @throws IOException
      */
-    public Object getData(Number160 pKey)
+    public FutureGet getData(Number160 pKey)
             throws ClassNotFoundException, IOException {
         FutureGet futureGet = peer.get(pKey).start();
-        futureGet.awaitUninterruptibly();
+        futureGet.addListener(new GetListener(peer.peerAddress().inetAddress().toString(), "Get data"));
 
-        return futureGet.data().object();
+        return futureGet;
     }
 
 
@@ -199,7 +199,8 @@ public class FSPeer {
         List<String> keys = new ArrayList<>();
 
         FutureGet futureGet = peer.get(Number160.createHash(Config.DEFAULT.getKeyForAllKeys())).all().start();
-        futureGet.awaitUninterruptibly();
+        futureGet.addListener(new GetListener(peer.peerAddress().inetAddress().toString(), "Get all keys"));
+        futureGet.await();
         
         Map<Number640, Data> map = futureGet.dataMap();
         Collection<Data> collection = map.values();
@@ -220,9 +221,11 @@ public class FSPeer {
      * 
      * @throws IOException
      */
-    public void putData(Number160 pKey, Data pValue) {
+    public FuturePut putData(Number160 pKey, Data pValue) {
         FuturePut futurePut = peer.put(pKey).data(pValue).start();
-        futurePut.awaitUninterruptibly();
+        futurePut.addListener(new GetListener(peer.peerAddress().inetAddress().toString(), "Get data"));
+        
+        return futurePut;
     }
     
    /** Stores the given data with the given content key on the default location key
@@ -233,9 +236,11 @@ public class FSPeer {
     * 
     * @throws IOException
     */
-    public void putKey(Number160 pContentKey, Data pValue) {
+    public FuturePut putKey(Number160 pContentKey, Data pValue) {
         FuturePut futurePut = peer.put(Number160.createHash(Config.DEFAULT.getKeyForAllKeys())).data(pContentKey, pValue).start();
-        futurePut.awaitUninterruptibly();
+        futurePut.addListener(new PutListener(peer.peerAddress().inetAddress().toString(), "Put key"));
+        
+        return futurePut;
     }
 
     /**
@@ -243,9 +248,11 @@ public class FSPeer {
      * 
      * @param pKey Key of which the data should be removed
      */
-    public void removeData(Number160 pKey) {
+    public FutureRemove removeData(Number160 pKey) {
         FutureRemove futureRemove = peer.remove(pKey).start();
-        futureRemove.awaitUninterruptibly();
+        futureRemove.addListener(new RemoveListener(peer.peerAddress().inetAddress().toString(), "Remove data"));
+        
+        return futureRemove;
     }
     
     /**
@@ -254,8 +261,10 @@ public class FSPeer {
      * @param pLocationKey
      * @param pContentKey
      */
-    public void removeKey(Number160 pContentKey) {
+    public FutureRemove removeKey(Number160 pContentKey) {
         FutureRemove futureRemove = peer.remove(Number160.createHash(Config.DEFAULT.getKeyForAllKeys())).contentKey(pContentKey).start();
-        futureRemove.awaitUninterruptibly();
+        futureRemove.addListener(new RemoveListener(peer.peerAddress().inetAddress().toString(), "Remove key"));
+        
+        return futureRemove;
     }
 }
