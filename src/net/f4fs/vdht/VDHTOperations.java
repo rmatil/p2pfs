@@ -81,7 +81,7 @@ public class VDHTOperations {
 	// get the latest version and do modification. In this case, append the
 	// string
 	private static Pair<Number160, Data> getAndUpdate(PeerDHT peerDHT,
-			Data data) throws InterruptedException, ClassNotFoundException, // TODO: Change to Data
+			Data data) throws InterruptedException, ClassNotFoundException,
 			IOException {
 		Pair<Number640, Data> pair = null;
 		for (int i = 0; i < 5; i++) {
@@ -98,8 +98,8 @@ public class VDHTOperations {
 		}
 		// we got the latest data
 		if (pair != null) {
-			// update operation is append
-			Data newData = data; //Stringtest: new Data(pair.element1().object() + data);
+			// update operation TODO: let user know about old versions
+			Data newData = data;
 			Number160 v = pair.element0().versionKey();
 			long version = v.timestamp() + 1;
 			newData.addBasedOn(v);
