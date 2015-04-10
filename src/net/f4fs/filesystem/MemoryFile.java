@@ -10,6 +10,8 @@ import net.fusejna.ErrorCodes;
 import net.fusejna.StructStat.StatWrapper;
 import net.fusejna.types.TypeMode.NodeType;
 import net.tomp2p.dht.FutureGet;
+import net.tomp2p.dht.FuturePut;
+import net.tomp2p.dht.FutureRemove;
 import net.tomp2p.peers.Number160;
 import net.tomp2p.storage.Data;
 
@@ -62,12 +64,16 @@ public class MemoryFile
             // only update value on the content key because file was already 
             // created in parent constructor
             String stringContent = new String(contents.array(), StandardCharsets.UTF_8);
-            super.getPeer().put(Number160.createHash(getPath()), new Data(stringContent));
+            FuturePut futurePut = super.getPeer().put(Number160.createHash(getPath()), new Data(stringContent));
+            futurePut.awaitUninterruptibly();
+            
         } catch (final IOException e) {
             logger.warning("Could not create file " + name + ". Message: " + e.getMessage());
             // remove file (also the content key in the location keys)
-            super.getPeer().remove(Number160.createHash(getPath()));
-            super.getPeer().removeContentKey(Number160.createHash(getPath()));
+            FutureRemove futureRemove = super.getPeer().remove(Number160.createHash(getPath()));
+            futureRemove.awaitUninterruptibly();
+            futureRemove = super.getPeer().removeContentKey(Number160.createHash(getPath()));
+            futureRemove.awaitUninterruptibly();
         }
     }
 
@@ -91,7 +97,7 @@ public class MemoryFile
         synchronized (this) {
             try {
                 FutureGet futureGet = super.getPeer().get(Number160.createHash(getPath()));
-                futureGet.await();
+                futureGet.awaitUninterruptibly();
                 String stringContent = (String) futureGet.data().object();
                 
                 // replace current content with the content stored in the DHT
@@ -99,7 +105,7 @@ public class MemoryFile
                 byteBuffer.put(stringContent.getBytes(StandardCharsets.UTF_8));
                 contents = byteBuffer;
 
-            } catch (ClassNotFoundException | IOException | InterruptedException e) {
+            } catch (ClassNotFoundException | IOException e) {
                 logger.warning("Could not read contents of path segment " + getPath() + ". Message: " + e.getMessage());
                 return -ErrorCodes.EIO();
             }
@@ -133,7 +139,9 @@ public class MemoryFile
             String stringContent = new String(bytesRead, StandardCharsets.UTF_8);
             try {
                 // try to update the shortened value
-                super.getPeer().put(Number160.createHash(getPath()), new Data(stringContent));
+                FuturePut futurePut = super.getPeer().put(Number160.createHash(getPath()), new Data(stringContent));
+                futurePut.awaitUninterruptibly();
+
                 // only if DHT update succeeds update the value on disk
                 newContents.put(bytesRead);
                 contents = newContents;
@@ -169,7 +177,9 @@ public class MemoryFile
             String stringContent = new String(bytesToWrite, StandardCharsets.UTF_8);
             try {
                 // try to update the value in the DHT
-                super.getPeer().put(Number160.createHash(getPath()), new Data(stringContent));
+                FuturePut futurePut = super.getPeer().put(Number160.createHash(getPath()), new Data(stringContent));
+                futurePut.awaitUninterruptibly();
+
                 // only if DHT update succeeds udpate the value on disk
                 contents.position((int) writeOffset);
                 contents.put(bytesToWrite);

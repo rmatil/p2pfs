@@ -223,7 +223,7 @@ public class FSPeer {
      */
     public FuturePut put(Number160 pKey, Data pValue) {
         FuturePut futurePut = peer.put(pKey).data(pValue).start();
-        futurePut.addListener(new GetListener(peer.peerAddress().inetAddress().toString(), "Get data"));
+        futurePut.addListener(new PutListener(peer.peerAddress().inetAddress().toString(), "Get data"));
         
         return futurePut;
     }

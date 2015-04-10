@@ -9,6 +9,7 @@ import net.f4fs.fspeer.FSPeer;
 import net.fusejna.DirectoryFiller;
 import net.fusejna.StructStat.StatWrapper;
 import net.fusejna.types.TypeMode.NodeType;
+import net.tomp2p.dht.FuturePut;
 import net.tomp2p.peers.Number160;
 import net.tomp2p.storage.Data;
 
@@ -40,8 +41,10 @@ public class MemoryDirectory
             // update the value of getPath of p
             p.setParent(this);
             // try to store the new memory segment in DHT
-            super.getPeer().put(Number160.createHash(getPath()), new Data(""));
-            super.getPeer().putContentKey(Number160.createHash(getPath()), new Data(getPath()));
+            FuturePut futurePut = super.getPeer().put(Number160.createHash(getPath()), new Data(""));
+            futurePut.awaitUninterruptibly();
+            futurePut = super.getPeer().putContentKey(Number160.createHash(getPath()), new Data(getPath()));
+            futurePut.awaitUninterruptibly();
 
             contents.add(p);
             logger.info("Added MemoryPath " + p.getPath() + " to " + getPath());

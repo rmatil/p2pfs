@@ -1,6 +1,7 @@
 package net.f4fs.fspeer;
 
 import net.tomp2p.dht.FutureGet;
+import net.tomp2p.dht.FuturePut;
 import net.tomp2p.futures.BaseFutureAdapter;
 
 
@@ -23,5 +24,4 @@ public class GetListener extends BaseFutureAdapter<FutureGet> {
            System.out.println("[Peer@" + _peerIP + "] " + _output + " failed") ;
        }
     }
-
 }
