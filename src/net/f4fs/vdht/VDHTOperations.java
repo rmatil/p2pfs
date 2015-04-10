@@ -31,7 +31,7 @@ public class VDHTOperations {
      * @param pPeerDHT local DHT of the peer
      * @param pLocationKey location key of the requested entry
      */
-	private static Pair<Number640, Data> retrieve(PeerDHT pPeerDHT,	Number160 pLocationKey)
+	public static Pair<Number640, Data> retrieve(PeerDHT pPeerDHT,	Number160 pLocationKey)
 			throws InterruptedException, ClassNotFoundException, IOException {
 		Pair<Number640, Data> pair = null;
 		for (int i = 0; i < 5; i++) {
@@ -60,7 +60,7 @@ public class VDHTOperations {
      * @param pLocationKey location key of the requested entry
      * @param pVersionKey version key of the requested entry
      */
-	private static Pair<Number640, Data> retrieve(PeerDHT pPeerDHT, Number160 pLocationKey,	Number160 pVersionKey)
+	public static Pair<Number640, Data> retrieve(PeerDHT pPeerDHT, Number160 pLocationKey,	Number160 pVersionKey)
 			throws InterruptedException, ClassNotFoundException, IOException {
 		Pair<Number640, Data> pair = null;
 		for (int i = 0; i < 5; i++) {
@@ -89,7 +89,7 @@ public class VDHTOperations {
      * @param pLocationKey location key of the data to save
      * @param pFileData data to be stored at specified location
      */
-	private static void store(PeerDHT pPeerDHT, Number160 pLocationKey,	Data pFileData)
+	public static void store(PeerDHT pPeerDHT, Number160 pLocationKey,	Data pFileData)
 			throws ClassNotFoundException, InterruptedException, IOException {
 		Pair<Number640, Byte> pair2 = null;
 		for (int i = 0; i < 5; i++) {
