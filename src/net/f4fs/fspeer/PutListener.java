@@ -6,8 +6,8 @@ import net.tomp2p.futures.BaseFutureAdapter;
 
 public class PutListener extends BaseFutureAdapter<FuturePut> {
     
-    private String _output;
-    private String _peerIP;
+    private final String _output;
+    private final String _peerIP;
     
     public PutListener(String peerIP, String output){
         _output = output;

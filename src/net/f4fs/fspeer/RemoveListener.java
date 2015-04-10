@@ -3,11 +3,10 @@ package net.f4fs.fspeer;
 import net.tomp2p.dht.FutureRemove;
 import net.tomp2p.futures.BaseFutureAdapter;
 
-
 public class RemoveListener extends BaseFutureAdapter<FutureRemove> {
     
-    private String _output;
-    private String _peerIP;
+    private final String _output;
+    private final String _peerIP;
     
     public RemoveListener(String peerIP, String output){
         _output = output;
