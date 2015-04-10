@@ -4,7 +4,6 @@ import java.io.IOException;
 import java.util.logging.Logger;
 
 import net.f4fs.fspeer.FSPeer;
-import net.f4fs.util.HexFactory;
 import net.fusejna.StructStat.StatWrapper;
 import net.tomp2p.peers.Number160;
 import net.tomp2p.storage.Data;
@@ -35,7 +34,9 @@ public abstract class AMemoryPath {
         
         // Store an empty element
         try {
-            peer.putData(new Number160(HexFactory.stringToHex(getPath())), new Data(""));
+            peer.put(Number160.createHash(getPath()), new Data(""));
+            peer.putContentKey(Number160.createHash(getPath()), new Data(getPath()));
+
             logger.info("Created new MemoryPath " + name + " successfully on path " + getPath());
         } catch (IOException e) {
             logger.warning("Could not create MemoryPath " + name + ". Message: " + e.getMessage());
@@ -46,7 +47,8 @@ public abstract class AMemoryPath {
         if (parent != null) {
             parent.deleteChild(this);
             parent = null;
-            peer.removeData(new Number160(HexFactory.stringToHex(getPath())));
+            peer.remove(Number160.createHash(getPath()));
+            peer.removeContentKey(Number160.createHash(getPath()));
             peer = null;
         }
     }
@@ -73,15 +75,23 @@ public abstract class AMemoryPath {
             newName = newName.substring(1);
         }
         
+        String oldName = this.name;
         try {
-             Object content = peer.getData(new Number160(HexFactory.stringToHex(getPath())));
+             Object content = peer.get(Number160.createHash(getPath()));
 
-             peer.removeData(new Number160(HexFactory.stringToHex(getPath())));
-             peer.putData(new Number160(HexFactory.stringToHex(getPath())), new Data(content));
+             // remove content key and the corresponding value from the dht
+             peer.remove(Number160.createHash(getPath()));
+             peer.removeContentKey(Number160.createHash(getPath()));
 
              name = newName;
+             
+             // update content key and store the files content on the updated key again
+             peer.put(Number160.createHash(getPath()), new Data(content));
+             peer.putContentKey(Number160.createHash(getPath()), new Data(getPath()));
         } catch (ClassNotFoundException | IOException e) {
            logger.warning("Could not rename to " + newName + ". Message: " + e.getMessage());
+           // reset in case renaming didn't work as expected
+           name = oldName;
         }
     }
 

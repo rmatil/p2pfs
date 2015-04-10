@@ -177,7 +177,7 @@ public class FSPeer {
      * @throws ClassNotFoundException
      * @throws IOException
      */
-    public FutureGet getData(Number160 pKey)
+    public FutureGet get(Number160 pKey)
             throws ClassNotFoundException, IOException {
         FutureGet futureGet = peer.get(pKey).start();
         futureGet.addListener(new GetListener(peer.peerAddress().inetAddress().toString(), "Get data"));
@@ -194,7 +194,7 @@ public class FSPeer {
      * 
      * @throws Exception
      */
-    public List<String> getAllKeys()
+    public List<String> getAllContentKeys()
             throws Exception {
         List<String> keys = new ArrayList<>();
 
@@ -221,7 +221,7 @@ public class FSPeer {
      * 
      * @throws IOException
      */
-    public FuturePut putData(Number160 pKey, Data pValue) {
+    public FuturePut put(Number160 pKey, Data pValue) {
         FuturePut futurePut = peer.put(pKey).data(pValue).start();
         futurePut.addListener(new GetListener(peer.peerAddress().inetAddress().toString(), "Get data"));
         
@@ -236,7 +236,7 @@ public class FSPeer {
     * 
     * @throws IOException
     */
-    public FuturePut putKey(Number160 pContentKey, Data pValue) {
+    public FuturePut putContentKey(Number160 pContentKey, Data pValue) {
         FuturePut futurePut = peer.put(Number160.createHash(Config.DEFAULT.getKeyForAllKeys())).data(pContentKey, pValue).start();
         futurePut.addListener(new PutListener(peer.peerAddress().inetAddress().toString(), "Put key"));
         
@@ -248,7 +248,7 @@ public class FSPeer {
      * 
      * @param pKey Key of which the data should be removed
      */
-    public FutureRemove removeData(Number160 pKey) {
+    public FutureRemove remove(Number160 pKey) {
         FutureRemove futureRemove = peer.remove(pKey).start();
         futureRemove.addListener(new RemoveListener(peer.peerAddress().inetAddress().toString(), "Remove data"));
         
@@ -261,7 +261,7 @@ public class FSPeer {
      * @param pLocationKey
      * @param pContentKey
      */
-    public FutureRemove removeKey(Number160 pContentKey) {
+    public FutureRemove removeContentKey(Number160 pContentKey) {
         FutureRemove futureRemove = peer.remove(Number160.createHash(Config.DEFAULT.getKeyForAllKeys())).contentKey(pContentKey).start();
         futureRemove.addListener(new RemoveListener(peer.peerAddress().inetAddress().toString(), "Remove key"));
         

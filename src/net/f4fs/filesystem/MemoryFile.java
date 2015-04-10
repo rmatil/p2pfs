@@ -6,7 +6,6 @@ import java.nio.charset.StandardCharsets;
 import java.util.logging.Logger;
 
 import net.f4fs.fspeer.FSPeer;
-import net.f4fs.util.HexFactory;
 import net.fusejna.ErrorCodes;
 import net.fusejna.StructStat.StatWrapper;
 import net.fusejna.types.TypeMode.NodeType;
@@ -60,11 +59,15 @@ public class MemoryFile
             final byte[] contentBytes = text.getBytes("UTF-8");
             contents = ByteBuffer.wrap(contentBytes);
 
+            // only update value on the content key because file was already 
+            // created in parent constructor
             String stringContent = new String(contents.array(), StandardCharsets.UTF_8);
-            super.getPeer().putData(new Number160(HexFactory.stringToHex(getPath())), new Data(stringContent));
+            super.getPeer().put(Number160.createHash(getPath()), new Data(stringContent));
         } catch (final IOException e) {
             logger.warning("Could not create file " + name + ". Message: " + e.getMessage());
-            super.getPeer().removeData(new Number160(HexFactory.stringToHex(getPath())));
+            // remove file (also the content key in the location keys)
+            super.getPeer().remove(Number160.createHash(getPath()));
+            super.getPeer().removeContentKey(Number160.createHash(getPath()));
         }
     }
 
@@ -87,7 +90,7 @@ public class MemoryFile
         final byte[] bytesRead = new byte[bytesToRead];
         synchronized (this) {
             try {
-                FutureGet futureGet = super.getPeer().getData(new Number160(HexFactory.stringToHex(getPath())));
+                FutureGet futureGet = super.getPeer().get(Number160.createHash(getPath()));
                 futureGet.await();
                 String stringContent = (String) futureGet.data().object();
                 
@@ -130,7 +133,7 @@ public class MemoryFile
             String stringContent = new String(bytesRead, StandardCharsets.UTF_8);
             try {
                 // try to update the shortened value
-                super.getPeer().putData(new Number160(HexFactory.stringToHex(getPath())), new Data(stringContent));
+                super.getPeer().put(Number160.createHash(getPath()), new Data(stringContent));
                 // only if DHT update succeeds update the value on disk
                 newContents.put(bytesRead);
                 contents = newContents;
@@ -166,7 +169,7 @@ public class MemoryFile
             String stringContent = new String(bytesToWrite, StandardCharsets.UTF_8);
             try {
                 // try to update the value in the DHT
-                super.getPeer().putData(new Number160(HexFactory.stringToHex(getPath())), new Data(stringContent));
+                super.getPeer().put(Number160.createHash(getPath()), new Data(stringContent));
                 // only if DHT update succeeds udpate the value on disk
                 contents.position((int) writeOffset);
                 contents.put(bytesToWrite);

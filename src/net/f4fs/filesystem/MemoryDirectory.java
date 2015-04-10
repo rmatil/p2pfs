@@ -6,7 +6,6 @@ import java.util.List;
 import java.util.logging.Logger;
 
 import net.f4fs.fspeer.FSPeer;
-import net.f4fs.util.HexFactory;
 import net.fusejna.DirectoryFiller;
 import net.fusejna.StructStat.StatWrapper;
 import net.fusejna.types.TypeMode.NodeType;
@@ -35,13 +34,14 @@ public class MemoryDirectory
         // TODO: what about the content if p is a file?
 
         // remove dir from old place
-        super.getPeer().removeData(new Number160(HexFactory.stringToHex(getPath())));
+//        super.getPeer().remove(new Number160(HexFactory.stringToHex(getPath())));
 
         try {
             // update the value of getPath of p
             p.setParent(this);
             // try to store the new memory segment in DHT
-            super.getPeer().putData(new Number160(HexFactory.stringToHex(getPath())), new Data(""));
+            super.getPeer().put(Number160.createHash(getPath()), new Data(""));
+            super.getPeer().putContentKey(Number160.createHash(getPath()), new Data(getPath()));
 
             contents.add(p);
             logger.info("Added MemoryPath " + p.getPath() + " to " + getPath());

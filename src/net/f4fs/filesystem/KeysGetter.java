@@ -20,7 +20,7 @@ public class KeysGetter implements Runnable {
     public void run() {
         while(true){
             try {
-                keys = _peer.getAllKeys();
+                keys = _peer.getAllContentKeys();
                 
                 for(String key : keys){
                     if(_filesystem.getPath(key) == null){ 
