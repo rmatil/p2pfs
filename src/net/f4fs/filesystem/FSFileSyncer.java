@@ -31,6 +31,11 @@ public class FSFileSyncer
     private final FSPeer _peer;
 
     /**
+     * Indicates whether this runnable is still running
+     */
+    private boolean      _isRunning;
+
+    /**
      * Create a new Thread to "sync" the list of stored files
      * among the P2P network.
      * 
@@ -40,10 +45,19 @@ public class FSFileSyncer
     public FSFileSyncer(P2PFS filesystem, FSPeer peer) {
         _filesystem = filesystem;
         _peer = peer;
+        _isRunning = true;
     }
 
+    /**
+     * Terminates this runnable on the next iteration
+     */
+    public void terminate() {
+        _isRunning = false;
+    }
+
+    @Override
     public void run() {
-        while (true) {
+        while (_isRunning) {
             try {
                 keys = _peer.getAllPaths();
 
@@ -55,9 +69,10 @@ public class FSFileSyncer
                     }
                 }
 
-                Thread.sleep(1000);
+                Thread.sleep(2000);
             } catch (Exception pEx) {
                 pEx.printStackTrace();
+                _isRunning = false;
             }
         }
     }

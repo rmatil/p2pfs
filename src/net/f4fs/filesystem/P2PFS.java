@@ -18,11 +18,10 @@ import net.fusejna.types.TypeMode.ModeWrapper;
 import net.fusejna.util.FuseFilesystemAdapterFull;
 
 
-/*
- * TODO: 
- * Put and Get of files into file system
+/**
  * 
- * IDEA: storing each path as [location key: hash('keys')], [content key: hash(path)] and [value: path]
+ * 
+ * <b>Description of idea</b>: storing each path as [location key: hash('keys')], [content key: hash(path)] and [value: path]
  * and storing the path a second time as [location key: path] and [value: file_content]
  * like this it is possible to get all keys with new GetBuilder(hash('keys')).keys() --> returns a map with all [hash(path), path]
  * 
@@ -41,6 +40,10 @@ public class P2PFS
      */
     private static final Logger   logger = Logger.getLogger("P2PFS.class");
 
+    private Thread                fileSyncerThread;
+
+    private FSFileSyncer          fileSyncer;
+
     /**
      * Creates a new instance of this file system.
      * Enables logging
@@ -53,10 +56,12 @@ public class P2PFS
             throws IOException {
 
         rootDirectory = new MemoryDirectory("/", peer);
-       
-        // start thread to get all file keys from dht
-        // new KeysGetter(this, peer).run();
 
+        // start thread to get all file keys from dht
+        fileSyncer = new FSFileSyncer(this, peer);
+        fileSyncerThread = new Thread(fileSyncer);
+        fileSyncerThread.start(); // use start() instead of run()
+        
         super.log(false);
     }
 
@@ -81,6 +86,19 @@ public class P2PFS
     public void afterUnmount(final File mountPoint) {
         if (mountPoint.exists()) {
             FileUtils.deleteFileOrFolder(mountPoint);
+        }
+        
+        if (null != fileSyncerThread) {
+            // indicate stop flag on runnable
+            fileSyncer.terminate();
+            
+            try {
+                // wait until run() of runnable is terminated
+                fileSyncerThread.join();
+                logger.info("FSFileSyncer stopped successfully");
+            } catch (InterruptedException e) {
+                logger.warning("Could not terminate FSFileSyncer properly");
+            }
         }
     }
 

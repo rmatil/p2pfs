@@ -37,13 +37,23 @@ public abstract class AMemoryPath {
 
         // Store an empty element
         try {
+            // If some data already exists in the DHT, do not update the value of the key
+            // (E.g. could be the case, when invoked from FSFileSyncer)
+            FutureGet futureGet = peer.getData(Number160.createHash(getPath()));
+            futureGet.await();
+            
+            if (null != futureGet.data()) {
+                logger.info("MemoryPath " + name + " already existed on path " + getPath());
+                return;
+            }
+            
             FuturePut futurePut = peer.putData(Number160.createHash(getPath()), new Data(""));
             futurePut.await();
             futurePut = peer.putPath(Number160.createHash(getPath()), new Data(getPath()));
             futurePut.await();
 
             logger.info("Created new MemoryPath " + name + " successfully on path " + getPath());
-        } catch (IOException | InterruptedException e) {
+        } catch (IOException | InterruptedException | ClassNotFoundException e) {
             logger.warning("Could not create MemoryPath " + name + ". Message: " + e.getMessage());
         }
     }
