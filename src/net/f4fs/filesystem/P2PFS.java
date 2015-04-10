@@ -5,6 +5,7 @@ import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.util.logging.Logger;
 
+import net.f4fs.config.FSStatConfig;
 import net.f4fs.fspeer.FSPeer;
 import net.f4fs.util.FileUtils;
 import net.fusejna.DirectoryFiller;
@@ -334,12 +335,12 @@ public class P2PFS
 
     @Override
     public int statfs(final String path, final StatvfsWrapper wrapper) {
-        wrapper.bsize(4000L); // block size of 4000 bytes
-        wrapper.blocks(1000L); // TODO: manually update this, when a new peer joins
-        wrapper.bfree(200L);
-        wrapper.bavail(180L);
-        wrapper.files(5L);
-        wrapper.ffree(29L);
+        wrapper.bsize(FSStatConfig.DEFAULT.getBsize()); // block size of 4000 bytes
+        wrapper.blocks(FSStatConfig.DEFAULT.getBlocks()); // TODO: manually update this, when a new peer joins
+        wrapper.bfree(FSStatConfig.DEFAULT.getBfree());
+        wrapper.bavail(FSStatConfig.DEFAULT.getBavail());
+        wrapper.files(FSStatConfig.DEFAULT.getFiles());
+        wrapper.ffree(FSStatConfig.DEFAULT.getFfree());
         return 0;
     }
 
