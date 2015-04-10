@@ -38,12 +38,12 @@ public abstract class AMemoryPath {
         // Store an empty element
         try {
             FuturePut futurePut = peer.putData(Number160.createHash(getPath()), new Data(""));
-            futurePut.awaitUninterruptibly();
+            futurePut.await();
             futurePut = peer.putPath(Number160.createHash(getPath()), new Data(getPath()));
-            futurePut.awaitUninterruptibly();
+            futurePut.await();
 
             logger.info("Created new MemoryPath " + name + " successfully on path " + getPath());
-        } catch (IOException e) {
+        } catch (IOException | InterruptedException e) {
             logger.warning("Could not create MemoryPath " + name + ". Message: " + e.getMessage());
         }
     }
@@ -86,7 +86,7 @@ public abstract class AMemoryPath {
         String oldName = this.name;
         try {
             FutureGet futureGet = peer.getData(Number160.createHash(getPath()));
-            futureGet.awaitUninterruptibly();
+            futureGet.await();
 
             Object content = new Object();
             if (null == futureGet.data()) {
@@ -97,15 +97,19 @@ public abstract class AMemoryPath {
             }
 
             // remove content key and the corresponding value from the dht
-            peer.removeData(Number160.createHash(getPath()));
-            peer.removePath(Number160.createHash(getPath()));
-
+            FutureRemove futureRemove = peer.removeData(Number160.createHash(getPath()));
+            futureRemove.await();
+            futureRemove = peer.removePath(Number160.createHash(getPath()));
+            futureRemove.await();
+            
             name = newName;
 
             // update content key and store the files content on the updated key again
-            peer.putData(Number160.createHash(getPath()), new Data(content));
-            peer.putPath(Number160.createHash(getPath()), new Data(getPath()));
-        } catch (ClassNotFoundException | IOException e) {
+            FuturePut futurePut = peer.putData(Number160.createHash(getPath()), new Data(content));
+            futurePut.await();
+            futurePut = peer.putPath(Number160.createHash(getPath()), new Data(getPath()));
+            futurePut.await();
+        } catch (InterruptedException | ClassNotFoundException | IOException e) {
             logger.warning("Could not rename to " + newName + ". Message: " + e.getMessage());
             // reset in case renaming didn't work as expected
             name = oldName;

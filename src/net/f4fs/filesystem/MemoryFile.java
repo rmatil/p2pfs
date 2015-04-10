@@ -65,15 +65,20 @@ public class MemoryFile
             // created in parent constructor
             String stringContent = new String(contents.array(), StandardCharsets.UTF_8);
             FuturePut futurePut = super.getPeer().putData(Number160.createHash(getPath()), new Data(stringContent));
-            futurePut.awaitUninterruptibly();
+            futurePut.await();
             
-        } catch (final IOException e) {
+        } catch (final IOException | InterruptedException e) {
             logger.warning("Could not create file " + name + ". Message: " + e.getMessage());
-            // remove file (also the content key in the location keys)
-            FutureRemove futureRemove = super.getPeer().removeData(Number160.createHash(getPath()));
-            futureRemove.awaitUninterruptibly();
-            futureRemove = super.getPeer().removePath(Number160.createHash(getPath()));
-            futureRemove.awaitUninterruptibly();
+            
+            try {
+                // remove file (also the content key in the location keys)
+                FutureRemove futureRemove = super.getPeer().removeData(Number160.createHash(getPath()));
+                futureRemove.await();
+                futureRemove = super.getPeer().removePath(Number160.createHash(getPath()));
+                futureRemove.await();
+            } catch (InterruptedException e1) {
+                logger.warning("Could not create file " + name + ". Message: " + e.getMessage());
+            }
         }
     }
 
@@ -97,7 +102,7 @@ public class MemoryFile
         synchronized (this) {
             try {
                 FutureGet futureGet = super.getPeer().getData(Number160.createHash(getPath()));
-                futureGet.awaitUninterruptibly();
+                futureGet.await();
                 String stringContent = (String) futureGet.data().object();
                 
                 // replace current content with the content stored in the DHT
@@ -105,7 +110,7 @@ public class MemoryFile
                 byteBuffer.put(stringContent.getBytes(StandardCharsets.UTF_8));
                 contents = byteBuffer;
 
-            } catch (ClassNotFoundException | IOException e) {
+            } catch (ClassNotFoundException | IOException | InterruptedException e) {
                 logger.warning("Could not read contents of path segment " + getPath() + ". Message: " + e.getMessage());
                 return -ErrorCodes.EIO();
             }
@@ -140,12 +145,12 @@ public class MemoryFile
             try {
                 // try to update the shortened value
                 FuturePut futurePut = super.getPeer().putData(Number160.createHash(getPath()), new Data(stringContent));
-                futurePut.awaitUninterruptibly();
+                futurePut.await();
 
                 // only if DHT update succeeds update the value on disk
                 newContents.put(bytesRead);
                 contents = newContents;
-            } catch (IOException e) {
+            } catch (IOException | InterruptedException e) {
                 logger.warning("Could not truncate the contents of the file " + getPath() + ". Message: " + e.getMessage());
             }
         }
@@ -178,13 +183,13 @@ public class MemoryFile
             try {
                 // try to update the value in the DHT
                 FuturePut futurePut = super.getPeer().putData(Number160.createHash(getPath()), new Data(stringContent));
-                futurePut.awaitUninterruptibly();
+                futurePut.await();
 
                 // only if DHT update succeeds udpate the value on disk
                 contents.position((int) writeOffset);
                 contents.put(bytesToWrite);
                 contents.position(0); // Rewind
-            } catch (IOException e) {
+            } catch (IOException | InterruptedException e) {
                 logger.warning("Could not write to file " + getPath() + ". Message; " + e.getMessage());
                 return -ErrorCodes.EIO();
             }
