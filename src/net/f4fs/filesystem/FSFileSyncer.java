@@ -11,7 +11,7 @@ import net.f4fs.fspeer.FSPeer;
  * 
  * @author Reto
  */
-public class FSContentKeySyncer
+public class FSFileSyncer
         implements Runnable {
 
     /**
@@ -37,7 +37,7 @@ public class FSContentKeySyncer
      * @param filesystem The filesystem to update
      * @param peer The peer from which to get the keys
      */
-    public FSContentKeySyncer(P2PFS filesystem, FSPeer peer) {
+    public FSFileSyncer(P2PFS filesystem, FSPeer peer) {
         _filesystem = filesystem;
         _peer = peer;
     }
