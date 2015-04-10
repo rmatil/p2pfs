@@ -56,19 +56,19 @@ public enum Config {
      * Default mount point for the filesystem
      */
     private String   _mountPoint;
-    
+
     /**
      * Indicates whether the cli should be started or not
      */
-    private boolean _startCommandLineInterface;
-    
+    private boolean  _startCommandLineInterface;
+
     /**
      * Key in the DHT to get al list of all paths
      */
-    private String _masterLocationKey;
+    private String   _masterLocationPathsKey;
 
     Config(String protocol, String host, int port, String authToken, String getPath, String postPath, String removePath, String keepAlivePath, int keepAliveMsgPeriod,
-            TimeUnit keepAliveMsgPeriod_T, String mountPoint, boolean startCommandLineInterface, String masterLocationKey) {
+            TimeUnit keepAliveMsgPeriod_T, String mountPoint, boolean startCommandLineInterface, String masterLocationPathsKey) {
         _protocol = protocol;
         _port = port;
         _keepAliveMsgPeriod = keepAliveMsgPeriod;
@@ -81,7 +81,7 @@ public enum Config {
         _keepAlivePath = keepAlivePath;
         _mountPoint = mountPoint;
         _startCommandLineInterface = startCommandLineInterface;
-        _masterLocationKey = masterLocationKey;
+        _masterLocationPathsKey = masterLocationPathsKey;
     }
 
     public String getProtocol() {
@@ -131,12 +131,12 @@ public enum Config {
     public String getMountPoint() {
         return _mountPoint;
     }
-    
+
     public boolean getStartCommandLineInterface() {
         return _startCommandLineInterface;
     }
-    
-    public String getMasterLocationKey(){
-        return _masterLocationKey;
+
+    public String getMasterLocationPathsKey() {
+        return _masterLocationPathsKey;
     }
 }

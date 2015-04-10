@@ -198,7 +198,7 @@ public class FSPeer {
             throws Exception {
         List<String> keys = new ArrayList<>();
 
-        FutureGet futureGet = peer.get(Number160.createHash(Config.DEFAULT.getMasterLocationKey())).all().start();
+        FutureGet futureGet = peer.get(Number160.createHash(Config.DEFAULT.getMasterLocationPathsKey())).all().start();
         futureGet.addListener(new GetListener(peer.peerAddress().inetAddress().toString(), "Get all keys"));
         futureGet.await();
         
@@ -237,7 +237,7 @@ public class FSPeer {
     * @throws IOException
     */
     public FuturePut putContentKey(Number160 pContentKey, Data pValue) {
-        FuturePut futurePut = peer.put(Number160.createHash(Config.DEFAULT.getMasterLocationKey())).data(pContentKey, pValue).start();
+        FuturePut futurePut = peer.put(Number160.createHash(Config.DEFAULT.getMasterLocationPathsKey())).data(pContentKey, pValue).start();
         futurePut.addListener(new PutListener(peer.peerAddress().inetAddress().toString(), "Put key"));
         
         return futurePut;
@@ -262,7 +262,7 @@ public class FSPeer {
      * @param pContentKey
      */
     public FutureRemove removeContentKey(Number160 pContentKey) {
-        FutureRemove futureRemove = peer.remove(Number160.createHash(Config.DEFAULT.getMasterLocationKey())).contentKey(pContentKey).start();
+        FutureRemove futureRemove = peer.remove(Number160.createHash(Config.DEFAULT.getMasterLocationPathsKey())).contentKey(pContentKey).start();
         futureRemove.addListener(new RemoveListener(peer.peerAddress().inetAddress().toString(), "Remove key"));
         
         return futureRemove;
