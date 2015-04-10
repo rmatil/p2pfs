@@ -31,7 +31,7 @@ import net.tomp2p.tracker.PeerTracker;
  * 
  * @author Thomas Bocek
  */
-public class ExampleUtils {
+public class TestUtils {
     static final Random RND = new Random( 42L );
 
     /**
