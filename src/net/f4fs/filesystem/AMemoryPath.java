@@ -64,9 +64,7 @@ public abstract class AMemoryPath {
     }
 
     protected AMemoryPath find(String path) {
-        while (path.startsWith("/")) {
-            path = path.substring(1);
-        }
+        path.replace("^/*", ""); // removes / suffixes.
         if (path.equals(name) || path.isEmpty()) {
             return this;
         }
