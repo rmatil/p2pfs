@@ -9,7 +9,7 @@ import java.util.concurrent.TimeUnit;
  * Created by samuel on 31.03.15.
  */
 public enum Config {
-    DEFAULT("http", "188.226.178.35", 4000, "tabequals4", "ip-addresses", "ip-addresses/new", "ip-addresses/remove", "keepAlive", 5, TimeUnit.MINUTES, "./P2PFS2", true, "keys");
+    DEFAULT("http", "188.226.178.35", 4000, "tabequals4", "ip-addresses", "ip-addresses/new", "ip-addresses/remove", "keepAlive", 5, TimeUnit.MINUTES, "./P2PFS", true, "keys");
 
     private String   _protocol;
 
