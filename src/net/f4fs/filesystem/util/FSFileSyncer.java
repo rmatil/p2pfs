@@ -1,8 +1,9 @@
-package net.f4fs.filesystem;
+package net.f4fs.filesystem.util;
 
 import java.util.ArrayList;
 import java.util.List;
 
+import net.f4fs.filesystem.P2PFS;
 import net.f4fs.fspeer.FSPeer;
 
 
@@ -69,7 +70,7 @@ public class FSFileSyncer
                     }
                 }
 
-                Thread.sleep(2000);
+                Thread.sleep(1000);
             } catch (Exception pEx) {
                 pEx.printStackTrace();
                 _isRunning = false;

@@ -1,4 +1,4 @@
-package net.f4fs.filesystem;
+package net.f4fs.filesystem.partials;
 
 import java.io.IOException;
 import java.nio.ByteBuffer;
@@ -83,7 +83,7 @@ public class MemoryFile
     }
 
     @Override
-    protected void getattr(final StatWrapper stat) {
+    public void getattr(final StatWrapper stat) {
         stat.setMode(NodeType.FILE).size(contents.capacity());
     }
 

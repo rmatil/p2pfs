@@ -6,8 +6,12 @@ import java.nio.ByteBuffer;
 import java.util.logging.Logger;
 
 import net.f4fs.config.FSStatConfig;
+import net.f4fs.filesystem.partials.AMemoryPath;
+import net.f4fs.filesystem.partials.MemoryDirectory;
+import net.f4fs.filesystem.partials.MemoryFile;
+import net.f4fs.filesystem.util.FSFileSyncer;
+import net.f4fs.filesystem.util.FSFileUtils;
 import net.f4fs.fspeer.FSPeer;
-import net.f4fs.util.FileUtils;
 import net.fusejna.DirectoryFiller;
 import net.fusejna.ErrorCodes;
 import net.fusejna.FuseException;
@@ -85,7 +89,7 @@ public class P2PFS
     @Override
     public void afterUnmount(final File mountPoint) {
         if (mountPoint.exists()) {
-            FileUtils.deleteFileOrFolder(mountPoint);
+            FSFileUtils.deleteFileOrFolder(mountPoint);
         }
         
         if (null != fileSyncerThread) {

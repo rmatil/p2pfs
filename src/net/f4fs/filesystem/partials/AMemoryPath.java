@@ -1,4 +1,4 @@
-package net.f4fs.filesystem;
+package net.f4fs.filesystem.partials;
 
 import java.io.IOException;
 import java.util.logging.Logger;
@@ -73,7 +73,7 @@ public abstract class AMemoryPath {
         }
     }
 
-    protected AMemoryPath find(String path) {
+    public AMemoryPath find(String path) {
         path.replace("^/*", ""); // removes / suffixes.
         if (path.equals(name) || path.isEmpty()) {
             return this;
@@ -81,7 +81,7 @@ public abstract class AMemoryPath {
         return null;
     }
 
-    protected abstract void getattr(StatWrapper stat);
+    public abstract void getattr(StatWrapper stat);
 
     /**
      * Renames the memory path to the given name

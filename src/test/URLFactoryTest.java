@@ -1,7 +1,8 @@
 package test;
 
+import net.f4fs.bootstrapserver.util.URLFactory;
 import net.f4fs.config.Config;
-import net.f4fs.util.URLFactory;
+
 import org.junit.Test;
 
 import static org.junit.Assert.assertEquals;

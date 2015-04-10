@@ -1,4 +1,4 @@
-package net.f4fs.util;
+package net.f4fs.filesystem.util;
 
 import java.io.File;
 
@@ -8,7 +8,7 @@ import java.io.File;
  * 
  * @author Raphael
  */
-public class FileUtils {
+public class FSFileUtils {
 
     /**
      * Deletes all files in the specified path if it is a directory, 

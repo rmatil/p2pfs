@@ -1,4 +1,4 @@
-package net.f4fs.filesystem;
+package net.f4fs.filesystem.partials;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -66,7 +66,7 @@ public class MemoryDirectory
     }
 
     @Override
-    protected AMemoryPath find(String path) {
+    public AMemoryPath find(String path) {
         if (super.find(path) != null) {
             return super.find(path);
         }
@@ -94,7 +94,7 @@ public class MemoryDirectory
     }
 
     @Override
-    protected void getattr(final StatWrapper stat) {
+    public void getattr(final StatWrapper stat) {
         stat.setMode(NodeType.DIRECTORY);
     }
 
