@@ -49,14 +49,14 @@ public class DhtOperationsCommand {
                         continue;
                     }
                     
-                    peer.put(new Number160().createHash(inputArray[1]), new Data(inputArray[2]));
+                    peer.putData(new Number160().createHash(inputArray[1]), new Data(inputArray[2]));
                 } else if (inputArray[0].equals("get")) {
                     if (inputArray.length < 2) {
                         System.out.println("usage: get:<key>");
                         continue;
                     }
 
-                    System.out.println("> " + peer.get(new Number160().createHash(inputArray[1])));
+                    System.out.println("> " + peer.getData(new Number160().createHash(inputArray[1])));
                 } else if (inputArray[0].equals(QUIT)) {
                     System.out.println("> terminating input console...");
                     System.out.println();

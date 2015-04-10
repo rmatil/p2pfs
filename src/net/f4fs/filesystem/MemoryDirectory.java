@@ -41,9 +41,9 @@ public class MemoryDirectory
             // update the value of getPath of p
             p.setParent(this);
             // try to store the new memory segment in DHT
-            FuturePut futurePut = super.getPeer().put(Number160.createHash(getPath()), new Data(""));
+            FuturePut futurePut = super.getPeer().putData(Number160.createHash(getPath()), new Data(""));
             futurePut.awaitUninterruptibly();
-            futurePut = super.getPeer().putContentKey(Number160.createHash(getPath()), new Data(getPath()));
+            futurePut = super.getPeer().putPath(Number160.createHash(getPath()), new Data(getPath()));
             futurePut.awaitUninterruptibly();
 
             contents.add(p);

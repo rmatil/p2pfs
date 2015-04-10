@@ -64,15 +64,15 @@ public class MemoryFile
             // only update value on the content key because file was already 
             // created in parent constructor
             String stringContent = new String(contents.array(), StandardCharsets.UTF_8);
-            FuturePut futurePut = super.getPeer().put(Number160.createHash(getPath()), new Data(stringContent));
+            FuturePut futurePut = super.getPeer().putData(Number160.createHash(getPath()), new Data(stringContent));
             futurePut.awaitUninterruptibly();
             
         } catch (final IOException e) {
             logger.warning("Could not create file " + name + ". Message: " + e.getMessage());
             // remove file (also the content key in the location keys)
-            FutureRemove futureRemove = super.getPeer().remove(Number160.createHash(getPath()));
+            FutureRemove futureRemove = super.getPeer().removeData(Number160.createHash(getPath()));
             futureRemove.awaitUninterruptibly();
-            futureRemove = super.getPeer().removeContentKey(Number160.createHash(getPath()));
+            futureRemove = super.getPeer().removePath(Number160.createHash(getPath()));
             futureRemove.awaitUninterruptibly();
         }
     }
@@ -96,7 +96,7 @@ public class MemoryFile
         final byte[] bytesRead = new byte[bytesToRead];
         synchronized (this) {
             try {
-                FutureGet futureGet = super.getPeer().get(Number160.createHash(getPath()));
+                FutureGet futureGet = super.getPeer().getData(Number160.createHash(getPath()));
                 futureGet.awaitUninterruptibly();
                 String stringContent = (String) futureGet.data().object();
                 
@@ -139,7 +139,7 @@ public class MemoryFile
             String stringContent = new String(bytesRead, StandardCharsets.UTF_8);
             try {
                 // try to update the shortened value
-                FuturePut futurePut = super.getPeer().put(Number160.createHash(getPath()), new Data(stringContent));
+                FuturePut futurePut = super.getPeer().putData(Number160.createHash(getPath()), new Data(stringContent));
                 futurePut.awaitUninterruptibly();
 
                 // only if DHT update succeeds update the value on disk
@@ -177,7 +177,7 @@ public class MemoryFile
             String stringContent = new String(bytesToWrite, StandardCharsets.UTF_8);
             try {
                 // try to update the value in the DHT
-                FuturePut futurePut = super.getPeer().put(Number160.createHash(getPath()), new Data(stringContent));
+                FuturePut futurePut = super.getPeer().putData(Number160.createHash(getPath()), new Data(stringContent));
                 futurePut.awaitUninterruptibly();
 
                 // only if DHT update succeeds udpate the value on disk

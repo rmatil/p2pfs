@@ -45,7 +45,7 @@ public class FSFileSyncer
     public void run() {
         while (true) {
             try {
-                keys = _peer.getAllContentKeys();
+                keys = _peer.getAllPaths();
 
                 // TODO: what about removal?
                 for (String key : keys) {
