@@ -61,15 +61,16 @@ public class MemoryFile
             final byte[] contentBytes = text.getBytes("UTF-8");
             contents = ByteBuffer.wrap(contentBytes);
 
-            // only update value on the content key because file was already 
+            // only update value on the content key because file was already
             // created in parent constructor
             String stringContent = new String(contents.array(), StandardCharsets.UTF_8);
             FuturePut futurePut = super.getPeer().putData(Number160.createHash(getPath()), new Data(stringContent));
             futurePut.await();
-            
+            logger.info("Created File " + name);
+
         } catch (final IOException | InterruptedException e) {
             logger.warning("Could not create file " + name + ". Message: " + e.getMessage());
-            
+
             try {
                 // remove file (also the content key in the location keys)
                 FutureRemove futureRemove = super.getPeer().removeData(Number160.createHash(getPath()));
@@ -104,7 +105,7 @@ public class MemoryFile
                 FutureGet futureGet = super.getPeer().getData(Number160.createHash(getPath()));
                 futureGet.await();
                 String stringContent = (String) futureGet.data().object();
-                
+
                 // replace current content with the content stored in the DHT
                 ByteBuffer byteBuffer = ByteBuffer.allocate(stringContent.getBytes().length);
                 byteBuffer.put(stringContent.getBytes(StandardCharsets.UTF_8));
@@ -197,5 +198,4 @@ public class MemoryFile
 
         return (int) bufSize;
     }
-
 }

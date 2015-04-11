@@ -10,6 +10,7 @@ import net.fusejna.DirectoryFiller;
 import net.fusejna.StructStat.StatWrapper;
 import net.fusejna.types.TypeMode.NodeType;
 import net.tomp2p.dht.FuturePut;
+import net.tomp2p.dht.FutureRemove;
 import net.tomp2p.peers.Number160;
 import net.tomp2p.storage.Data;
 
@@ -58,11 +59,17 @@ public class MemoryDirectory
     public synchronized void deleteChild(final AMemoryPath child) {
         boolean ret = contents.remove(child);
 
-//        if (ret) {
-//            // file was contained in contents
-//            super.getPeer().remove(new Number160(HexFactory.stringToHex(getPath())));
-//            logger.info("Removed MemoryPath " + child.getPath() + " from " + super.getPath());
-//        }
+        if (ret) {
+            // file was contained in contents
+            try {
+                FutureRemove futureRemove = super.getPeer().removeData(Number160.createHash(getPath()));
+                futureRemove.await();
+                futureRemove = super.getPeer().removePath(Number160.createHash(getPath()));
+                futureRemove.await();
+            } catch (InterruptedException e) {
+                logger.warning("Could not delete child memory path " + child.getName() + ". Message: " + e.getMessage());
+            }
+        }
     }
 
     @Override
@@ -115,5 +122,4 @@ public class MemoryDirectory
             filler.add(p.getName());
         }
     }
-
 }

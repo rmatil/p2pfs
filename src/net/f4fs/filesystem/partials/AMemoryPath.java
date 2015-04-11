@@ -43,7 +43,7 @@ public abstract class AMemoryPath {
             futureGet.await();
             
             if (null != futureGet.data()) {
-                logger.info("MemoryPath " + name + " already existed on path " + getPath());
+                logger.warning("MemoryPath " + name + " already existed on path " + getPath() + ". Inconsistent state can now be created");
                 return;
             }
             
@@ -52,7 +52,6 @@ public abstract class AMemoryPath {
             futurePut = peer.putPath(Number160.createHash(getPath()), new Data(getPath()));
             futurePut.await();
 
-            logger.info("Created new MemoryPath " + name + " successfully on path " + getPath());
         } catch (IOException | InterruptedException | ClassNotFoundException e) {
             logger.warning("Could not create MemoryPath " + name + ". Message: " + e.getMessage());
         }
@@ -62,14 +61,6 @@ public abstract class AMemoryPath {
         if (parent != null) {
             parent.deleteChild(this);
             parent = null;
-            try {
-                FutureRemove futureRemove = peer.removeData(Number160.createHash(getPath()));
-                futureRemove.await();
-                futureRemove = peer.removePath(Number160.createHash(getPath()));
-                futureRemove.await();
-            } catch (InterruptedException e) {
-                logger.warning("Could not delete MemoryPath " + name + ". Message: " + e.getMessage());
-            }
         }
     }
 
@@ -84,11 +75,13 @@ public abstract class AMemoryPath {
     public abstract void getattr(StatWrapper stat);
 
     /**
-     * Renames the memory path to the given name
+     * Renames the memory path to the given name.
+     * Includes removal of the old path on the DHT and storing it on the new one.
+     * Transfers content to it.
      * 
      * @param newName The new name
      */
-    public void rename(String newName) {
+    public synchronized void rename(String newName) {
         while (newName.startsWith("/")) {
             newName = newName.substring(1);
         }
@@ -103,6 +96,7 @@ public abstract class AMemoryPath {
                 // memoryPath is a directory and has no content
                 content = new String("");
             } else {
+                // memoryPath is a file
                 content = futureGet.data().object();
             }
 
@@ -119,6 +113,7 @@ public abstract class AMemoryPath {
             futurePut.await();
             futurePut = peer.putPath(Number160.createHash(getPath()), new Data(getPath()));
             futurePut.await();
+            logger.info("Renamed " + oldName + " to " + newName);
         } catch (InterruptedException | ClassNotFoundException | IOException e) {
             logger.warning("Could not rename to " + newName + ". Message: " + e.getMessage());
             // reset in case renaming didn't work as expected

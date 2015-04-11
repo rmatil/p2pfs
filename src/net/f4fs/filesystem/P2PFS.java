@@ -295,9 +295,7 @@ public class P2PFS
         if (!(newParent instanceof MemoryDirectory)) {
             return -ErrorCodes.ENOTDIR();
         }
-        p.delete();
         p.rename(newName.substring(newName.lastIndexOf("/")));
-        ((MemoryDirectory) newParent).add(p);
         return 0;
     }
 
