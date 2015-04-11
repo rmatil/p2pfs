@@ -199,7 +199,7 @@ public class FSPeer {
         List<String> keys = new ArrayList<>();
 
         FutureGet futureGet = peer.get(Number160.createHash(Config.DEFAULT.getMasterLocationPathsKey())).all().start();
-        futureGet.addListener(new GetListener(peer.peerAddress().inetAddress().toString(), "Get all keys"));
+        futureGet.addListener(new GetListener(peer.peerAddress().inetAddress().toString(), "Get all paths"));
         futureGet.await();
         
         Map<Number640, Data> map = futureGet.dataMap();
@@ -223,7 +223,7 @@ public class FSPeer {
      */
     public FuturePut putData(Number160 pKey, Data pValue) {
         FuturePut futurePut = peer.put(pKey).data(pValue).start();
-        futurePut.addListener(new PutListener(peer.peerAddress().inetAddress().toString(), "Get data"));
+        futurePut.addListener(new PutListener(peer.peerAddress().inetAddress().toString(), "Put data"));
         
         return futurePut;
     }
@@ -238,7 +238,7 @@ public class FSPeer {
     */
     public FuturePut putPath(Number160 pContentKey, Data pValue) {
         FuturePut futurePut = peer.put(Number160.createHash(Config.DEFAULT.getMasterLocationPathsKey())).data(pContentKey, pValue).start();
-        futurePut.addListener(new PutListener(peer.peerAddress().inetAddress().toString(), "Put key"));
+        futurePut.addListener(new PutListener(peer.peerAddress().inetAddress().toString(), "Put path"));
         
         return futurePut;
     }
@@ -263,7 +263,7 @@ public class FSPeer {
      */
     public FutureRemove removePath(Number160 pContentKey) {
         FutureRemove futureRemove = peer.remove(Number160.createHash(Config.DEFAULT.getMasterLocationPathsKey())).contentKey(pContentKey).start();
-        futureRemove.addListener(new RemoveListener(peer.peerAddress().inetAddress().toString(), "Remove key"));
+        futureRemove.addListener(new RemoveListener(peer.peerAddress().inetAddress().toString(), "Remove path"));
         
         return futureRemove;
     }
