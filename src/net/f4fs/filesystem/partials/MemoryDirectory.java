@@ -1,6 +1,5 @@
 package net.f4fs.filesystem.partials;
 
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.logging.Logger;
@@ -9,10 +8,8 @@ import net.f4fs.fspeer.FSPeer;
 import net.fusejna.DirectoryFiller;
 import net.fusejna.StructStat.StatWrapper;
 import net.fusejna.types.TypeMode.NodeType;
-import net.tomp2p.dht.FuturePut;
 import net.tomp2p.dht.FutureRemove;
 import net.tomp2p.peers.Number160;
-import net.tomp2p.storage.Data;
 
 
 public class MemoryDirectory
@@ -97,7 +94,7 @@ public class MemoryDirectory
             filler.add(p.getName());
         }
     }
-    
+
     public List<AMemoryPath> getContents() {
         return contents;
     }

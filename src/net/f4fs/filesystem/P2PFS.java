@@ -68,7 +68,7 @@ public class P2PFS
         fileSyncer = new FSFileSyncer(this, peer);
         fileSyncerThread = new Thread(fileSyncer);
         fileSyncerThread.start(); // use start() instead of run()
-        
+
         super.log(false);
     }
 
@@ -94,11 +94,11 @@ public class P2PFS
         if (mountPoint.exists()) {
             FSFileUtils.deleteFileOrFolder(mountPoint);
         }
-        
+
         if (null != fileSyncerThread) {
             // indicate stop flag on runnable
             fileSyncer.terminate();
-            
+
             try {
                 // wait until run() of runnable is terminated
                 fileSyncerThread.join();
@@ -125,8 +125,7 @@ public class P2PFS
      * device, with the 'blkdev' option passed.
      */
     @Override
-    public int bmap(final String path, final FileInfoWrapper info)
-    {
+    public int bmap(final String path, final FileInfoWrapper info) {
         return 0;
     }
 
@@ -178,10 +177,16 @@ public class P2PFS
         }
         final AMemoryPath parent = getParentPath(path);
         if (parent instanceof MemoryDirectory) {
-            ((MemoryDirectory) parent).mkfile(getLastComponent(path));
+
+            String fileName = getLastComponent(path);
+            // check if it is a file based on the filename
+            if (isFile(fileName)) {
+                ((MemoryDirectory) parent).mkfile(getLastComponent(path));
+            } else {
+                ((MemoryDirectory) parent).mkdir(getLastComponent(path));
+            }
 
             logger.info("Created file on path: " + path);
-
             return 0;
         }
 
@@ -395,7 +400,7 @@ public class P2PFS
 
         return this;
     }
-    
+
     /**
      * Returns a set of paths which are saved on the local FS
      * 
@@ -403,12 +408,29 @@ public class P2PFS
      */
     public Set<String> getAllPaths() {
         Set<String> allPaths = new HashSet<>();
-        
+
         List<AMemoryPath> contents = rootDirectory.getContents();
         for (AMemoryPath path : contents) {
             allPaths.add(path.getName());
         }
-        
+
         return allPaths;
+    }
+
+    /**
+     * Checks if the provided file is a file or a directory
+     * based on the existence of a dot in the last component of the path.
+     * 
+     * @param path The path to check
+     * @return True if it is a file, false otherwise
+     */
+    public boolean isFile(String path) {
+        String lastCompoment = getLastComponent(path);
+
+        if (!lastCompoment.contains(".")) {
+            return false;
+        }
+
+        return true;
     }
 }
