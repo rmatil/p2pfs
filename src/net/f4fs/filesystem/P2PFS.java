@@ -250,19 +250,15 @@ public class P2PFS
         return -ErrorCodes.ENOENT();
     }
 
+    /**
+     * Checks whether the user has the correct access rights
+     * to open the file on the provided path
+     * 
+     * @param path The path of the file to check
+     * @param info The FileInfoWrapper which has to be updated
+     */
     @Override
     public int open(final String path, final FileInfoWrapper info) {
-        final AMemoryPath parent = getParentPath(path);
-        if (parent instanceof MemoryDirectory) {
-            AMemoryPath file = parent.find(path);
-            if (file instanceof MemoryFile) {
-                file.open(path, info);
-                return 0;
-            }
-            
-            return -ErrorCodes.EISDIR();
-        }
-
         return 0;
     }
 

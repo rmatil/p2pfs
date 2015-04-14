@@ -4,8 +4,6 @@ import java.io.IOException;
 import java.util.logging.Logger;
 
 import net.f4fs.fspeer.FSPeer;
-import net.fusejna.ErrorCodes;
-import net.fusejna.StructFuseFileInfo.FileInfoWrapper;
 import net.fusejna.StructStat.StatWrapper;
 import net.tomp2p.dht.FutureGet;
 import net.tomp2p.dht.FuturePut;
@@ -121,10 +119,6 @@ public abstract class AMemoryPath {
             // reset in case renaming didn't work as expected
             name = oldName;
         }
-    }
-    
-    public MemoryFile open(final String path, final FileInfoWrapper info) { 
-        return null;
     }
 
     /**
