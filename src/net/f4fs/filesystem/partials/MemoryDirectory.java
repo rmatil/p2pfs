@@ -31,31 +31,6 @@ public class MemoryDirectory
         logger.info("Created Directory '" + name + "' in parent " + parent.getName());
     }
 
-    public synchronized void add(final AMemoryPath p) {
-        // TODO: hope, that removal from old dir is done from memory path when it is moved
-        // TODO: what about the content if p is a file?
-
-        // remove dir from old place
-//        super.getPeer().remove(new Number160(HexFactory.stringToHex(getPath())));
-
-        try {
-            // update the value of getPath of p
-            p.setParent(this);
-            // try to store the new memory segment in DHT
-            FuturePut futurePut = super.getPeer().putData(Number160.createHash(getPath()), new Data(""));
-            futurePut.await();
-            futurePut = super.getPeer().putPath(Number160.createHash(getPath()), new Data(getPath()));
-            futurePut.await();
-
-            contents.add(p);
-            logger.info("Added MemoryPath " + p.getPath() + " to " + getPath());
-        } catch (IOException | InterruptedException e) {
-            logger.warning("Could not add MemoryPath " + p.getPath() + " to " + getPath() + ". Message: " + e.getMessage());
-            // remove parent again
-            p.setParent(null);
-        }
-    }
-
     public synchronized void deleteChild(final AMemoryPath child) {
         boolean ret = contents.remove(child);
 
