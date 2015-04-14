@@ -43,7 +43,7 @@ public abstract class AMemoryPath {
             futureGet.await();
             
             if (null != futureGet.data()) {
-                logger.warning("MemoryPath " + name + " already existed on path " + getPath() + ". Inconsistent state can now be created");
+                logger.warning("MemoryPath " + name + " already existed on path " + getPath() + ". Inconsistent state may have occurred");
                 return;
             }
             
@@ -91,22 +91,23 @@ public abstract class AMemoryPath {
             FutureGet futureGet = peer.getData(Number160.createHash(getPath()));
             futureGet.await();
 
-            Object content = new Object();
+            String content = new String();
             if (null == futureGet.data()) {
                 // memoryPath is a directory and has no content
                 content = new String("");
             } else {
                 // memoryPath is a file
-                content = futureGet.data().object();
+                content = (String) futureGet.data().object(); // content stores some bytes as string
             }
 
             // remove content key and the corresponding value from the dht
-            FutureRemove futureRemove = peer.removeData(Number160.createHash(getPath()));
+            // Note: remove path first to prevent inconsistent state
+            FutureRemove futureRemove = peer.removePath(Number160.createHash(getPath()));
             futureRemove.await();
-            futureRemove = peer.removePath(Number160.createHash(getPath()));
+            futureRemove = peer.removeData(Number160.createHash(getPath()));
             futureRemove.await();
             
-            name = newName;
+            this.name = newName;
 
             // update content key and store the files content on the updated key again
             FuturePut futurePut = peer.putData(Number160.createHash(getPath()), new Data(content));
