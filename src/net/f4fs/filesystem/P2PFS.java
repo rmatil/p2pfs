@@ -249,6 +249,16 @@ public class P2PFS
 
     @Override
     public int open(final String path, final FileInfoWrapper info) {
+        final AMemoryPath parent = getParentPath(path);
+        if (parent instanceof MemoryDirectory) {
+            AMemoryPath file = parent.find(path);
+            if (file instanceof MemoryFile) {
+                return 0;
+            }
+            
+            return -ErrorCodes.EISDIR();
+        }
+
         return 0;
     }
 

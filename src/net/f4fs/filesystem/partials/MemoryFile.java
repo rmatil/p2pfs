@@ -7,6 +7,7 @@ import java.util.logging.Logger;
 
 import net.f4fs.fspeer.FSPeer;
 import net.fusejna.ErrorCodes;
+import net.fusejna.StructFuseFileInfo.FileInfoWrapper;
 import net.fusejna.StructStat.StatWrapper;
 import net.fusejna.types.TypeMode.NodeType;
 import net.tomp2p.dht.FutureGet;
@@ -197,5 +198,28 @@ public class MemoryFile
         }
 
         return (int) bufSize;
+    }
+    
+    @Override
+    public MemoryFile open(final String path, final FileInfoWrapper info) {
+        try {
+            FutureGet futureGet = super.getPeer().getData(Number160.createHash(path));
+            futureGet.await();
+            
+            String content = new String();
+            if (null == futureGet.data()) {
+                logger.warning("Could not open file " + path + " from DHT. Data was null");
+                return null;
+            } else {
+                content = (String) futureGet.data().object();
+            }
+
+            contents = ByteBuffer.wrap(content.getBytes(StandardCharsets.UTF_8));
+        } catch (ClassNotFoundException | IOException | InterruptedException e) {
+           logger.warning("Could not open file from DHT");
+           return null;
+        }
+
+        return this;
     }
 }
