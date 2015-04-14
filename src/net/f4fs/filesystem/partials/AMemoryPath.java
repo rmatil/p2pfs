@@ -41,26 +41,42 @@ public abstract class AMemoryPath {
             // (E.g. could be the case, when invoked from FSFileSyncer)
             FutureGet futureGet = peer.getData(Number160.createHash(getPath()));
             futureGet.await();
-            
+
             if (null != futureGet.data()) {
-                logger.warning("MemoryPath " + name + " already existed on path " + getPath() + ". Inconsistent state may have occurred");
+                logger.info("MemoryPath with name '" + name + "' already existed in the DHT on path '" + getPath() + "'. Creating it locallay...");
                 return;
             }
-            
+
             FuturePut futurePut = peer.putData(Number160.createHash(getPath()), new Data(""));
             futurePut.await();
             futurePut = peer.putPath(Number160.createHash(getPath()), new Data(getPath()));
             futurePut.await();
 
         } catch (IOException | InterruptedException | ClassNotFoundException e) {
-            logger.warning("Could not create MemoryPath " + name + ". Message: " + e.getMessage());
+            logger.warning("Could not create MemoryPath with name '" + name + "' on path '" + getPath() + "'. Message: " + e.getMessage());
         }
     }
 
     public synchronized void delete() {
         if (parent != null) {
-            parent.deleteChild(this);
-            parent = null;
+            try {
+                String path = getPath();
+                
+                FutureRemove futureRemove = peer.removePath(Number160.createHash(path));
+                futureRemove.await();
+                futureRemove = peer.removeData(Number160.createHash(path));
+                futureRemove.await();
+
+                // be aware that this must be after getPath() 
+                // otherwise the parent dir will 
+                // be empty and another file gets deleted
+                parent.deleteChild(this);
+                parent = null;
+
+                logger.info("Removed file on path " + path + " from the DHT");
+            } catch (InterruptedException e) {
+                logger.warning("Could not remove file on path " + getPath() + ". Message: " + e.getMessage());
+            }
         }
     }
 
@@ -106,7 +122,7 @@ public abstract class AMemoryPath {
             futureRemove.await();
             futureRemove = peer.removeData(Number160.createHash(getPath()));
             futureRemove.await();
-            
+
             this.name = newName;
 
             // update content key and store the files content on the updated key again
@@ -114,9 +130,9 @@ public abstract class AMemoryPath {
             futurePut.await();
             futurePut = peer.putPath(Number160.createHash(getPath()), new Data(getPath()));
             futurePut.await();
-            logger.info("Renamed " + oldName + " to " + newName);
+            logger.info("Renamed file with name '" + oldName + "' to '" + newName + "' on path '" + getPath() + "'.");
         } catch (InterruptedException | ClassNotFoundException | IOException e) {
-            logger.warning("Could not rename to " + newName + ". Message: " + e.getMessage());
+            logger.warning("Could not rename to '" + newName + "' on path '" + getPath() + "'. Message: " + e.getMessage());
             // reset in case renaming didn't work as expected
             name = oldName;
         }

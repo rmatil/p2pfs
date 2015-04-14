@@ -65,16 +65,15 @@ public class FSFileSyncer
 
                 // remove deleted files / dirs / symlinks / ...
                 localPaths.removeAll(keys); // list of all localPaths which are removed in the DHT
-
                 for (String pathToDelete : localPaths) {
                     _filesystem.unlink(pathToDelete);
                 }
 
                 // create local non-existing files
-                localPaths = _filesystem.getAllPaths();
-                keys.removeAll(localPaths); // remove all which exist on both
                 for (String key : keys) {
-                    _filesystem.create(key, null, null);
+                    if (_filesystem.getPath(key) == null) {
+                        _filesystem.create(key, null, null);
+                    }
                 }
 
                 Thread.sleep(1000);

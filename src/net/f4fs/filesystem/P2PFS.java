@@ -171,7 +171,7 @@ public class P2PFS
     @Override
     public int create(final String path, final ModeWrapper mode, final FileInfoWrapper info) {
         if (getPath(path) != null) {
-            logger.info("File could not be created. A file with the same name already exists (Error code " + -ErrorCodes.EEXIST() + ").");
+            logger.info("File on path " + path + " could not be created. A file with the same name already exists (Error code " + -ErrorCodes.EEXIST() + ").");
             return -ErrorCodes.EEXIST();
         }
         final AMemoryPath parent = getParentPath(path);
@@ -189,7 +189,7 @@ public class P2PFS
             return 0;
         }
 
-        logger.warning("File could not be created. No such file or directory (Error code " + -ErrorCodes.ENOENT() + ").");
+        logger.warning("File on path " + path + " could not be created. No such file or directory (Error code " + -ErrorCodes.ENOENT() + ").");
         return -ErrorCodes.ENOENT();
     }
 
@@ -407,12 +407,11 @@ public class P2PFS
      */
     public Set<String> getAllPaths() {
         Set<String> allPaths = new HashSet<>();
-        allPaths.add("/"); // add root directory
-        
+        allPaths.add("/");
         allPaths.addAll(getDirSubPaths(rootDirectory));
         return allPaths;
     }
-    
+
     /**
      * Returns all child paths of the given directory
      * 
@@ -421,7 +420,7 @@ public class P2PFS
      */
     protected Set<String> getDirSubPaths(MemoryDirectory dir) {
         Set<String> allPaths = new HashSet<>();
-        
+
         for (AMemoryPath path : dir.getContents()) {
             if (path instanceof MemoryDirectory) {
                 allPaths.addAll(getDirSubPaths((MemoryDirectory) path));
@@ -429,7 +428,7 @@ public class P2PFS
                 allPaths.add(path.getPath());
             }
         }
-        
+
         return allPaths;
     }
 
@@ -449,5 +448,5 @@ public class P2PFS
 
         return true;
     }
-    
+
 }

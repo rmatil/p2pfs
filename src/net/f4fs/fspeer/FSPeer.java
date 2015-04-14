@@ -201,12 +201,12 @@ public class FSPeer {
         FutureGet futureGet = peer.get(Number160.createHash(Config.DEFAULT.getMasterLocationPathsKey())).all().start();
         futureGet.addListener(new GetListener(peer.peerAddress().inetAddress().toString(), "Get all paths"));
         futureGet.await();
-        
+
         Map<Number640, Data> map = futureGet.dataMap();
         Collection<Data> collection = map.values();
-        
+
         Iterator<Data> iter = collection.iterator();
-        while(iter.hasNext()){
+        while (iter.hasNext()) {
             keys.add((String) iter.next().object());
         }
 
@@ -224,22 +224,23 @@ public class FSPeer {
     public FuturePut putData(Number160 pKey, Data pValue) {
         FuturePut futurePut = peer.put(pKey).data(pValue).start();
         futurePut.addListener(new PutListener(peer.peerAddress().inetAddress().toString(), "Put data"));
-        
+
         return futurePut;
     }
-    
-   /** Stores the given data with the given content key on the default location key
-    * 
-    * @param pLocationKey The key on which machine to store
-    * @param pContentKey The key to store the data
-    * @param pValue The data to store
-    * 
-    * @throws IOException
-    */
+
+    /**
+     * Stores the given data with the given content key on the default location key
+     * 
+     * @param pLocationKey The key on which machine to store
+     * @param pContentKey The key to store the data
+     * @param pValue The data to store
+     * 
+     * @throws IOException
+     */
     public FuturePut putPath(Number160 pContentKey, Data pValue) {
         FuturePut futurePut = peer.put(Number160.createHash(Config.DEFAULT.getMasterLocationPathsKey())).data(pContentKey, pValue).start();
         futurePut.addListener(new PutListener(peer.peerAddress().inetAddress().toString(), "Put path"));
-        
+
         return futurePut;
     }
 
@@ -251,12 +252,12 @@ public class FSPeer {
     public FutureRemove removeData(Number160 pKey) {
         FutureRemove futureRemove = peer.remove(pKey).start();
         futureRemove.addListener(new RemoveListener(peer.peerAddress().inetAddress().toString(), "Remove data"));
-        
+
         return futureRemove;
     }
-    
+
     /**
-     * Removes the file key from the file keys which are stored with the default location key 
+     * Removes the file key from the file keys which are stored with the default location key
      * 
      * @param pLocationKey
      * @param pContentKey
@@ -264,7 +265,7 @@ public class FSPeer {
     public FutureRemove removePath(Number160 pContentKey) {
         FutureRemove futureRemove = peer.remove(Number160.createHash(Config.DEFAULT.getMasterLocationPathsKey())).contentKey(pContentKey).start();
         futureRemove.addListener(new RemoveListener(peer.peerAddress().inetAddress().toString(), "Remove path"));
-        
+
         return futureRemove;
     }
 }

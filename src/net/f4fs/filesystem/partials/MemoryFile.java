@@ -31,7 +31,7 @@ public class MemoryFile
      */
     public MemoryFile(final String name, FSPeer peer) {
         super(name, peer);
-        logger.info("Created File '" + name + "' without parent");
+        logger.info("Created File with name '" + name + "' without parent");
     }
 
     /**
@@ -44,7 +44,7 @@ public class MemoryFile
      */
     public MemoryFile(final String name, final MemoryDirectory parent, final FSPeer peer) {
         super(name, parent, peer);
-        logger.info("Created File '" + name + "' in parent directory " + parent.getName());
+        logger.info("Created File with name '" + name + "' on path '" + getPath() + "'.");
     }
 
     /**
@@ -66,10 +66,10 @@ public class MemoryFile
             String stringContent = new String(contents.array(), StandardCharsets.UTF_8);
             FuturePut futurePut = super.getPeer().putData(Number160.createHash(getPath()), new Data(stringContent));
             futurePut.await();
-            logger.info("Created File " + name);
+            logger.info("Created File with name '" + name + "' on path '" + getPath() + "'.");
 
         } catch (final IOException | InterruptedException e) {
-            logger.warning("Could not create file " + name + ". Message: " + e.getMessage());
+            logger.warning("Could not create file with name '" + name + "' on path '" + getPath() + "'. Message: " + e.getMessage());
 
             try {
                 // remove file (also the content key in the location keys)
@@ -78,7 +78,7 @@ public class MemoryFile
                 futureRemove = super.getPeer().removePath(Number160.createHash(getPath()));
                 futureRemove.await();
             } catch (InterruptedException e1) {
-                logger.warning("Could not create file " + name + ". Message: " + e.getMessage());
+                logger.warning("Could not create file with name '" + name + "' on path '" + getPath() + "'. Message: " + e.getMessage());
             }
         }
     }
@@ -106,7 +106,7 @@ public class MemoryFile
                 futureGet.await();
                 
                 if (null == futureGet.data()) {
-                    logger.warning("Could not read file on path " + getPath() + " from the DHT. Data was null");
+                    logger.warning("Could not read file on path '" + getPath() + "' from the DHT. Data was null");
                     return -ErrorCodes.EIO();
                 }
 
@@ -116,7 +116,7 @@ public class MemoryFile
                 contents = ByteBuffer.wrap(stringContent.getBytes(StandardCharsets.UTF_8));
 
             } catch (ClassNotFoundException | IOException | InterruptedException e) {
-                logger.warning("Could not read contents of path segment " + getPath() + ". Message: " + e.getMessage());
+                logger.warning("Could not read contents of file on path '" + getPath() + "'. Message: " + e.getMessage());
                 return -ErrorCodes.EIO();
             }
 
@@ -156,7 +156,7 @@ public class MemoryFile
                 newContents.put(bytesRead);
                 contents = newContents;
             } catch (IOException | InterruptedException e) {
-                logger.warning("Could not truncate the contents of the file " + getPath() + ". Message: " + e.getMessage());
+                logger.warning("Could not truncate the contents of the file on path '" + getPath() + "'. Message: " + e.getMessage());
             }
         }
     }
@@ -195,7 +195,7 @@ public class MemoryFile
                 contents.put(bytesToWrite);
                 contents.position(0); // Rewind
             } catch (IOException | InterruptedException e) {
-                logger.warning("Could not write to file " + getPath() + ". Message; " + e.getMessage());
+                logger.warning("Could not write to file on path '" + getPath() + "'. Message; " + e.getMessage());
                 return -ErrorCodes.EIO();
             }
         }

@@ -8,8 +8,6 @@ import net.f4fs.fspeer.FSPeer;
 import net.fusejna.DirectoryFiller;
 import net.fusejna.StructStat.StatWrapper;
 import net.fusejna.types.TypeMode.NodeType;
-import net.tomp2p.dht.FutureRemove;
-import net.tomp2p.peers.Number160;
 
 
 public class MemoryDirectory
@@ -20,28 +18,16 @@ public class MemoryDirectory
 
     public MemoryDirectory(final String name, FSPeer peer) {
         super(name, peer);
-        logger.info("Created Directory '" + name + "' without parent");
+        logger.info("Created Directory '" + name + "' without parent on path '" + getPath() + "'.");
     }
 
     public MemoryDirectory(final String name, final MemoryDirectory parent, FSPeer peer) {
         super(name, parent, peer);
-        logger.info("Created Directory '" + name + "' in parent " + parent.getName());
+        logger.info("Created Directory '" + name + "' on path '" + getPath() + "'.");
     }
 
     public synchronized void deleteChild(final AMemoryPath child) {
-        boolean ret = contents.remove(child);
-
-        if (ret) {
-            // file was contained in contents
-            try {
-                FutureRemove futureRemove = super.getPeer().removeData(Number160.createHash(getPath()));
-                futureRemove.await();
-                futureRemove = super.getPeer().removePath(Number160.createHash(getPath()));
-                futureRemove.await();
-            } catch (InterruptedException e) {
-                logger.warning("Could not delete child memory path " + child.getName() + ". Message: " + e.getMessage());
-            }
-        }
+        contents.remove(child);
     }
 
     @Override
