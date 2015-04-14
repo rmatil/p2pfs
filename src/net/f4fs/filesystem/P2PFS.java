@@ -423,7 +423,14 @@ public class P2PFS
 
         for (AMemoryPath path : dir.getContents()) {
             if (path instanceof MemoryDirectory) {
-                allPaths.addAll(getDirSubPaths((MemoryDirectory) path));
+                Set<String> dirSubPaths = getDirSubPaths((MemoryDirectory) path);
+                if( dirSubPaths.size() == 0){
+                    // this directory is empty 
+                    allPaths.add(path.getPath());
+                } else {
+                    // directory ios not empty
+                    allPaths.addAll(getDirSubPaths((MemoryDirectory) path));
+                }
             } else {
                 allPaths.add(path.getPath());
             }
