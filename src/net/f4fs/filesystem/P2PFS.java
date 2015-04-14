@@ -4,7 +4,6 @@ import java.io.File;
 import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.util.HashSet;
-import java.util.List;
 import java.util.Set;
 import java.util.logging.Logger;
 
@@ -408,12 +407,29 @@ public class P2PFS
      */
     public Set<String> getAllPaths() {
         Set<String> allPaths = new HashSet<>();
-
-        List<AMemoryPath> contents = rootDirectory.getContents();
-        for (AMemoryPath path : contents) {
-            allPaths.add(path.getName());
+        allPaths.add("/"); // add root directory
+        
+        allPaths.addAll(getDirSubPaths(rootDirectory));
+        return allPaths;
+    }
+    
+    /**
+     * Returns all child paths of the given directory
+     * 
+     * @param dir The directory of which to get its children paths
+     * @return A set containing all child paths
+     */
+    protected Set<String> getDirSubPaths(MemoryDirectory dir) {
+        Set<String> allPaths = new HashSet<>();
+        
+        for (AMemoryPath path : dir.getContents()) {
+            if (path instanceof MemoryDirectory) {
+                allPaths.addAll(getDirSubPaths((MemoryDirectory) path));
+            } else {
+                allPaths.add(path.getPath());
+            }
         }
-
+        
         return allPaths;
     }
 
@@ -433,4 +449,5 @@ public class P2PFS
 
         return true;
     }
+    
 }
