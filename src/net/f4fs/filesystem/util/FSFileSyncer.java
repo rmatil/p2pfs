@@ -70,11 +70,11 @@ public class FSFileSyncer
                     _filesystem.unlink(pathToDelete);
                 }
 
-                // create local non-existing files 
+                // create local non-existing files
+                localPaths = _filesystem.getAllPaths();
+                keys.removeAll(localPaths); // remove all which exist on both
                 for (String key : keys) {
-                    if (_filesystem.getPath(key) == null) {
-                        _filesystem.create(key, null, null);
-                    }
+                    _filesystem.create(key, null, null);
                 }
 
                 Thread.sleep(1000);
