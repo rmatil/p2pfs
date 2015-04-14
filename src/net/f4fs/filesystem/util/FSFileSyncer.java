@@ -1,7 +1,7 @@
 package net.f4fs.filesystem.util;
 
-import java.util.ArrayList;
-import java.util.List;
+import java.util.HashSet;
+import java.util.Set;
 
 import net.f4fs.filesystem.P2PFS;
 import net.f4fs.fspeer.FSPeer;
@@ -18,7 +18,7 @@ public class FSFileSyncer
     /**
      * List representing all fetched keys
      */
-    private List<String> keys = new ArrayList<>();
+    private Set<String>  keys = new HashSet<>();
 
     /**
      * Filesystem to update its paths
@@ -60,12 +60,18 @@ public class FSFileSyncer
     public void run() {
         while (_isRunning) {
             try {
+                Set<String> localPaths = _filesystem.getAllPaths();
                 keys = _peer.getAllPaths();
 
-                // TODO: what about removal?
+                // remove deleted files / dirs / symlinks / ...
+                localPaths.removeAll(keys); // list of all localPaths which are removed in the DHT
+                for (String pathToDelete : localPaths) {
+                    _filesystem.unlink(pathToDelete);
+                }
+
+                // create local non-existing files 
                 for (String key : keys) {
                     if (_filesystem.getPath(key) == null) {
-
                         _filesystem.create(key, null, null);
                     }
                 }

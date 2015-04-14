@@ -59,7 +59,7 @@ public class MemoryFile
         // stores an empty file in the DHT
         super(name, peer);
         try {
-            final byte[] contentBytes = text.getBytes("UTF-8");
+            final byte[] contentBytes = text.getBytes(StandardCharsets.UTF_8);
             contents = ByteBuffer.wrap(contentBytes);
 
             // only update value on the content key because file was already

@@ -3,6 +3,9 @@ package net.f4fs.filesystem;
 import java.io.File;
 import java.io.IOException;
 import java.nio.ByteBuffer;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
 import java.util.logging.Logger;
 
 import net.f4fs.config.FSStatConfig;
@@ -253,6 +256,7 @@ public class P2PFS
         if (parent instanceof MemoryDirectory) {
             AMemoryPath file = parent.find(path);
             if (file instanceof MemoryFile) {
+                file.open(path, info);
                 return 0;
             }
             
@@ -394,5 +398,21 @@ public class P2PFS
         this.mount(file);
 
         return this;
+    }
+    
+    /**
+     * Returns a set of paths which are saved on the local FS
+     * 
+     * @return All paths to locally existent files
+     */
+    public Set<String> getAllPaths() {
+        Set<String> allPaths = new HashSet<>();
+        
+        List<AMemoryPath> contents = rootDirectory.getContents();
+        for (AMemoryPath path : contents) {
+            allPaths.add(path.getName());
+        }
+        
+        return allPaths;
     }
 }

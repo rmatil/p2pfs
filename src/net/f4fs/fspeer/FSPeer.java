@@ -6,11 +6,11 @@ import java.io.InputStreamReader;
 import java.net.Inet4Address;
 import java.net.InetAddress;
 import java.net.URL;
-import java.util.ArrayList;
 import java.util.Collection;
+import java.util.HashSet;
 import java.util.Iterator;
-import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import net.f4fs.config.Config;
 import net.f4fs.util.RandomDevice;
@@ -194,9 +194,9 @@ public class FSPeer {
      * 
      * @throws Exception
      */
-    public List<String> getAllPaths()
+    public Set<String> getAllPaths()
             throws Exception {
-        List<String> keys = new ArrayList<>();
+        Set<String> keys = new HashSet<>();
 
         FutureGet futureGet = peer.get(Number160.createHash(Config.DEFAULT.getMasterLocationPathsKey())).all().start();
         futureGet.addListener(new GetListener(peer.peerAddress().inetAddress().toString(), "Get all paths"));

@@ -122,4 +122,8 @@ public class MemoryDirectory
             filler.add(p.getName());
         }
     }
+    
+    public List<AMemoryPath> getContents() {
+        return contents;
+    }
 }
