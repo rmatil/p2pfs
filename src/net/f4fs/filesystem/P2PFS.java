@@ -170,6 +170,7 @@ public class P2PFS
      */
     @Override
     public int create(final String path, final ModeWrapper mode, final FileInfoWrapper info) {
+        
         if (getPath(path) != null) {
             logger.info("File on path " + path + " could not be created. A file with the same name already exists (Error code " + -ErrorCodes.EEXIST() + ").");
             return -ErrorCodes.EEXIST();
@@ -263,12 +264,23 @@ public class P2PFS
      */
     @Override
     public int open(final String path, final FileInfoWrapper info) {
+        // ensures that file will be read even if the file is empty
+        AMemoryPath filePath = getPath(path);
+        if(filePath instanceof MemoryFile){
+            MemoryFile file = (MemoryFile) filePath;
+            
+           if (file.getContent().capacity() == 0) {
+               read(path, ByteBuffer.allocate((int) FSStatConfig.DEFAULT.getBsize()), FSStatConfig.DEFAULT.getBsize(), 0, null);               
+           }
+        } 
+        
         return 0;
     }
 
     @Override
     public int read(final String path, final ByteBuffer buffer, final long size, final long offset, final FileInfoWrapper info) {
         final AMemoryPath p = getPath(path);
+    
         if (p == null) {
             logger.warning("Failed to read file on " + path + ". No such file or directory (Error code " + -ErrorCodes.ENOENT() + ").");
             return -ErrorCodes.ENOENT();

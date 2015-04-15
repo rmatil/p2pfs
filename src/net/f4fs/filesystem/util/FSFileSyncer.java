@@ -5,6 +5,10 @@ import java.util.Set;
 
 import net.f4fs.filesystem.P2PFS;
 import net.f4fs.fspeer.FSPeer;
+import net.fusejna.StructFuseFileInfo;
+import net.fusejna.StructFuseFileInfo.FileInfoWrapper;
+import net.fusejna.types.TypeMode.ModeWrapper;
+import net.fusejna.types.TypeMode.NodeType;
 
 
 /**
@@ -72,11 +76,12 @@ public class FSFileSyncer
                 // create local non-existing files
                 for (String key : keys) {
                     if (_filesystem.getPath(key) == null) {
+                        
                         _filesystem.create(key, null, null);
                     }
                 }
 
-                Thread.sleep(1000);
+                Thread.sleep(10000);
             } catch (Exception pEx) {
                 pEx.printStackTrace();
                 _isRunning = false;

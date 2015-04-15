@@ -100,6 +100,7 @@ public class MemoryFile
     public int read(final ByteBuffer buffer, final long size, final long offset) {
         final int bytesToRead = (int) Math.min(contents.capacity() - offset, size);
         final byte[] bytesRead = new byte[bytesToRead];
+       
         synchronized (this) {
             try {
                 FutureGet futureGet = super.getPeer().getData(Number160.createHash(getPath()));
@@ -119,6 +120,7 @@ public class MemoryFile
                 logger.warning("Could not read contents of file on path '" + getPath() + "'. Message: " + e.getMessage());
                 return -ErrorCodes.EIO();
             }
+            
 
             contents.position((int) offset);
             contents.get(bytesRead, 0, bytesToRead);
@@ -201,5 +203,14 @@ public class MemoryFile
         }
 
         return (int) bufSize;
+    }
+    
+    /**
+     * Return the content of this MemoryFile
+     * 
+     * @return Contents ByteBuffer 
+     */
+    public ByteBuffer getContent(){
+        return contents;
     }
 }
