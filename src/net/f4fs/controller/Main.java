@@ -55,7 +55,8 @@ public class Main {
             if (!success) {
                 boostrapServerAccess.removeIpPortPair(myIp, Config.DEFAULT.getPort());
                 fsPeer.shutdown();
-                return;
+                System.out.println("[Shutdown]: Bootstrap failed");
+                System.exit(1);
             }
             
             // start file system with the connected peer

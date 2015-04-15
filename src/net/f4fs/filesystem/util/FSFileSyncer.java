@@ -5,10 +5,6 @@ import java.util.Set;
 
 import net.f4fs.filesystem.P2PFS;
 import net.f4fs.fspeer.FSPeer;
-import net.fusejna.StructFuseFileInfo;
-import net.fusejna.StructFuseFileInfo.FileInfoWrapper;
-import net.fusejna.types.TypeMode.ModeWrapper;
-import net.fusejna.types.TypeMode.NodeType;
 
 
 /**
