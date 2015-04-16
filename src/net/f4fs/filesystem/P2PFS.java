@@ -270,7 +270,7 @@ public class P2PFS
             MemoryFile file = (MemoryFile) filePath;
             
            if (file.getContent().capacity() == 0) {
-               read(path, ByteBuffer.allocate((int) FSStatConfig.DEFAULT.getBsize()), FSStatConfig.DEFAULT.getBsize(), 0, null);               
+               read(path, ByteBuffer.allocate((int) FSStatConfig.BIGGER.getBsize()), FSStatConfig.BIGGER.getBsize(), 0, null);               
            }
         } 
         
@@ -381,12 +381,12 @@ public class P2PFS
 
     @Override
     public int statfs(final String path, final StatvfsWrapper wrapper) {
-        wrapper.bsize(FSStatConfig.DEFAULT.getBsize()); // block size of 4000 bytes
-        wrapper.blocks(FSStatConfig.DEFAULT.getBlocks()); // TODO: manually update this, when a new peer joins
-        wrapper.bfree(FSStatConfig.DEFAULT.getBfree());
-        wrapper.bavail(FSStatConfig.DEFAULT.getBavail());
-        wrapper.files(FSStatConfig.DEFAULT.getFiles());
-        wrapper.ffree(FSStatConfig.DEFAULT.getFfree());
+        wrapper.bsize(FSStatConfig.BIGGER.getBsize()); // block size of 4000 bytes
+        wrapper.blocks(FSStatConfig.BIGGER.getBlocks()); // TODO: manually update this, when a new peer joins
+        wrapper.bfree(FSStatConfig.BIGGER.getBfree());
+        wrapper.bavail(FSStatConfig.BIGGER.getBavail());
+        wrapper.files(FSStatConfig.BIGGER.getFiles());
+        wrapper.ffree(FSStatConfig.BIGGER.getFfree());
         return 0;
     }
 

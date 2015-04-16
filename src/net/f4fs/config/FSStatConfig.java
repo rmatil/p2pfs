@@ -6,7 +6,8 @@ package net.f4fs.config;
  * @author Raphael
  */
 public enum FSStatConfig {
-    DEFAULT(4000L, 1000L, 200L, 180L, 5L, 29L);
+    DEFAULT(4000L, 1000L, 200L, 180L, 5L, 29L),
+    BIGGER(4000L, 100000L, 98000L, 90000L, 10L, 58L);
 
     /**
      * Optimal transfer block size
