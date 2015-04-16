@@ -9,7 +9,7 @@ import java.util.concurrent.TimeUnit;
  * Created by samuel on 31.03.15.
  */
 public enum Config {
-    DEFAULT("http", "188.226.178.35", 4000, "tabequals4", "ip-addresses", "ip-addresses/new", "ip-addresses/remove", "keepAlive", 5, TimeUnit.MINUTES, "./P2PFS", false);
+    DEFAULT("http", "188.226.178.35", 4000, "tabequals4", "ip-addresses", "ip-addresses/new", "ip-addresses/remove", "keepAlive", 5, TimeUnit.MINUTES, "./P2PFS", false, "keys");
 
     private String   _protocol;
 
@@ -56,11 +56,19 @@ public enum Config {
      * Default mount point for the filesystem
      */
     private String   _mountPoint;
-    
-    private boolean _startCommandLineInterface;
+
+    /**
+     * Indicates whether the cli should be started or not
+     */
+    private boolean  _startCommandLineInterface;
+
+    /**
+     * Key in the DHT to get al list of all paths
+     */
+    private String   _masterLocationPathsKey;
 
     Config(String protocol, String host, int port, String authToken, String getPath, String postPath, String removePath, String keepAlivePath, int keepAliveMsgPeriod,
-            TimeUnit keepAliveMsgPeriod_T, String mountPoint, boolean startCommandLineInterface) {
+            TimeUnit keepAliveMsgPeriod_T, String mountPoint, boolean startCommandLineInterface, String masterLocationPathsKey) {
         _protocol = protocol;
         _port = port;
         _keepAliveMsgPeriod = keepAliveMsgPeriod;
@@ -73,6 +81,7 @@ public enum Config {
         _keepAlivePath = keepAlivePath;
         _mountPoint = mountPoint;
         _startCommandLineInterface = startCommandLineInterface;
+        _masterLocationPathsKey = masterLocationPathsKey;
     }
 
     public String getProtocol() {
@@ -122,8 +131,12 @@ public enum Config {
     public String getMountPoint() {
         return _mountPoint;
     }
-    
+
     public boolean getStartCommandLineInterface() {
         return _startCommandLineInterface;
+    }
+
+    public String getMasterLocationPathsKey() {
+        return _masterLocationPathsKey;
     }
 }

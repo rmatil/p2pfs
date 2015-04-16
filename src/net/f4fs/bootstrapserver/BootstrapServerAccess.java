@@ -1,7 +1,7 @@
 package net.f4fs.bootstrapserver;
 
+import net.f4fs.bootstrapserver.util.URLFactory;
 import net.f4fs.util.KeepAlive;
-import net.f4fs.util.URLFactory;
 
 import java.io.BufferedReader;
 import java.io.DataOutputStream;

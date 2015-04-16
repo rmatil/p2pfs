@@ -1,8 +1,10 @@
-package net.f4fs.filesystem;
+package net.f4fs.filesystem.partials;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.logging.Logger;
 
+import net.f4fs.fspeer.FSPeer;
 import net.fusejna.DirectoryFiller;
 import net.fusejna.StructStat.StatWrapper;
 import net.fusejna.types.TypeMode.NodeType;
@@ -11,19 +13,17 @@ import net.fusejna.types.TypeMode.NodeType;
 public class MemoryDirectory
         extends AMemoryPath {
 
+    private Logger                  logger   = Logger.getLogger("MemoryDirectory.class");
     private final List<AMemoryPath> contents = new ArrayList<AMemoryPath>();
 
-    public MemoryDirectory(final String name) {
-        super(name);
+    public MemoryDirectory(final String name, FSPeer peer) {
+        super(name, peer);
+        logger.info("Created Directory '" + name + "' without parent on path '" + getPath() + "'.");
     }
 
-    public MemoryDirectory(final String name, final MemoryDirectory parent) {
-        super(name, parent);
-    }
-
-    public synchronized void add(final AMemoryPath p) {
-        contents.add(p);
-        p.setParent(this);
+    public MemoryDirectory(final String name, final MemoryDirectory parent, FSPeer peer) {
+        super(name, parent, peer);
+        logger.info("Created Directory '" + name + "' on path '" + getPath() + "'.");
     }
 
     public synchronized void deleteChild(final AMemoryPath child) {
@@ -31,7 +31,7 @@ public class MemoryDirectory
     }
 
     @Override
-    protected AMemoryPath find(String path) {
+    public AMemoryPath find(String path) {
         if (super.find(path) != null) {
             return super.find(path);
         }
@@ -59,16 +59,20 @@ public class MemoryDirectory
     }
 
     @Override
-    protected void getattr(final StatWrapper stat) {
+    public void getattr(final StatWrapper stat) {
         stat.setMode(NodeType.DIRECTORY);
     }
 
     public synchronized void mkdir(final String lastComponent) {
-        contents.add(new MemoryDirectory(lastComponent, this));
+        // stores also the new directory in the DHT with the correct path
+        // because this element was set as parent in the constructor
+        contents.add(new MemoryDirectory(lastComponent, this, super.getPeer()));
     }
 
     public synchronized void mkfile(final String lastComponent) {
-        contents.add(new MemoryFile(lastComponent, this));
+        // stores also the new file in the DHT with the correct path
+        // because this element was set as parent in the constructor
+        contents.add(new MemoryFile(lastComponent, this, super.getPeer()));
     }
 
     public synchronized void read(final DirectoryFiller filler) {
@@ -77,4 +81,7 @@ public class MemoryDirectory
         }
     }
 
+    public List<AMemoryPath> getContents() {
+        return contents;
+    }
 }

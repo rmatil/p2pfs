@@ -1,5 +1,6 @@
 package net.f4fs.util;
 
+import net.f4fs.bootstrapserver.util.URLBuilder;
 import net.f4fs.config.Config;
 
 import java.io.IOException;
