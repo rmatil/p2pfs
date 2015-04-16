@@ -28,7 +28,7 @@ public class DhtOperationsCommand {
      * @param peer The peer on which to store / retrieve values
      */
     @SuppressWarnings("static-access")
-    public static void readAndProcess(FSPeer peer) {
+    public static void startCommandLineInterface(FSPeer peer) {
         String input = "";
         Scanner scanner = new Scanner(System.in);
 
@@ -49,14 +49,14 @@ public class DhtOperationsCommand {
                         continue;
                     }
                     
-                    peer.put(new Number160().createHash(inputArray[1]), new Data(inputArray[2]));
+                    peer.putData(new Number160().createHash(inputArray[1]), new Data(inputArray[2]));
                 } else if (inputArray[0].equals("get")) {
                     if (inputArray.length < 2) {
                         System.out.println("usage: get:<key>");
                         continue;
                     }
 
-                    System.out.println("> " + peer.get(new Number160().createHash(inputArray[1])));
+                    System.out.println("> " + peer.getData(new Number160().createHash(inputArray[1])));
                 } else if (inputArray[0].equals(QUIT)) {
                     System.out.println("> terminating input console...");
                     System.out.println();

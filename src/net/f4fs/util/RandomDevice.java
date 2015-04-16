@@ -13,7 +13,7 @@ import java.util.Random;
  */
 public enum RandomDevice {
     // To provide reproducible outcomes.
-    INSTANCE(new Random(4568321548855l));
+    INSTANCE(new Random(System.currentTimeMillis()));
 
     private Random rand;
 

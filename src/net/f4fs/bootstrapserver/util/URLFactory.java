@@ -1,4 +1,4 @@
-package net.f4fs.util;
+package net.f4fs.bootstrapserver.util;
 
 import net.f4fs.config.Config;
 
