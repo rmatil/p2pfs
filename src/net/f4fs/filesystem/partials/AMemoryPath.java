@@ -1,6 +1,7 @@
 package net.f4fs.filesystem.partials;
 
 import java.io.IOException;
+import java.nio.ByteBuffer;
 import java.util.logging.Logger;
 
 import net.f4fs.fspeer.FSPeer;
@@ -47,7 +48,7 @@ public abstract class AMemoryPath {
                 return;
             }
 
-            FuturePut futurePut = peer.putData(Number160.createHash(getPath()), new Data(""));
+            FuturePut futurePut = peer.putData(Number160.createHash(getPath()), new Data(new byte[0]));
             futurePut.await();
             futurePut = peer.putPath(Number160.createHash(getPath()), new Data(getPath()));
             futurePut.await();
@@ -107,13 +108,13 @@ public abstract class AMemoryPath {
             FutureGet futureGet = peer.getData(Number160.createHash(getPath()));
             futureGet.await();
 
-            String content = new String();
+            ByteBuffer content = null;
             if (null == futureGet.data()) {
                 // memoryPath is a directory and has no content
-                content = new String("");
+                content = ByteBuffer.wrap(new byte[0]);
             } else {
                 // memoryPath is a file
-                content = (String) futureGet.data().object(); // content stores some bytes as string
+                content = ByteBuffer.wrap((byte[]) futureGet.data().object()); // content stores some bytes as string
             }
 
             // remove content key and the corresponding value from the dht

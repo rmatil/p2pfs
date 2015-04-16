@@ -111,10 +111,9 @@ public class MemoryFile
                     return -ErrorCodes.EIO();
                 }
 
-                String stringContent = (String) futureGet.data().object();
-
                 // replace current content with the content stored in the DHT
-                contents = ByteBuffer.wrap(stringContent.getBytes(StandardCharsets.UTF_8));
+                contents = ByteBuffer.wrap((byte[]) futureGet.data().object());
+                
 
             } catch (ClassNotFoundException | IOException | InterruptedException e) {
                 logger.warning("Could not read contents of file on path '" + getPath() + "'. Message: " + e.getMessage());
@@ -148,16 +147,15 @@ public class MemoryFile
             // writes as much bytes of contents into bytesRead
             contents.get(bytesRead);
 
-            String stringContent = new String(bytesRead, StandardCharsets.UTF_8);
             try {
                 // try to update the shortened value
-                FuturePut futurePut = super.getPeer().putData(Number160.createHash(getPath()), new Data(stringContent));
+                FuturePut futurePut = super.getPeer().putData(Number160.createHash(getPath()), new Data(bytesRead));
                 futurePut.await();
 
                 // only if DHT update succeeds update the value on disk
                 newContents.put(bytesRead);
                 contents = newContents;
-            } catch (IOException | InterruptedException e) {
+            } catch (InterruptedException e) {
                 logger.warning("Could not truncate the contents of the file on path '" + getPath() + "'. Message: " + e.getMessage());
             }
         }
@@ -186,17 +184,16 @@ public class MemoryFile
             }
             buffer.get(bytesToWrite, 0, (int) bufSize);
 
-            String stringContent = new String(bytesToWrite, StandardCharsets.UTF_8);
             try {
                 // try to update the value in the DHT
-                FuturePut futurePut = super.getPeer().putData(Number160.createHash(getPath()), new Data(stringContent));
+                FuturePut futurePut = super.getPeer().putData(Number160.createHash(getPath()), new Data(bytesToWrite));
                 futurePut.await();
 
                 // only if DHT update succeeds udpate the value on disk
                 contents.position((int) writeOffset);
                 contents.put(bytesToWrite);
                 contents.position(0); // Rewind
-            } catch (IOException | InterruptedException e) {
+            } catch (InterruptedException e) {
                 logger.warning("Could not write to file on path '" + getPath() + "'. Message; " + e.getMessage());
                 return -ErrorCodes.EIO();
             }
