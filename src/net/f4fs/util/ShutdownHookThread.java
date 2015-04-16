@@ -1,6 +1,6 @@
-package net.tomp2p.util;
+package net.f4fs.util;
 
-import net.tomp2p.bootstrapserver.BootstrapServerAccess;
+import net.f4fs.bootstrapserver.BootstrapServerAccess;
 
 
 /**

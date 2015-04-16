@@ -1,4 +1,4 @@
-package net.tomp2p.fspeer;
+package net.f4fs.fspeer;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -7,19 +7,26 @@ import java.net.Inet4Address;
 import java.net.InetAddress;
 import java.net.URL;
 import java.util.Collection;
-import java.util.Random;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.Map;
+import java.util.Set;
 
+import net.f4fs.config.Config;
+import net.f4fs.util.RandomDevice;
 import net.tomp2p.connection.Bindings;
 import net.tomp2p.connection.DiscoverNetworks;
 import net.tomp2p.connection.StandardProtocolFamily;
 import net.tomp2p.dht.FutureGet;
 import net.tomp2p.dht.FuturePut;
+import net.tomp2p.dht.FutureRemove;
 import net.tomp2p.dht.PeerBuilderDHT;
 import net.tomp2p.dht.PeerDHT;
 import net.tomp2p.futures.FutureBootstrap;
 import net.tomp2p.futures.FutureDiscover;
 import net.tomp2p.p2p.PeerBuilder;
 import net.tomp2p.peers.Number160;
+import net.tomp2p.peers.Number640;
 import net.tomp2p.peers.PeerAddress;
 import net.tomp2p.storage.Data;
 
@@ -44,12 +51,11 @@ public class FSPeer {
     public void startAsBootstrapPeer(String myIP, int myPort)
             throws Exception {
 
-        Random rnd = new Random(43L);
         Bindings b = new Bindings().addProtocol(StandardProtocolFamily.INET).addAddress(
                 InetAddress.getByName(myIP));
 
         // b.addInterface("eth0");
-        peer = new PeerBuilderDHT(new PeerBuilder(new Number160(rnd)).ports(myPort).bindings(b).start()).start();
+        peer = new PeerBuilderDHT(new PeerBuilder(new Number160(RandomDevice.INSTANCE.getRand())).ports(myPort).bindings(b).start()).start();
         System.out.println("[Peer@" + myIP + "]: Server started listening to: " + DiscoverNetworks.discoverInterfaces(b));
         System.out.println("[Peer@" + myIP + "]: Address visible to outside is " + peer.peerAddress());
     }
@@ -68,12 +74,11 @@ public class FSPeer {
     public boolean startPeer(String myIP, int myPort, String connectionIpAddress, int connectionPort)
             throws Exception {
 
-        Random rnd = new Random();
         Bindings b = new Bindings().addProtocol(StandardProtocolFamily.INET).addAddress(
                 InetAddress.getByName(myIP));
 
         // b.addInterface("eth0");
-        peer = new PeerBuilderDHT(new PeerBuilder(new Number160(rnd)).ports(myPort).bindings(b).start()).start();
+        peer = new PeerBuilderDHT(new PeerBuilder(new Number160(RandomDevice.INSTANCE.getRand())).ports(myPort).bindings(b).start()).start();
         System.out.println("[Peer@" + myIP + "]: Client started and listening to: " + DiscoverNetworks.discoverInterfaces(b));
         System.out.println("[Peer@" + myIP + "]: Address visible to outside is " + peer.peerAddress());
 
@@ -172,12 +177,40 @@ public class FSPeer {
      * @throws ClassNotFoundException
      * @throws IOException
      */
-    public Object get(Number160 pKey)
+    public FutureGet getData(Number160 pKey)
             throws ClassNotFoundException, IOException {
         FutureGet futureGet = peer.get(pKey).start();
-        futureGet.awaitUninterruptibly();
+        futureGet.addListener(new GetListener(peer.peerAddress().inetAddress().toString(), "Get data"));
 
-        return futureGet.data().object();
+        return futureGet;
+    }
+
+
+    /**
+     * Gets all keys of all files stored in the dht
+     * 
+     * @param pLocationKey
+     * @return keys List with all keys to the files in the dht
+     * 
+     * @throws Exception
+     */
+    public Set<String> getAllPaths()
+            throws Exception {
+        Set<String> keys = new HashSet<>();
+
+        FutureGet futureGet = peer.get(Number160.createHash(Config.DEFAULT.getMasterLocationPathsKey())).all().start();
+        futureGet.addListener(new GetListener(peer.peerAddress().inetAddress().toString(), "Get all paths"));
+        futureGet.await();
+
+        Map<Number640, Data> map = futureGet.dataMap();
+        Collection<Data> collection = map.values();
+
+        Iterator<Data> iter = collection.iterator();
+        while (iter.hasNext()) {
+            keys.add((String) iter.next().object());
+        }
+
+        return keys;
     }
 
     /**
@@ -188,9 +221,51 @@ public class FSPeer {
      * 
      * @throws IOException
      */
-    public void put(Number160 pKey, Data pValue) {
+    public FuturePut putData(Number160 pKey, Data pValue) {
         FuturePut futurePut = peer.put(pKey).data(pValue).start();
-        futurePut.awaitUninterruptibly();
+        futurePut.addListener(new PutListener(peer.peerAddress().inetAddress().toString(), "Put data"));
+
+        return futurePut;
     }
 
+    /**
+     * Stores the given data with the given content key on the default location key
+     * 
+     * @param pLocationKey The key on which machine to store
+     * @param pContentKey The key to store the data
+     * @param pValue The data to store
+     * 
+     * @throws IOException
+     */
+    public FuturePut putPath(Number160 pContentKey, Data pValue) {
+        FuturePut futurePut = peer.put(Number160.createHash(Config.DEFAULT.getMasterLocationPathsKey())).data(pContentKey, pValue).start();
+        futurePut.addListener(new PutListener(peer.peerAddress().inetAddress().toString(), "Put path"));
+
+        return futurePut;
+    }
+
+    /**
+     * Removes the assigned data from the peer
+     * 
+     * @param pKey Key of which the data should be removed
+     */
+    public FutureRemove removeData(Number160 pKey) {
+        FutureRemove futureRemove = peer.remove(pKey).start();
+        futureRemove.addListener(new RemoveListener(peer.peerAddress().inetAddress().toString(), "Remove data"));
+
+        return futureRemove;
+    }
+
+    /**
+     * Removes the file key from the file keys which are stored with the default location key
+     * 
+     * @param pLocationKey
+     * @param pContentKey
+     */
+    public FutureRemove removePath(Number160 pContentKey) {
+        FutureRemove futureRemove = peer.remove(Number160.createHash(Config.DEFAULT.getMasterLocationPathsKey())).contentKey(pContentKey).start();
+        futureRemove.addListener(new RemoveListener(peer.peerAddress().inetAddress().toString(), "Remove path"));
+
+        return futureRemove;
+    }
 }

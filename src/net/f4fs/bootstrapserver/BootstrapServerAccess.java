@@ -1,4 +1,7 @@
-package net.tomp2p.bootstrapserver;
+package net.f4fs.bootstrapserver;
+
+import net.f4fs.bootstrapserver.util.URLFactory;
+import net.f4fs.util.KeepAlive;
 
 import java.io.BufferedReader;
 import java.io.DataOutputStream;
@@ -15,34 +18,11 @@ import java.net.URL;
  *
  */
 public class BootstrapServerAccess {
+    private KeepAlive keepAlive;
 
-    /**
-     * The url to the bootstrap server
-     */
-    public static final String BOOTSTRAP_SERVER = "http://188.226.178.35";
-
-    /**
-     * The authentication token to access any
-     * operation on the bootstrap server
-     */
-    public static final String TOKEN            = "?token=tabequals4";
-
-    /**
-     * The URL to get a list of all IP addresses
-     * currently connected with the P2P network
-     */
-    public static final String GET_URL          = "/ip-addresses";
-
-    /**
-     * The URL to which new addresses can be posted
-     */
-    public static final String POST_URL         = "/ip-addresses/new";
-
-    /**
-     * The URL on which the removal of
-     * IP addresses are handled
-     */
-    public static final String REMOVE_URL       = "/ip-addresses/remove";
+    public BootstrapServerAccess() {
+        keepAlive = new KeepAlive();
+    }
 
     /**
      * Returns a string containing the JSON representation
@@ -51,7 +31,7 @@ public class BootstrapServerAccess {
      * @return The JSON string
      */
     public String getIpAddressList() {
-        String stringURL = BOOTSTRAP_SERVER + GET_URL + TOKEN;
+        String stringURL = URLFactory.createIPListURL();
         String result = "";
 
         URL getURL;
@@ -92,7 +72,7 @@ public class BootstrapServerAccess {
      * @return The updated list of connected peers
      */
     public StringBuffer postIpPortPair(String pAddress, int pPort) {
-        String postURL = BOOTSTRAP_SERVER + POST_URL + TOKEN;
+        String postURL = URLFactory.createStoreURL();
         StringBuffer result = new StringBuffer();
 
         URL getURL;
@@ -141,7 +121,7 @@ public class BootstrapServerAccess {
      * @return The updated list of connected peers
      */
     public StringBuffer removeIpPortPair(String pAddress, int pPort) {
-        String removeURL = BOOTSTRAP_SERVER + REMOVE_URL + TOKEN;
+        String removeURL = URLFactory.createRemoveURL();
         StringBuffer result = new StringBuffer();
 
         URL stringURL;
@@ -179,6 +159,18 @@ public class BootstrapServerAccess {
         }
 
         return result;
+    }
+
+    public void sendSingleKeepAliveMessage() {
+        keepAlive.sendMsg();
+    }
+
+    public void heartBeat() {
+        keepAlive.exec();
+    }
+
+    public void feelTheRhythmFeelTheRhymeItBobsledTime() {
+        heartBeat();
     }
 
 }
