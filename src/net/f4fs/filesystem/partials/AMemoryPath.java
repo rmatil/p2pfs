@@ -114,7 +114,7 @@ public abstract class AMemoryPath {
                 content = ByteBuffer.wrap(new byte[0]);
             } else {
                 // memoryPath is a file
-                content = ByteBuffer.wrap((byte[]) futureGet.data().object()); // content stores some bytes as string
+                content = ByteBuffer.wrap(futureGet.data().toBytes()); // content stores some bytes as string
             }
 
             // remove content key and the corresponding value from the dht

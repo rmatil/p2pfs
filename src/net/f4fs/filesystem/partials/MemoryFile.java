@@ -100,26 +100,25 @@ public class MemoryFile
     public int read(final ByteBuffer buffer, final long size, final long offset) {
         final int bytesToRead = (int) Math.min(contents.capacity() - offset, size);
         final byte[] bytesRead = new byte[bytesToRead];
-       
+
         synchronized (this) {
             try {
                 FutureGet futureGet = super.getPeer().getData(Number160.createHash(getPath()));
                 futureGet.await();
-                
+
                 if (null == futureGet.data()) {
                     logger.warning("Could not read file on path '" + getPath() + "' from the DHT. Data was null");
                     return -ErrorCodes.EIO();
                 }
 
                 // replace current content with the content stored in the DHT
-                contents = ByteBuffer.wrap((byte[]) futureGet.data().object());
-                
+                contents = ByteBuffer.wrap(futureGet.data().toBytes());
 
             } catch (ClassNotFoundException | IOException | InterruptedException e) {
                 logger.warning("Could not read contents of file on path '" + getPath() + "'. Message: " + e.getMessage());
                 return -ErrorCodes.EIO();
             }
-            
+
 
             contents.position((int) offset);
             contents.get(bytesRead, 0, bytesToRead);
@@ -164,7 +163,8 @@ public class MemoryFile
     /**
      * Writes up to <i>bufSize</i> bytes to the
      * file referenced by the file descriptor <i>buffer</i>
-     * from the buffer starting at <i>writeOffset</i>
+     * from the buffer starting at <i>writeOffset</i> <br>
+     * <b style="color:red">NOTE: This method gets called multiple times for a certain file because it gets written in chunks</b>
      * 
      * @param buffer The byteBuffer with the file content in it
      * @param bufSize The size of the buffer to write
@@ -185,14 +185,17 @@ public class MemoryFile
             buffer.get(bytesToWrite, 0, (int) bufSize);
 
             try {
-                // try to update the value in the DHT
-                FuturePut futurePut = super.getPeer().putData(Number160.createHash(getPath()), new Data(bytesToWrite));
-                futurePut.await();
-
-                // only if DHT update succeeds udpate the value on disk
+                // NOTE: this must be before the data gets stored in the DHT
+                // because otherwise the latest chunk of data will not be stored in there
                 contents.position((int) writeOffset);
                 contents.put(bytesToWrite);
                 contents.position(0); // Rewind
+
+                // NOTE: write gets called multiple times for the same file, because
+                // it is written in chunks. Because we do not now, when everything of a certain file is
+                // written, overwrite the contents in the DHT
+                FuturePut futurePut = super.getPeer().putData(Number160.createHash(getPath()), new Data(contents.array()));
+                futurePut.await();
             } catch (InterruptedException e) {
                 logger.warning("Could not write to file on path '" + getPath() + "'. Message; " + e.getMessage());
                 return -ErrorCodes.EIO();
@@ -201,13 +204,13 @@ public class MemoryFile
 
         return (int) bufSize;
     }
-    
+
     /**
      * Return the content of this MemoryFile
      * 
-     * @return Contents ByteBuffer 
+     * @return Contents ByteBuffer
      */
-    public ByteBuffer getContent(){
+    public ByteBuffer getContent() {
         return contents;
     }
 }
