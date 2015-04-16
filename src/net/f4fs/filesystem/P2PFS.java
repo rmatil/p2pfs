@@ -364,7 +364,7 @@ public class P2PFS
         }
 
         MemoryDirectory parentDir = (MemoryDirectory) newParent;
-        parentDir.symlink(getLastComponent(path), getLastComponent(target));
+        parentDir.symlink(existingPath, getLastComponent(target));
         return 0;
     }
 

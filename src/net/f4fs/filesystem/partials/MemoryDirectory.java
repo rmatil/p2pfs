@@ -128,7 +128,7 @@ public class MemoryDirectory
      * @param path The already existing file to which the link should be created
      * @param target The path of the symlink which points to <code>path</code>
      */
-    public void symlink(final String path, final String target) {
+    public void symlink(final AMemoryPath path, final String target) {
         // stores also the new directory in the DHT with the correct path
         // because this element was set as parent in the constructor
         contents.add(new MemorySymLink(path, target, this, super.getPeer()));

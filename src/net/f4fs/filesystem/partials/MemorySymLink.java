@@ -26,7 +26,7 @@ public class MemorySymLink
      * @param target The path of the symlink which points to <code>path</code>
      * @param peer The FSPeer
      */
-    public MemorySymLink(final String path, final String target, final FSPeer peer) {
+    public MemorySymLink(final AMemoryPath path, final String target, final FSPeer peer) {
         super(target, peer);
         this.target = target;
 
@@ -38,12 +38,12 @@ public class MemorySymLink
             futureRemove.await();
 
             // create the symlink to the target
-            FuturePut futurePut = peer.putPath(Number160.createHash(path), new Data(target));
+            FuturePut futurePut = peer.putPath(Number160.createHash(getPath()), new Data(path.getPath()));
             futurePut.await();
 
-            logger.info("Created symlink '" + target + "' to file on path '" + path + "'.");
+            logger.info("Created symlink '" + target + "' on path '" + getPath() + "' to file on path '" + path.getPath() + "'.");
         } catch (InterruptedException | IOException e) {
-            logger.warning("Could not create symlink '" + target + "' to file on path '" + path + "'. Message: " + e.getMessage());
+            logger.warning("Could not create symlink '" + target + "' on path '" + getPath() + "' to file on path '" + path.getPath() + "'. Message: " + e.getMessage());
         }
     }
 
@@ -56,7 +56,7 @@ public class MemorySymLink
      * @param parent The parent directory
      * @param peer The FSPeer
      */
-    public MemorySymLink(final String path, final String target, final MemoryDirectory parent, final FSPeer peer) {
+    public MemorySymLink(final AMemoryPath path, final String target, final MemoryDirectory parent, final FSPeer peer) {
         super(target, parent, peer);
         this.target = target;
 
@@ -68,12 +68,12 @@ public class MemorySymLink
             futureRemove.await();
 
             // create the symlink to the target
-            FuturePut futurePut = peer.putPath(Number160.createHash(path), new Data(target));
+            FuturePut futurePut = peer.putPath(Number160.createHash(getPath()), new Data(path.getPath()));
             futurePut.await();
 
-            logger.info("Created symlink '" + target + "' to file on path '" + path + "'.");
+            logger.info("Created symlink '" + target + "' on path '" + getPath() + "' to file on path '" + path.getPath() + "'.");
         } catch (InterruptedException | IOException e) {
-            logger.warning("Could not create symlink '" + target + "' to file on path '" + path + "'. Message: " + e.getMessage());
+            logger.warning("Could not create symlink '" + target + "' on path '" + getPath() + "' to file on path '" + path.getPath() + "'. Message: " + e.getMessage());
         }
     }
 
