@@ -24,6 +24,8 @@ import net.tomp2p.utils.Pair;
  */
 public class VDHTOperations {
 
+	private static final Random RND = new Random(42L);
+	private static final int NUMBER_OF_RETRIES = 5;
 	
     /**
      * Retrieves the latest VDHT entry according to the specified key.
@@ -34,7 +36,7 @@ public class VDHTOperations {
 	public static Pair<Number640, Data> retrieve(PeerDHT pPeerDHT,	Number160 pLocationKey)
 			throws InterruptedException, ClassNotFoundException, IOException {
 		Pair<Number640, Data> pair = null;
-		for (int i = 0; i < 5; i++) {
+		for (int i = 0; i < NUMBER_OF_RETRIES; i++) {
 			FutureGet fg = pPeerDHT.get(pLocationKey).getLatest().start()
 					.awaitUninterruptibly();
 			// check if all the peers agree on the same latest version, if not
@@ -63,7 +65,7 @@ public class VDHTOperations {
 	public static Pair<Number640, Data> retrieve(PeerDHT pPeerDHT, Number160 pLocationKey,	Number160 pVersionKey)
 			throws InterruptedException, ClassNotFoundException, IOException {
 		Pair<Number640, Data> pair = null;
-		for (int i = 0; i < 5; i++) {
+		for (int i = 0; i < NUMBER_OF_RETRIES; i++) {
 			FutureGet fg = pPeerDHT.get(pLocationKey).versionKey(pVersionKey).start()
 					.awaitUninterruptibly();
 			// check if all the peers agree on the same latest version, if not
@@ -92,7 +94,7 @@ public class VDHTOperations {
 	public static void store(PeerDHT pPeerDHT, Number160 pLocationKey,	Data pFileData)
 			throws ClassNotFoundException, InterruptedException, IOException {
 		Pair<Number640, Byte> pair2 = null;
-		for (int i = 0; i < 5; i++) {
+		for (int i = 0; i < NUMBER_OF_RETRIES; i++) {
 			Pair<Number160, Data> pair = getAndUpdate(pPeerDHT, pLocationKey,
 					pFileData);
 			if (pair == null) {
