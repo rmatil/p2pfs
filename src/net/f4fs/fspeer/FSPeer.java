@@ -13,6 +13,7 @@ import java.util.Map;
 import java.util.Set;
 
 import net.f4fs.config.Config;
+import net.f4fs.persistence.IPersistence;
 import net.f4fs.util.RandomDevice;
 import net.tomp2p.connection.Bindings;
 import net.tomp2p.connection.DiscoverNetworks;
@@ -38,7 +39,14 @@ import net.tomp2p.storage.Data;
  */
 public class FSPeer {
 
-    private PeerDHT peer;
+    private PeerDHT      peer;
+
+    private IPersistence persistence;
+
+    public FSPeer() {
+        PersistenceFactory persistenceFactory = new PersistenceFactory();
+        this.persistence = persistenceFactory.getDhtOperations();
+    }
 
     /**
      * Starts this peer as the first, i.e. bootstrap peer
@@ -176,13 +184,12 @@ public class FSPeer {
      * 
      * @throws ClassNotFoundException
      * @throws IOException
+     * @throws InterruptedException If a failure happened during await of future
      */
-    public FutureGet getData(Number160 pKey)
-            throws ClassNotFoundException, IOException {
-        FutureGet futureGet = peer.get(pKey).start();
-        futureGet.addListener(new GetListener(peer.peerAddress().inetAddress().toString(), "Get data"));
+    public Data getData(Number160 pKey)
+            throws ClassNotFoundException, IOException, InterruptedException {
 
-        return futureGet;
+        return this.persistence.getData(this.peer, pKey);
     }
 
 
@@ -220,12 +227,11 @@ public class FSPeer {
      * @param pValue The data to store
      * 
      * @throws IOException
+     * @throws InterruptedException If a failure happened during await of future
      */
-    public FuturePut putData(Number160 pKey, Data pValue) {
-        FuturePut futurePut = peer.put(pKey).data(pValue).start();
-        futurePut.addListener(new PutListener(peer.peerAddress().inetAddress().toString(), "Put data"));
-
-        return futurePut;
+    public void putData(Number160 pKey, Data pValue)
+            throws InterruptedException {
+        this.persistence.putData(this.peer, pKey, pValue);
     }
 
     /**
@@ -248,12 +254,12 @@ public class FSPeer {
      * Removes the assigned data from the peer
      * 
      * @param pKey Key of which the data should be removed
+     * 
+     * @throws InterruptedException If a failure happened during await of future
      */
-    public FutureRemove removeData(Number160 pKey) {
-        FutureRemove futureRemove = peer.remove(pKey).start();
-        futureRemove.addListener(new RemoveListener(peer.peerAddress().inetAddress().toString(), "Remove data"));
-
-        return futureRemove;
+    public void removeData(Number160 pKey)
+            throws InterruptedException {
+        this.persistence.removeData(this.peer, pKey);
     }
 
     /**

@@ -4,7 +4,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.logging.Logger;
 
-import net.f4fs.config.FSStatConfig;
 import net.f4fs.fspeer.FSPeer;
 import net.fusejna.DirectoryFiller;
 import net.fusejna.StructStat.StatWrapper;
