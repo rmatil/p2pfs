@@ -1,4 +1,4 @@
-package net.f4fs.vdht;
+package net.f4fs.persistence;
 
 import java.io.IOException;
 import java.util.Map;
