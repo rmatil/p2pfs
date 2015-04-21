@@ -10,7 +10,6 @@ import net.f4fs.fspeer.FSPeer;
 import net.fusejna.ErrorCodes;
 import net.fusejna.StructStat.StatWrapper;
 import net.fusejna.types.TypeMode.NodeType;
-import net.tomp2p.dht.FutureRemove;
 import net.tomp2p.peers.Number160;
 import net.tomp2p.storage.Data;
 
@@ -73,9 +72,7 @@ public class MemoryFile
             try {
                 // remove file (also the content key in the location keys)
                 super.getPeer().removeData(Number160.createHash(getPath()));
-                
-                FutureRemove futureRemove = super.getPeer().removePath(Number160.createHash(getPath()));
-                futureRemove.await();
+                super.getPeer().removePath(Number160.createHash(getPath()));
             } catch (InterruptedException e1) {
                 logger.warning("Could not create file with name '" + name + "' on path '" + getPath() + "'. Message: " + e.getMessage());
             }

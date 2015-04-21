@@ -1,7 +1,9 @@
 package net.f4fs.fspeer;
 
 import net.f4fs.persistence.DHTOperations;
+import net.f4fs.persistence.IPathPersistence;
 import net.f4fs.persistence.IPersistence;
+import net.f4fs.persistence.PathOperations;
 
 /**
  * Factory to retrieve multiple adapters which differ in how 
@@ -19,5 +21,15 @@ public class PersistenceFactory {
      */
     public IPersistence getDhtOperations() {
         return new DHTOperations();
+    }
+    
+    /**
+     * Returns an adapter to store, get and remove
+     * paths of files in the DHT
+     * 
+     * @return The adapter 
+     */
+    public IPathPersistence getPathPersistence() {
+        return new PathOperations();
     }
 }

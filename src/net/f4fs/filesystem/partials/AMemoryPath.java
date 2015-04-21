@@ -6,8 +6,6 @@ import java.util.logging.Logger;
 
 import net.f4fs.fspeer.FSPeer;
 import net.fusejna.StructStat.StatWrapper;
-import net.tomp2p.dht.FuturePut;
-import net.tomp2p.dht.FutureRemove;
 import net.tomp2p.peers.Number160;
 import net.tomp2p.storage.Data;
 
@@ -47,9 +45,7 @@ public abstract class AMemoryPath {
             }
 
             peer.putData(Number160.createHash(getPath()), new Data(new byte[0]));
-            
-            FuturePut futurePut = peer.putPath(Number160.createHash(getPath()), new Data(getPath()));
-            futurePut.await();
+            peer.putPath(Number160.createHash(getPath()), new Data(getPath()));
 
         } catch (IOException | InterruptedException | ClassNotFoundException e) {
             logger.warning("Could not create MemoryPath with name '" + name + "' on path '" + getPath() + "'. Message: " + e.getMessage());
@@ -61,9 +57,7 @@ public abstract class AMemoryPath {
             try {
                 String path = getPath();
                 
-                FutureRemove futureRemove = peer.removePath(Number160.createHash(path));
-                futureRemove.await();
-                
+                peer.removePath(Number160.createHash(path));
                 peer.removeData(Number160.createHash(path));
 
                 // be aware that this must be after getPath() 
@@ -116,18 +110,15 @@ public abstract class AMemoryPath {
 
             // remove content key and the corresponding value from the dht
             // Note: remove path first to prevent inconsistent state
-            FutureRemove futureRemove = peer.removePath(Number160.createHash(getPath()));
-            futureRemove.await();
-            
+            peer.removePath(Number160.createHash(getPath()));
             peer.removeData(Number160.createHash(getPath()));
 
             this.name = newName;
 
             // update content key and store the files content on the updated key again
             peer.putData(Number160.createHash(getPath()), new Data(content));
+            peer.putPath(Number160.createHash(getPath()), new Data(getPath()));
             
-            FuturePut futurePut = peer.putPath(Number160.createHash(getPath()), new Data(getPath()));
-            futurePut.await();
             logger.info("Renamed file with name '" + oldName + "' to '" + newName + "' on path '" + getPath() + "'.");
         } catch (InterruptedException | ClassNotFoundException | IOException e) {
             logger.warning("Could not rename to '" + newName + "' on path '" + getPath() + "'. Message: " + e.getMessage());
