@@ -10,6 +10,7 @@ import net.tomp2p.dht.PeerDHT;
 import net.tomp2p.peers.Number160;
 import net.tomp2p.storage.Data;
 
+import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
@@ -22,6 +23,7 @@ public class DHTOperationsTest {
     private static Number160     TEST_KEY      = null;
     private static Data          TEST_DATA     = null;
 
+    private static FSPeer        fsPeer        = null;
     private static PeerDHT       peerDht       = null;
     private static DHTOperations dhtOperations = null;
 
@@ -30,7 +32,7 @@ public class DHTOperationsTest {
             throws Exception {
         dhtOperations = new DHTOperations();
 
-        FSPeer fsPeer = new FSPeer();
+        fsPeer = new FSPeer();
         TEST_IP = fsPeer.findLocalIp();
 
         fsPeer.startAsBootstrapPeer(TEST_IP, TEST_PORT);
@@ -38,6 +40,11 @@ public class DHTOperationsTest {
 
         TEST_KEY = Number160.createHash(2);
         TEST_DATA = new Data("test data");
+    }
+
+    @AfterClass
+    public static void tearDown() {
+        fsPeer.shutdown();
     }
 
     @Test
