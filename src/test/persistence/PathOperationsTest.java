@@ -91,6 +91,23 @@ public class PathOperationsTest {
         assertEquals("Remove did not work", new HashSet<String>(), results);
     }
     
+    @Test
+    public void orverwritePathTest()
+            throws InterruptedException, ClassNotFoundException, IOException {
+        pathOperations.removePath(peerDht, TEST_DATA_DIR_KEY);
+        pathOperations.removePath(peerDht, TEST_DATA_FILE_KEY);
+        
+        pathOperations.putPath(peerDht, TEST_DATA_DIR_KEY, TEST_DATA_DIR);
+        pathOperations.putPath(peerDht, TEST_DATA_DIR_KEY, TEST_DATA_DIR);
+        
+        pathOperations.putPath(peerDht, TEST_DATA_FILE_KEY, TEST_DATA_FILE);
+        pathOperations.putPath(peerDht, TEST_DATA_FILE_KEY, TEST_DATA_FILE);
+        
+        Set<String> results = pathOperations.getAllPaths(peerDht);
+        
+        assertEquals("Overwrite did not work", this.getExpectdResults(), results);
+    }
+    
     protected Set<String> getExpectdResults() {
         Set<String> ret = new HashSet<>();
         ret.add("/this/is/a/path");
