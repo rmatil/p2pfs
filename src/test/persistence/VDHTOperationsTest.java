@@ -1,4 +1,4 @@
-package test;
+package test.persistence;
 
 import static org.junit.Assert.assertEquals;
 

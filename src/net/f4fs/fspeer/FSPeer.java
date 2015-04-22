@@ -257,4 +257,8 @@ public class FSPeer {
             throws InterruptedException {
         this.pathPersistence.removePath(this.peer, pContentKey);
     }
+    
+    public PeerDHT getPeerDHT() {
+        return this.peer;
+    }
 }
