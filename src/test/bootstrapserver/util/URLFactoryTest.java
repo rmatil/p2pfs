@@ -1,4 +1,4 @@
-package test;
+package test.bootstrapserver.util;
 
 import net.f4fs.bootstrapserver.util.URLFactory;
 import net.f4fs.config.Config;
