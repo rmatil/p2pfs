@@ -53,10 +53,10 @@ public class DHTOperations
         futureRemove.await();
     }
 
-    @Override
-    public void removeData(PeerDHT pPeer, Number160 pKey, Number160 pVersionKey)
-            throws InterruptedException {
-        this.removeData(pPeer, pKey);
-    }
+	@Override
+	public void removeDataOfVersion(PeerDHT pPeer, Number160 pKey,
+			Number160 pVersionKey) throws InterruptedException {
+		this.removeData(pPeer, pKey);
+	}
 
 }
