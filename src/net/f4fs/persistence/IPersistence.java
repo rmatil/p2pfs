@@ -65,5 +65,5 @@ public interface IPersistence {
      * 
      * @throws InterruptedException If a failure happened during await of future
      */
-    public void removeData(PeerDHT pPeer, Number160 pKey, Number160 pVersionKey) throws InterruptedException;
+    public void removeDataOfVersion(PeerDHT pPeer, Number160 pKey, Number160 pVersionKey) throws InterruptedException;
 }
