@@ -5,8 +5,10 @@ import java.util.Map;
 import java.util.Random;
 import java.util.logging.Logger;
 
+import net.f4fs.fspeer.RemoveListener;
 import net.tomp2p.dht.FutureGet;
 import net.tomp2p.dht.FuturePut;
+import net.tomp2p.dht.FutureRemove;
 import net.tomp2p.dht.PeerDHT;
 import net.tomp2p.peers.Number160;
 import net.tomp2p.peers.Number640;
@@ -280,8 +282,10 @@ public class VDHTOperations implements IPersistence {
 	@Override
 	public void removeData(PeerDHT pPeer, Number160 pKey)
 			throws InterruptedException {
-		// TODO Auto-generated method stub
-		
+        FutureRemove futureRemove = pPeer.remove(pKey).start();
+        futureRemove.addListener(new RemoveListener(pPeer.peerAddress().inetAddress().toString(), "Remove data"));
+
+        futureRemove.await();
 	}
 
 	@Override
