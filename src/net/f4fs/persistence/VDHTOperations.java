@@ -22,7 +22,7 @@ import net.tomp2p.utils.Pair;
  * 
  * @author Christian
  */
-public class VDHTOperations {
+public class VDHTOperations implements IPersistence {
 
     private static final Random RND               = new Random(42L);
     private static final int    NUMBER_OF_RETRIES = 5;
@@ -193,5 +193,56 @@ public class VDHTOperations {
         
         return new Pair<Number640, K>(latestKey, latestData);
     }
+
+	@Override
+	public Data getData(PeerDHT pPeer, Number160 pLocationKey)
+			throws InterruptedException {
+        Pair<Number640, Data> pair = null;
+        
+        for (int i = 0; i < NUMBER_OF_RETRIES; i++) {
+            FutureGet fg = pPeer.get(pLocationKey).getLatest().start().awaitUninterruptibly();
+            // check if all the peers agree on the same latest version, if not
+            // wait a little and try again
+            pair = checkVersions(fg.rawData());
+            
+            if (pair != null) {
+                break;
+            }
+
+            logger.info("Get delay or fork - get");
+            Thread.sleep(RND.nextInt(500));
+        }
+
+        // we got the latest data
+        return pair.element1();
+	}
+
+	@Override
+	public Data getDataOfVersion(PeerDHT pPeer, Number160 pLocationKey,
+			Number160 pVersionKey) throws InterruptedException {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Override
+	public void putData(PeerDHT pPeer, Number160 pLocationKey, Data pData)
+			throws InterruptedException {
+		// TODO Auto-generated method stub
+		
+	}
+
+	@Override
+	public void removeData(PeerDHT pPeer, Number160 pKey)
+			throws InterruptedException {
+		// TODO Auto-generated method stub
+		
+	}
+
+	@Override
+	public void removeData(PeerDHT pPeer, Number160 pKey, Number160 pVersionKey)
+			throws InterruptedException {
+		// TODO Auto-generated method stub
+		
+	}
 
 }
