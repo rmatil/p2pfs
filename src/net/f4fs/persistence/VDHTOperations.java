@@ -218,16 +218,44 @@ public class VDHTOperations implements IPersistence {
 	}
 
 	@Override
-	public Data getDataOfVersion(PeerDHT pPeer, Number160 pLocationKey,
-			Number160 pVersionKey) throws InterruptedException {
+	public Data getDataOfVersion(PeerDHT pPeer, Number160 pLocationKey, Number160 pVersionKey)
+			throws InterruptedException {
 		// TODO Auto-generated method stub
 		return null;
 	}
 
 	@Override
 	public void putData(PeerDHT pPeer, Number160 pLocationKey, Data pData)
-			throws InterruptedException {
-		// TODO Auto-generated method stub
+			throws InterruptedException, ClassNotFoundException, IOException {
+		Pair<Number640, Byte> pair2 = null;
+        
+        for (int i = 0; i < NUMBER_OF_RETRIES; i++) {
+            Pair<Number160, Data> pair = getAndUpdate(pPeer, pLocationKey, pData);
+            if (pair == null) {
+                logger.warning("We cannot handle this kind of inconsistency automatically, handing over the the API dev");
+                return;
+            }
+
+            FuturePut fp = pPeer.put(pLocationKey).data(Number160.ZERO, pair.element1().prepareFlag(), pair.element0()).start().awaitUninterruptibly();
+            pair2 = checkVersions(fp.rawResult());
+            // 1 is PutStatus.OK_PREPARED
+            if (pair2 != null && pair2.element1() == 1) {
+                break;
+            }
+            
+            logger.info("Get delay or fork - get");
+            
+            // if not removed, a low ttl will eventually get rid of it
+            pPeer.remove(pLocationKey).versionKey(pair.element0()).start().awaitUninterruptibly();
+            Thread.sleep(RND.nextInt(500));
+        }
+
+        if (pair2 != null && pair2.element1() == 1) {
+            FuturePut fp = pPeer.put(pLocationKey).versionKey(pair2.element0().versionKey()).putConfirm().data(new Data()).start().awaitUninterruptibly();
+            logger.warning("Stored: " + fp.failedReason());
+        } else {
+            logger.warning("We cannot handle this kind of inconsistency automatically, handing over the the API dev");
+        }
 		
 	}
 
@@ -239,7 +267,7 @@ public class VDHTOperations implements IPersistence {
 	}
 
 	@Override
-	public void removeData(PeerDHT pPeer, Number160 pKey, Number160 pVersionKey)
+	public void removeDataOfVersion(PeerDHT pPeer, Number160 pKey, Number160 pVersionKey)
 			throws InterruptedException {
 		// TODO Auto-generated method stub
 		
