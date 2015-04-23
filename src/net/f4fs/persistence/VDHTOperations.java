@@ -283,7 +283,7 @@ public class VDHTOperations implements IPersistence {
 	public void removeData(PeerDHT pPeer, Number160 pKey)
 			throws InterruptedException {
         FutureRemove futureRemove = pPeer.remove(pKey).start();
-        futureRemove.addListener(new RemoveListener(pPeer.peerAddress().inetAddress().toString(), "Remove data"));
+        futureRemove.addListener(new RemoveListener(pPeer.peerAddress().inetAddress().toString(), "Remove latest data"));
 
         futureRemove.await();
 	}
@@ -291,8 +291,10 @@ public class VDHTOperations implements IPersistence {
 	@Override
 	public void removeDataOfVersion(PeerDHT pPeer, Number160 pKey, Number160 pVersionKey)
 			throws InterruptedException {
-		// TODO Auto-generated method stub
-		
+        FutureRemove futureRemove = pPeer.remove(pKey).versionKey(pVersionKey).start(); //TODO: Verify if version or location is remove!
+        futureRemove.addListener(new RemoveListener(pPeer.peerAddress().inetAddress().toString(), "Remove version data"));
+
+        futureRemove.await();
 	}
 
 }
