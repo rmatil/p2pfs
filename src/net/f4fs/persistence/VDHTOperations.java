@@ -129,7 +129,8 @@ public class VDHTOperations implements IPersistence {
     }
 
     /**
-     * get the latest version and do modification.
+     * Get the latest version and do modification.
+     * Create new FilePath.
      * 
      * @param peerDHT
      * @param pLocationKey
@@ -196,6 +197,14 @@ public class VDHTOperations implements IPersistence {
         return new Pair<Number640, K>(latestKey, latestData);
     }
 
+    /**
+     * Retrieves the latest VDHT entry according to the specified key.
+     * 
+     * @param pPeer local DHT of the peer
+     * @param pLocationKey location key of the requested entry
+     * 
+     * @return latestData latest Data all peers agree on
+     */
 	@Override
 	public Data getData(PeerDHT pPeer, Number160 pLocationKey)
 			throws InterruptedException {
@@ -220,6 +229,15 @@ public class VDHTOperations implements IPersistence {
         return latestData;
 	}
 
+    /**
+     * Retrieves a specific version of a VDHT entry.
+     * 
+     * @param pPeer local DHT of the peer
+     * @param pLocationKey location key of the requested entry
+     * @param pVersionKey version key of the requested entry
+     * 
+     * @return versionOfData all peers agree on
+     */
 	@Override
 	public Data getDataOfVersion(PeerDHT pPeer, Number160 pLocationKey, Number160 pVersionKey)
 			throws InterruptedException {
@@ -244,6 +262,14 @@ public class VDHTOperations implements IPersistence {
         return versionOfData;
 	}
 
+	
+    /**
+     * Stores a data entry in the VDHT at the specified location key.
+     * 
+     * @param pPeer local DHT of the peer
+     * @param pLocationKey location key of the data to save
+     * @param pData data to be stored at specified location
+     */
 	@Override
 	public void putData(PeerDHT pPeer, Number160 pLocationKey, Data pData)
 			throws InterruptedException, ClassNotFoundException, IOException {
@@ -279,6 +305,13 @@ public class VDHTOperations implements IPersistence {
 		
 	}
 
+	
+	/**
+	 * Removes the data of a specific location key
+	 * 
+	 * @param pPeer local DHT of the peer
+	 * @param pnKey location key of the data to be removed
+	 */
 	@Override
 	public void removeData(PeerDHT pPeer, Number160 pKey)
 			throws InterruptedException {
@@ -288,6 +321,13 @@ public class VDHTOperations implements IPersistence {
         futureRemove.await();
 	}
 
+	/**
+	 * Removes the data of a specific version of a location key
+	 * 
+	 * @param pPeer local DHT of the peer
+	 * @param pnKey location key of the data to be removed
+	 * @param pVersionKey version key of the data to be removed
+	 */
 	@Override
 	public void removeDataOfVersion(PeerDHT pPeer, Number160 pKey, Number160 pVersionKey)
 			throws InterruptedException {
