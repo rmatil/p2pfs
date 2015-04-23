@@ -15,7 +15,11 @@ import net.f4fs.util.DhtOperationsCommand;
 import net.f4fs.util.IpAddressJsonParser;
 import net.f4fs.util.ShutdownHookThread;
 
-
+/**
+ * Handles startup of the system
+ * 
+ * @author retwet
+ */
 public class Startup {
     
     private BootstrapServerAccess bootstrapServerAccess;
@@ -28,6 +32,10 @@ public class Startup {
         myIP = fsPeer.findLocalIp();
     }
     
+    /**
+     * Starts the system normal, getting the peers connected to 
+     * the DHT (if some exist) from the bootstrap server
+     */
     public void startWithBootstrapServer(){
         
         List<Map<String, String>> ipList = new ArrayList<>();
@@ -40,6 +48,12 @@ public class Startup {
         start(ipList);
     }
     
+    /**
+     * Starts the system if the IP and port of the bootstrap peer is known in advance
+     * 
+     * @param The IP address of the bootstrap peer
+     * @param The port of the bootstrap peer
+     */
     public void startWithoutBootstrapServer(String connectionIP, String connectionPort){
         List<Map<String, String>> ipList = new ArrayList<Map<String, String>>();
         
@@ -52,11 +66,18 @@ public class Startup {
         start(ipList);
     }
     
+    /**
+     * Start the peer as bootstrap peer if the size of the IP list is zero 
+     * or connect the peer to the DHT if the size of the IP list > 0
+     * and start the file system 
+     * 
+     * @param List of IP/port pairs of peers connected to the DHT
+     */
     private void start(List<Map<String, String>> ipList){
         int nrOfIpAddresses = ipList.size();
         bootstrapServerAccess.postIpPortPair(myIP, Config.DEFAULT.getPort());
         
-       // Connect to other peers if any are available, otherwise start as bootstrap peer
+        // Connect to other peers if any are available, otherwise start as bootstrap peer
         try {
             boolean success = false;
 
