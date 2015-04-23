@@ -1,5 +1,7 @@
 package net.f4fs.persistence;
 
+import java.io.IOException;
+
 import net.tomp2p.dht.PeerDHT;
 import net.tomp2p.peers.Number160;
 import net.tomp2p.storage.Data;
@@ -42,7 +44,7 @@ public interface IPersistence {
      * 
      * @throws InterruptedException If a failure happened during await of future
      */
-    public void putData(PeerDHT pPeer, Number160 pLocationKey, Data pData) throws InterruptedException;
+    public void putData(PeerDHT pPeer, Number160 pLocationKey, Data pData) throws InterruptedException, ClassNotFoundException, IOException;
     
     /**
      * Removes the specified data from the DHT.
