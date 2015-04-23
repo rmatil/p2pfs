@@ -214,14 +214,32 @@ public class VDHTOperations implements IPersistence {
         }
 
         // we got the latest data
-        return pair.element1();
+        Data latestData = pair.element1();
+        return latestData;
 	}
 
 	@Override
 	public Data getDataOfVersion(PeerDHT pPeer, Number160 pLocationKey, Number160 pVersionKey)
 			throws InterruptedException {
-		// TODO Auto-generated method stub
-		return null;
+        Pair<Number640, Data> pair = null;
+
+        for (int i = 0; i < NUMBER_OF_RETRIES; i++) {
+            FutureGet fg = pPeer.get(pLocationKey).versionKey(pVersionKey).start().awaitUninterruptibly();
+            // check if all the peers agree on the same latest version, if not
+            // wait a little and try again
+            pair = checkVersions(fg.rawData());
+            
+            if (pair != null) {
+                break;
+            }
+            
+            logger.info("Get delay or fork - get");
+            Thread.sleep(RND.nextInt(500));
+        }
+
+        // we got the latest data
+        Data versionOfData = pair.element1();
+        return versionOfData;
 	}
 
 	@Override
