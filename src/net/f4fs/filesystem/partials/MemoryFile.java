@@ -66,7 +66,7 @@ public class MemoryFile
 
             logger.info("Created File with name '" + name + "' on path '" + getPath() + "'.");
 
-        } catch (final IOException | InterruptedException e) {
+        } catch (final IOException | InterruptedException | ClassNotFoundException e) {
             logger.warning("Could not create file with name '" + name + "' on path '" + getPath() + "'. Message: " + e.getMessage());
 
             try {
@@ -196,7 +196,7 @@ public class MemoryFile
                 // only if DHT update succeeds update the value on disk
                 newContents.put(bytesRead);
                 contents = newContents;
-            } catch (InterruptedException e) {
+            } catch (InterruptedException | ClassNotFoundException | IOException e) {
                 logger.warning("Could not truncate the contents of the file on path '" + getPath() + "'. Message: " + e.getMessage());
             }
         }
@@ -237,7 +237,7 @@ public class MemoryFile
                 // it is written in chunks. Because we do not now, when everything of a certain file is
                 // written, overwrite the contents in the DHT
                 super.getPeer().putData(Number160.createHash(getPath()), new Data(contents.array()));
-            } catch (InterruptedException e) {
+            } catch (InterruptedException | ClassNotFoundException | IOException e) {
                 logger.warning("Could not write to file on path '" + getPath() + "'. Message; " + e.getMessage());
                 return -ErrorCodes.EIO();
             }

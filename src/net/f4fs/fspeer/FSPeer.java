@@ -213,9 +213,10 @@ public class FSPeer {
      * 
      * @throws IOException
      * @throws InterruptedException If a failure happened during await of future
+     * @throws ClassNotFoundException 
      */
     public void putData(Number160 pKey, Data pValue)
-            throws InterruptedException {
+            throws InterruptedException, ClassNotFoundException, IOException {
         this.persistence.putData(this.peer, pKey, pValue);
     }
 
