@@ -90,14 +90,14 @@ public class DHTOperationsTest {
     }
 
     @Test
-    public void removeDataWithVersion()
+    public void removeDataOfVersion()
             throws InterruptedException {
         dhtOperations.putData(peerDht, TEST_KEY, TEST_DATA);
 
         Data retrievedData = dhtOperations.getDataOfVersion(peerDht, TEST_KEY, TEST_KEY);
         assertEquals("Did not put data to DHT", TEST_DATA, retrievedData);
 
-        dhtOperations.removeData(peerDht, TEST_KEY, TEST_KEY);
+        dhtOperations.removeDataOfVersion(peerDht, TEST_KEY, TEST_KEY);
 
         retrievedData = dhtOperations.getDataOfVersion(peerDht, TEST_KEY, TEST_KEY);
         assertEquals("Did not remove data from DHT", null, retrievedData);
