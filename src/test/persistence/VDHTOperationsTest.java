@@ -1,4 +1,4 @@
-package test;
+package test.persistence;
 
 import static org.hamcrest.CoreMatchers.anyOf;
 import static org.hamcrest.MatcherAssert.assertThat;
