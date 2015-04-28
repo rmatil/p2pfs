@@ -102,18 +102,19 @@ public class Startup {
                 System.out.println("[Shutdown]: Bootstrap failed");
                 System.exit(1);
             }
-            
-            // start file system with the connected peer
-            new P2PFS(fsPeer).mountAndCreateIfNotExists(Config.DEFAULT.getMountPoint());
-            
-            // maybe start command line interface
-            if (Config.DEFAULT.getStartCommandLineInterface()) {
-                DhtOperationsCommand.startCommandLineInterface(fsPeer);   
-            }
 
             // Add shutdown hook so that IP address gets removed from server when
             // user does not terminate program correctly on
             Runtime.getRuntime().addShutdownHook(new ShutdownHookThread(myIP, Config.DEFAULT.getPort()));
+
+            // start file system with the connected peer
+            new P2PFS(fsPeer).mountAndCreateIfNotExists(Config.DEFAULT.getMountPoint());
+
+            // maybe start command line interface
+            if (Config.DEFAULT.getStartCommandLineInterface()) {
+                DhtOperationsCommand.startCommandLineInterface(fsPeer);
+            }
+
 
             bootstrapServerAccess.removeIpPortPair(myIP, Config.DEFAULT.getPort());
             fsPeer.shutdown();
