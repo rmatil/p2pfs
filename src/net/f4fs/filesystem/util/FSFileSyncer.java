@@ -6,7 +6,6 @@ import java.util.logging.Logger;
 
 import net.f4fs.filesystem.P2PFS;
 import net.f4fs.fspeer.FSPeer;
-import net.tomp2p.dht.FutureGet;
 import net.tomp2p.peers.Number160;
 
 
@@ -73,11 +72,10 @@ public class FSFileSyncer
                     if (_filesystem.getPath(key) == null) {
 
                         // check whether the path is a link, that means key and target are different
-                        FutureGet futureGet = _peer.getPath(Number160.createHash(key));
-                        futureGet.await();
-                        if (null != futureGet.data() && !key.equals((String) futureGet.data().object())) {
+                        String foundPath = _peer.getPath(Number160.createHash(key));
+                        if (null != foundPath && !key.equals(foundPath)) {
                             // target key is different from source key -> is a symlink
-                            _filesystem.symlink((String) futureGet.data().object(), key);
+                            _filesystem.symlink(foundPath, key);
                         } else {
                             _filesystem.create(key, null, null);
                         }

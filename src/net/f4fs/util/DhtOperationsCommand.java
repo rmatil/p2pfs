@@ -63,7 +63,7 @@ public class DhtOperationsCommand {
                 } else {
                     System.out.println("usage: put:<key>:<value>, get:<key> or 'q' for quit");
                 }
-            } catch (IOException | ClassNotFoundException pEx) {
+            } catch (IOException | ClassNotFoundException | InterruptedException pEx) {
                 pEx.printStackTrace();
             }
         }

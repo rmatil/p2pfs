@@ -10,9 +10,6 @@ import net.f4fs.fspeer.FSPeer;
 import net.fusejna.ErrorCodes;
 import net.fusejna.StructStat.StatWrapper;
 import net.fusejna.types.TypeMode.NodeType;
-import net.tomp2p.dht.FutureGet;
-import net.tomp2p.dht.FuturePut;
-import net.tomp2p.dht.FutureRemove;
 import net.tomp2p.peers.Number160;
 import net.tomp2p.storage.Data;
 
@@ -65,19 +62,17 @@ public class MemoryFile
             // only update value on the content key because file was already
             // created in parent constructor
             String stringContent = new String(contents.array(), StandardCharsets.UTF_8);
-            FuturePut futurePut = super.getPeer().putData(Number160.createHash(getPath()), new Data(stringContent));
-            futurePut.await();
+            super.getPeer().putData(Number160.createHash(getPath()), new Data(stringContent));
+
             logger.info("Created File with name '" + name + "' on path '" + getPath() + "'.");
 
-        } catch (final IOException | InterruptedException e) {
+        } catch (final IOException | InterruptedException | ClassNotFoundException e) {
             logger.warning("Could not create file with name '" + name + "' on path '" + getPath() + "'. Message: " + e.getMessage());
 
             try {
                 // remove file (also the content key in the location keys)
-                FutureRemove futureRemove = super.getPeer().removeData(Number160.createHash(getPath()));
-                futureRemove.await();
-                futureRemove = super.getPeer().removePath(Number160.createHash(getPath()));
-                futureRemove.await();
+                super.getPeer().removeData(Number160.createHash(getPath()));
+                super.getPeer().removePath(Number160.createHash(getPath()));
             } catch (InterruptedException e1) {
                 logger.warning("Could not create file with name '" + name + "' on path '" + getPath() + "'. Message: " + e.getMessage());
             }
@@ -152,16 +147,15 @@ public class MemoryFile
 
         synchronized (this) {
             try {
-                FutureGet futureGet = super.getPeer().getData(Number160.createHash(getPath()));
-                futureGet.await();
+                Data data = super.getPeer().getData(Number160.createHash(getPath()));
 
-                if (null == futureGet.data()) {
+                if (null == data) {
                     logger.warning("Could not read file on path '" + getPath() + "' from the DHT. Data was null");
                     return -ErrorCodes.EIO();
                 }
 
                 // replace current content with the content stored in the DHT
-                contents = ByteBuffer.wrap(futureGet.data().toBytes());
+                contents = ByteBuffer.wrap(data.toBytes());
 
             } catch (ClassNotFoundException | IOException | InterruptedException e) {
                 logger.warning("Could not read contents of file on path '" + getPath() + "'. Message: " + e.getMessage());
@@ -197,13 +191,12 @@ public class MemoryFile
 
             try {
                 // try to update the shortened value
-                FuturePut futurePut = super.getPeer().putData(Number160.createHash(getPath()), new Data(bytesRead));
-                futurePut.await();
+                super.getPeer().putData(Number160.createHash(getPath()), new Data(bytesRead));
 
                 // only if DHT update succeeds update the value on disk
                 newContents.put(bytesRead);
                 contents = newContents;
-            } catch (InterruptedException e) {
+            } catch (InterruptedException | ClassNotFoundException | IOException e) {
                 logger.warning("Could not truncate the contents of the file on path '" + getPath() + "'. Message: " + e.getMessage());
             }
         }
@@ -243,9 +236,8 @@ public class MemoryFile
                 // NOTE: write gets called multiple times for the same file, because
                 // it is written in chunks. Because we do not now, when everything of a certain file is
                 // written, overwrite the contents in the DHT
-                FuturePut futurePut = super.getPeer().putData(Number160.createHash(getPath()), new Data(contents.array()));
-                futurePut.await();
-            } catch (InterruptedException e) {
+                super.getPeer().putData(Number160.createHash(getPath()), new Data(contents.array()));
+            } catch (InterruptedException | ClassNotFoundException | IOException e) {
                 logger.warning("Could not write to file on path '" + getPath() + "'. Message; " + e.getMessage());
                 return -ErrorCodes.EIO();
             }

@@ -1,28 +1,23 @@
-package test;
+package test.persistence;
 
+import static org.hamcrest.CoreMatchers.anyOf;
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.contains;
 import static org.junit.Assert.assertEquals;
 
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.concurrent.CountDownLatch;
 
-import net.f4fs.vdht.VDHTOperations;
+import net.f4fs.persistence.VDHTOperations;
 import net.tomp2p.dht.FutureGet;
 import net.tomp2p.dht.FuturePut;
 import net.tomp2p.dht.PeerDHT;
 import net.tomp2p.peers.Number160;
-import net.tomp2p.peers.Number640;
 import net.tomp2p.storage.Data;
-import net.tomp2p.utils.Pair;
 
-import org.hamcrest.Matchers;
 import org.junit.BeforeClass;
 import org.junit.Test;
-
-import static org.hamcrest.Matchers.contains;
-import static org.hamcrest.CoreMatchers.anyOf;
-import static org.hamcrest.MatcherAssert.assertThat;
 
 
 /**
@@ -37,6 +32,8 @@ public class VDHTOperationsTest {
     private static final int PORT        = 4001;
 
     private static PeerDHT[] peers;
+    
+    private VDHTOperations vdhtOperations = new VDHTOperations();
 
 
     @BeforeClass
@@ -59,7 +56,7 @@ public class VDHTOperationsTest {
             @Override
             public void run() {
                 try {
-                    VDHTOperations.store(peers[1], Number160.ONE, new Data("one"));
+                    vdhtOperations.putData(peers[1], Number160.ONE, new Data("one"));
                 } catch (Exception e) {
                     e.printStackTrace();
                 }
@@ -72,7 +69,7 @@ public class VDHTOperationsTest {
             @Override
             public void run() {
                 try {
-                    VDHTOperations.store(peers[2], Number160.ONE, new Data("two"));
+                    vdhtOperations.putData(peers[2], Number160.ONE, new Data("two"));
                 } catch (Exception e) {
                     e.printStackTrace();
                 }
@@ -85,7 +82,7 @@ public class VDHTOperationsTest {
             @Override
             public void run() {
                 try {
-                    VDHTOperations.store(peers[3], Number160.ONE, new Data("three"));
+                    vdhtOperations.putData(peers[3], Number160.ONE, new Data("three"));
                 } catch (Exception e) {
                     e.printStackTrace();
                 }

@@ -6,9 +6,6 @@ import java.util.logging.Logger;
 
 import net.f4fs.fspeer.FSPeer;
 import net.fusejna.StructStat.StatWrapper;
-import net.tomp2p.dht.FutureGet;
-import net.tomp2p.dht.FuturePut;
-import net.tomp2p.dht.FutureRemove;
 import net.tomp2p.peers.Number160;
 import net.tomp2p.storage.Data;
 
@@ -40,18 +37,15 @@ public abstract class AMemoryPath {
         try {
             // If some data already exists in the DHT, do not update the value of the key
             // (E.g. could be the case, when invoked from FSFileSyncer)
-            FutureGet futureGet = peer.getData(Number160.createHash(getPath()));
-            futureGet.await();
+            Data data = peer.getData(Number160.createHash(getPath()));
 
-            if (null != futureGet.data()) {
+            if (null != data) {
                 logger.info("MemoryPath with name '" + name + "' already existed in the DHT on path '" + getPath() + "'. Creating it locallay...");
                 return;
             }
 
-            FuturePut futurePut = peer.putData(Number160.createHash(getPath()), new Data(new byte[0]));
-            futurePut.await();
-            futurePut = peer.putPath(Number160.createHash(getPath()), new Data(getPath()));
-            futurePut.await();
+            peer.putData(Number160.createHash(getPath()), new Data(new byte[0]));
+            peer.putPath(Number160.createHash(getPath()), new Data(getPath()));
 
         } catch (IOException | InterruptedException | ClassNotFoundException e) {
             logger.warning("Could not create MemoryPath with name '" + name + "' on path '" + getPath() + "'. Message: " + e.getMessage());
@@ -77,14 +71,12 @@ public abstract class AMemoryPath {
         try {
             // a symbolic link must contain the name of the target as content
             // as stated in <code>man ln</code>
-            FuturePut futurePut = peer.putData(Number160.createHash(getPath()), new Data(target.getBytes()));
-            futurePut.await();
+            peer.putData(Number160.createHash(getPath()), new Data(target.getBytes()));
             
             // create the symlink to the target
-            futurePut = peer.putPath(Number160.createHash(getPath()), new Data(existingPath.getPath()));
-            futurePut.await();
+            peer.putPath(Number160.createHash(getPath()), new Data(existingPath.getPath()));
 
-        } catch (InterruptedException | IOException e) {
+        } catch (InterruptedException | IOException | ClassNotFoundException e) {
            logger.warning("Could not create symlink '" + target + "' on path '" + getPath() + "'");
         }
     }
@@ -94,10 +86,8 @@ public abstract class AMemoryPath {
             try {
                 String path = getPath();
                 
-                FutureRemove futureRemove = peer.removePath(Number160.createHash(path));
-                futureRemove.await();
-                futureRemove = peer.removeData(Number160.createHash(path));
-                futureRemove.await();
+                peer.removePath(Number160.createHash(path));
+                peer.removeData(Number160.createHash(path));
 
                 // be aware that this must be after getPath() 
                 // otherwise the parent dir will 
@@ -136,32 +126,28 @@ public abstract class AMemoryPath {
 
         String oldName = this.name;
         try {
-            FutureGet futureGet = peer.getData(Number160.createHash(getPath()));
-            futureGet.await();
+            Data data = peer.getData(Number160.createHash(getPath()));
 
             ByteBuffer content = null;
-            if (null == futureGet.data()) {
+            if (null == data) {
                 // memoryPath is a directory and has no content
                 content = ByteBuffer.wrap(new byte[0]);
             } else {
                 // memoryPath is a file
-                content = ByteBuffer.wrap(futureGet.data().toBytes()); // content stores some bytes as string
+                content = ByteBuffer.wrap(data.toBytes()); // content stores some bytes as string
             }
 
             // remove content key and the corresponding value from the dht
             // Note: remove path first to prevent inconsistent state
-            FutureRemove futureRemove = peer.removePath(Number160.createHash(getPath()));
-            futureRemove.await();
-            futureRemove = peer.removeData(Number160.createHash(getPath()));
-            futureRemove.await();
+            peer.removePath(Number160.createHash(getPath()));
+            peer.removeData(Number160.createHash(getPath()));
 
             this.name = newName;
 
             // update content key and store the files content on the updated key again
-            FuturePut futurePut = peer.putData(Number160.createHash(getPath()), new Data(content));
-            futurePut.await();
-            futurePut = peer.putPath(Number160.createHash(getPath()), new Data(getPath()));
-            futurePut.await();
+            peer.putData(Number160.createHash(getPath()), new Data(content));
+            peer.putPath(Number160.createHash(getPath()), new Data(getPath()));
+            
             logger.info("Renamed file with name '" + oldName + "' to '" + newName + "' on path '" + getPath() + "'.");
         } catch (InterruptedException | ClassNotFoundException | IOException e) {
             logger.warning("Could not rename to '" + newName + "' on path '" + getPath() + "'. Message: " + e.getMessage());

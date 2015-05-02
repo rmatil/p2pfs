@@ -7,27 +7,21 @@ import java.net.Inet4Address;
 import java.net.InetAddress;
 import java.net.URL;
 import java.util.Collection;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.Map;
 import java.util.Set;
 import java.util.logging.Logger;
 
-import net.f4fs.config.Config;
+import net.f4fs.persistence.IPathPersistence;
+import net.f4fs.persistence.IPersistence;
 import net.f4fs.util.RandomDevice;
 import net.tomp2p.connection.Bindings;
 import net.tomp2p.connection.DiscoverNetworks;
 import net.tomp2p.connection.StandardProtocolFamily;
-import net.tomp2p.dht.FutureGet;
-import net.tomp2p.dht.FuturePut;
-import net.tomp2p.dht.FutureRemove;
 import net.tomp2p.dht.PeerBuilderDHT;
 import net.tomp2p.dht.PeerDHT;
 import net.tomp2p.futures.FutureBootstrap;
 import net.tomp2p.futures.FutureDiscover;
 import net.tomp2p.p2p.PeerBuilder;
 import net.tomp2p.peers.Number160;
-import net.tomp2p.peers.Number640;
 import net.tomp2p.peers.PeerAddress;
 import net.tomp2p.storage.Data;
 
@@ -39,9 +33,17 @@ import net.tomp2p.storage.Data;
  */
 public class FSPeer {
 
-    private Logger  logger = Logger.getLogger("FSPeer.class");
+    private PeerDHT          peer;
 
-    private PeerDHT peer;
+    private IPersistence     persistence;
+
+    private IPathPersistence pathPersistence;
+
+    public FSPeer() {
+        PersistenceFactory persistenceFactory = new PersistenceFactory();
+        this.persistence = persistenceFactory.getDhtOperations();
+        this.pathPersistence = persistenceFactory.getPathPersistence();
+    }
 
     /**
      * Starts this peer as the first, i.e. bootstrap peer
@@ -179,13 +181,11 @@ public class FSPeer {
      * 
      * @throws ClassNotFoundException
      * @throws IOException
+     * @throws InterruptedException If a failure happened during await of future
      */
-    public FutureGet getData(Number160 pKey)
-            throws ClassNotFoundException, IOException {
-        FutureGet futureGet = peer.get(pKey).start();
-        futureGet.addListener(new GetListener(peer.peerAddress().inetAddress().toString(), "Get data for key " + pKey.toString(true)));
-
-        return futureGet;
+    public Data getData(Number160 pKey)
+            throws ClassNotFoundException, IOException, InterruptedException {
+        return this.persistence.getData(this.peer, pKey);
     }
 
     /**
@@ -194,12 +194,14 @@ public class FSPeer {
      * @param pContentKey The content key specifying the path of the file
      * 
      * @return FutureGet to get the data
+     * 
+     * @throws IOException
+     * @throws InterruptedException If a failure happened during await of future
+     * @throws ClassNotFoundException
      */
-    public FutureGet getPath(Number160 pContentKey) {
-        FutureGet futureGet = peer.get(Number160.createHash(Config.DEFAULT.getMasterLocationPathsKey())).contentKey(pContentKey).start();
-        futureGet.addListener(new GetListener(peer.peerAddress().inetAddress().toString(), "Get path for content key " + pContentKey.toString(true)));
-
-        return futureGet;
+    public String getPath(Number160 pContentKey)
+            throws ClassNotFoundException, InterruptedException, IOException {
+        return this.pathPersistence.getPath(this.peer, pContentKey);
     }
 
     /**
@@ -208,31 +210,15 @@ public class FSPeer {
      * @param pLocationKey
      * @return keys List with all keys to the files in the dht
      * 
+     * @throws IOException
+     * @throws InterruptedException If a failure happened during await of future
+     * @throws ClassNotFoundException
+     * 
      * @throws Exception
      */
     public Set<String> getAllPaths()
-            throws Exception {
-        Set<String> keys = new HashSet<>();
-
-        FutureGet futureGet = peer.get(Number160.createHash(Config.DEFAULT.getMasterLocationPathsKey())).all().start();
-        futureGet.addListener(new GetListener(peer.peerAddress().inetAddress().toString(), "Get all paths"));
-        futureGet.await();
-
-        try {
-            Map<Number640, Data> map = futureGet.dataMap();
-            Collection<Data> collection = map.values();
-
-            Iterator<Data> iter = collection.iterator();
-            while (iter.hasNext()) {
-                keys.add((String) iter.next().object());
-            }
-        } catch (IllegalArgumentException iae) {
-            // catches an exception from TomP2P when dataMap() is called
-            // during Thread.join (-> see FSFileSyncer)
-            logger.warning("FutureGet.dataMap() throwed an exception. Message: " + iae.getMessage());
-        }
-
-        return keys;
+            throws ClassNotFoundException, InterruptedException, IOException {
+        return this.pathPersistence.getAllPaths(this.peer);
     }
 
     /**
@@ -242,12 +228,12 @@ public class FSPeer {
      * @param pValue The data to store
      * 
      * @throws IOException
+     * @throws InterruptedException If a failure happened during await of future
+     * @throws ClassNotFoundException
      */
-    public FuturePut putData(Number160 pKey, Data pValue) {
-        FuturePut futurePut = peer.put(pKey).data(pValue).start();
-        futurePut.addListener(new PutListener(peer.peerAddress().inetAddress().toString(), "Put data for key " + pKey.toString(true)));
-
-        return futurePut;
+    public void putData(Number160 pKey, Data pValue)
+            throws InterruptedException, ClassNotFoundException, IOException {
+        this.persistence.putData(this.peer, pKey, pValue);
     }
 
     /**
@@ -257,25 +243,23 @@ public class FSPeer {
      * @param pContentKey The key to store the data
      * @param pValue The data to store
      * 
-     * @throws IOException
+     * @throws InterruptedException If a failure happened during await of future
      */
-    public FuturePut putPath(Number160 pContentKey, Data pValue) {
-        FuturePut futurePut = peer.put(Number160.createHash(Config.DEFAULT.getMasterLocationPathsKey())).data(pContentKey, pValue).start();
-        futurePut.addListener(new PutListener(peer.peerAddress().inetAddress().toString(), "Put path for key " + pContentKey.toString(true)));
-
-        return futurePut;
+    public void putPath(Number160 pContentKey, Data pValue)
+            throws InterruptedException {
+        this.pathPersistence.putPath(this.peer, pContentKey, pValue);
     }
 
     /**
      * Removes the assigned data from the peer
      * 
      * @param pKey Key of which the data should be removed
+     * 
+     * @throws InterruptedException If a failure happened during await of future
      */
-    public FutureRemove removeData(Number160 pKey) {
-        FutureRemove futureRemove = peer.remove(pKey).start();
-        futureRemove.addListener(new RemoveListener(peer.peerAddress().inetAddress().toString(), "Remove data for key " + pKey.toString(true)));
-
-        return futureRemove;
+    public void removeData(Number160 pKey)
+            throws InterruptedException {
+        this.persistence.removeData(this.peer, pKey);
     }
 
     /**
@@ -283,11 +267,15 @@ public class FSPeer {
      * 
      * @param pLocationKey
      * @param pContentKey
+     * 
+     * @throws InterruptedException If a failure happened during await of future
      */
-    public FutureRemove removePath(Number160 pContentKey) {
-        FutureRemove futureRemove = peer.remove(Number160.createHash(Config.DEFAULT.getMasterLocationPathsKey())).contentKey(pContentKey).start();
-        futureRemove.addListener(new RemoveListener(peer.peerAddress().inetAddress().toString(), "Remove path for content key " + pContentKey.toString(true)));
+    public void removePath(Number160 pContentKey)
+            throws InterruptedException {
+        this.pathPersistence.removePath(this.peer, pContentKey);
+    }
 
-        return futureRemove;
+    public PeerDHT getPeerDHT() {
+        return this.peer;
     }
 }

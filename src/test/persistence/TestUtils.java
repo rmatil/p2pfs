@@ -13,7 +13,7 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-package test;
+package test.persistence;
 
 import java.io.IOException;
 import java.util.Random;
