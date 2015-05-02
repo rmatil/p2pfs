@@ -57,6 +57,37 @@ public abstract class AMemoryPath {
             logger.warning("Could not create MemoryPath with name '" + name + "' on path '" + getPath() + "'. Message: " + e.getMessage());
         }
     }
+    
+    /**
+     * Submits a symbolic link to the DHT named as provided in <b>target</b> pointing
+     * to the file located represented by <b>existingPath</b>.
+     * 
+     * <p style="color:red">Note: Does not add the content to the local disk</p>
+     * 
+     * @param existingPath The already existing path on disk to which the link should point
+     * @param target The name of the symbolic link
+     * @param parent The parent directory in which the link should be placed
+     * @param peer The peer
+     */
+    public AMemoryPath(final AMemoryPath existingPath, final String target, final MemoryDirectory parent, FSPeer peer) {
+        this.name = target;
+        this.parent = parent;
+        this.peer = peer;
+
+        try {
+            // a symbolic link must contain the name of the target as content
+            // as stated in <code>man ln</code>
+            FuturePut futurePut = peer.putData(Number160.createHash(getPath()), new Data(target.getBytes()));
+            futurePut.await();
+            
+            // create the symlink to the target
+            futurePut = peer.putPath(Number160.createHash(getPath()), new Data(existingPath.getPath()));
+            futurePut.await();
+
+        } catch (InterruptedException | IOException e) {
+           logger.warning("Could not create symlink '" + target + "' on path '" + getPath() + "'");
+        }
+    }
 
     public synchronized void delete() {
         if (parent != null) {

@@ -180,11 +180,24 @@ public class FSPeer {
     public FutureGet getData(Number160 pKey)
             throws ClassNotFoundException, IOException {
         FutureGet futureGet = peer.get(pKey).start();
-        futureGet.addListener(new GetListener(peer.peerAddress().inetAddress().toString(), "Get data"));
+        futureGet.addListener(new GetListener(peer.peerAddress().inetAddress().toString(), "Get data for key " + pKey.toString(true)));
 
         return futureGet;
     }
+    
+    /**
+     * Gets the assigned data (the path to the file) of the given content key on the default location key
+     * 
+     * @param pContentKey The content key specifying the path of the file
+     *  
+     * @return FutureGet to get the data
+     */
+    public FutureGet getPath(Number160 pContentKey) {
+        FutureGet futureGet = peer.get(Number160.createHash(Config.DEFAULT.getMasterLocationPathsKey())).contentKey(pContentKey).start();
+        futureGet.addListener(new GetListener(peer.peerAddress().inetAddress().toString(), "Get path for content key " + pContentKey.toString(true)));
 
+        return futureGet;
+    }
 
     /**
      * Gets all keys of all files stored in the dht
@@ -223,7 +236,7 @@ public class FSPeer {
      */
     public FuturePut putData(Number160 pKey, Data pValue) {
         FuturePut futurePut = peer.put(pKey).data(pValue).start();
-        futurePut.addListener(new PutListener(peer.peerAddress().inetAddress().toString(), "Put data"));
+        futurePut.addListener(new PutListener(peer.peerAddress().inetAddress().toString(), "Put data for key " + pKey.toString(true)));
 
         return futurePut;
     }
@@ -239,7 +252,7 @@ public class FSPeer {
      */
     public FuturePut putPath(Number160 pContentKey, Data pValue) {
         FuturePut futurePut = peer.put(Number160.createHash(Config.DEFAULT.getMasterLocationPathsKey())).data(pContentKey, pValue).start();
-        futurePut.addListener(new PutListener(peer.peerAddress().inetAddress().toString(), "Put path"));
+        futurePut.addListener(new PutListener(peer.peerAddress().inetAddress().toString(), "Put path for key " + pContentKey.toString(true)));
 
         return futurePut;
     }
@@ -251,7 +264,7 @@ public class FSPeer {
      */
     public FutureRemove removeData(Number160 pKey) {
         FutureRemove futureRemove = peer.remove(pKey).start();
-        futureRemove.addListener(new RemoveListener(peer.peerAddress().inetAddress().toString(), "Remove data"));
+        futureRemove.addListener(new RemoveListener(peer.peerAddress().inetAddress().toString(), "Remove data for key " + pKey.toString(true)));
 
         return futureRemove;
     }
@@ -264,7 +277,7 @@ public class FSPeer {
      */
     public FutureRemove removePath(Number160 pContentKey) {
         FutureRemove futureRemove = peer.remove(Number160.createHash(Config.DEFAULT.getMasterLocationPathsKey())).contentKey(pContentKey).start();
-        futureRemove.addListener(new RemoveListener(peer.peerAddress().inetAddress().toString(), "Remove path"));
+        futureRemove.addListener(new RemoveListener(peer.peerAddress().inetAddress().toString(), "Remove path for content key " + pContentKey.toString(true)));
 
         return futureRemove;
     }
