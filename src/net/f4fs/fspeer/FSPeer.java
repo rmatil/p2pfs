@@ -11,6 +11,7 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.Set;
+import java.util.logging.Logger;
 
 import net.f4fs.config.Config;
 import net.f4fs.util.RandomDevice;
@@ -37,6 +38,8 @@ import net.tomp2p.storage.Data;
  * @author Reto
  */
 public class FSPeer {
+
+    private Logger  logger = Logger.getLogger("FSPeer.class");
 
     private PeerDHT peer;
 
@@ -184,12 +187,12 @@ public class FSPeer {
 
         return futureGet;
     }
-    
+
     /**
      * Gets the assigned data (the path to the file) of the given content key on the default location key
      * 
      * @param pContentKey The content key specifying the path of the file
-     *  
+     * 
      * @return FutureGet to get the data
      */
     public FutureGet getPath(Number160 pContentKey) {
@@ -215,12 +218,18 @@ public class FSPeer {
         futureGet.addListener(new GetListener(peer.peerAddress().inetAddress().toString(), "Get all paths"));
         futureGet.await();
 
-        Map<Number640, Data> map = futureGet.dataMap();
-        Collection<Data> collection = map.values();
+        try {
+            Map<Number640, Data> map = futureGet.dataMap();
+            Collection<Data> collection = map.values();
 
-        Iterator<Data> iter = collection.iterator();
-        while (iter.hasNext()) {
-            keys.add((String) iter.next().object());
+            Iterator<Data> iter = collection.iterator();
+            while (iter.hasNext()) {
+                keys.add((String) iter.next().object());
+            }
+        } catch (IllegalArgumentException iae) {
+            // catches an exception from TomP2P when dataMap() is called
+            // during Thread.join (-> see FSFileSyncer)
+            logger.warning("FutureGet.dataMap() throwed an exception. Message: " + iae.getMessage());
         }
 
         return keys;
