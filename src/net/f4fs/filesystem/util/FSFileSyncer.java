@@ -2,6 +2,7 @@ package net.f4fs.filesystem.util;
 
 import java.util.HashSet;
 import java.util.Set;
+import java.util.logging.Logger;
 
 import net.f4fs.filesystem.P2PFS;
 import net.f4fs.fspeer.FSPeer;
@@ -17,10 +18,12 @@ import net.tomp2p.peers.Number160;
 public class FSFileSyncer
         implements Runnable {
 
+    private Logger       logger = Logger.getLogger("FSFileSyncer.class");
+
     /**
      * List representing all fetched keys
      */
-    private Set<String>  keys = new HashSet<>();
+    private Set<String>  keys   = new HashSet<>();
 
     /**
      * Filesystem to update its paths
@@ -65,16 +68,10 @@ public class FSFileSyncer
                 Set<String> localPaths = _filesystem.getAllPaths();
                 keys = _peer.getAllPaths();
 
-                // remove deleted files / dirs / symlinks / ...
-                localPaths.removeAll(keys); // list of all localPaths which are removed in the DHT
-                for (String pathToDelete : localPaths) {
-                    _filesystem.unlink(pathToDelete);
-                }
-
                 // create local non-existing files
                 for (String key : keys) {
                     if (_filesystem.getPath(key) == null) {
-                        
+
                         // check whether the path is a link, that means key and target are different
                         FutureGet futureGet = _peer.getPath(Number160.createHash(key));
                         futureGet.await();
@@ -87,7 +84,14 @@ public class FSFileSyncer
                     }
                 }
 
-                Thread.sleep(10000);
+                // remove deleted files / dirs / symlinks / ...
+                localPaths.removeAll(keys); // list of all localPaths which are removed in the DHT
+                for (String pathToDelete : localPaths) {
+                    logger.info("Call removal of element on path '" + pathToDelete + "'. LocalPaths: " + localPaths + ", DHTPaths: " + keys);
+                    _filesystem.unlink(pathToDelete);
+                }
+
+                Thread.sleep(1000);
             } catch (Exception pEx) {
                 pEx.printStackTrace();
                 _isRunning = false;
