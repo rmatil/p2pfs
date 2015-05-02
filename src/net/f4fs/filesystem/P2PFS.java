@@ -11,6 +11,7 @@ import net.f4fs.config.FSStatConfig;
 import net.f4fs.filesystem.partials.AMemoryPath;
 import net.f4fs.filesystem.partials.MemoryDirectory;
 import net.f4fs.filesystem.partials.MemoryFile;
+import net.f4fs.filesystem.partials.MemorySymLink;
 import net.f4fs.filesystem.util.FSFileSyncer;
 import net.f4fs.filesystem.util.FSFileUtils;
 import net.f4fs.fspeer.FSPeer;
@@ -170,7 +171,7 @@ public class P2PFS
      */
     @Override
     public int create(final String path, final ModeWrapper mode, final FileInfoWrapper info) {
-        
+
         if (getPath(path) != null) {
             logger.info("File on path " + path + " could not be created. A file with the same name already exists (Error code " + -ErrorCodes.EEXIST() + ").");
             return -ErrorCodes.EEXIST();
@@ -266,32 +267,45 @@ public class P2PFS
     public int open(final String path, final FileInfoWrapper info) {
         // ensures that file will be read even if the file is empty
         AMemoryPath filePath = getPath(path);
-        if(filePath instanceof MemoryFile){
+        if (filePath instanceof MemoryFile) {
             MemoryFile file = (MemoryFile) filePath;
-            
-           if (file.getContent().capacity() == 0) {
-               read(path, ByteBuffer.allocate((int) FSStatConfig.BIGGER.getBsize()), FSStatConfig.BIGGER.getBsize(), 0, null);               
-           }
-        } 
-        
+
+            // read only file contents when empty on disk
+            // to force loading of the content from the DHT
+            if (file.getContent().capacity() == 0) {
+                read(path, ByteBuffer.allocate((int) FSStatConfig.BIGGER.getBsize()), FSStatConfig.BIGGER.getBsize(), 0, null);
+            }
+        } else if (filePath instanceof MemorySymLink) {
+            MemorySymLink symLink = (MemorySymLink) filePath;
+            AMemoryPath target = getPath(symLink.getTarget());
+
+            if (target instanceof MemoryFile) {
+                MemoryFile targetFile = (MemoryFile) target;
+                // read only file contents when empty on disk
+                // to force loading of the content from the DHT
+                if (targetFile.getContent().capacity() == 0) {
+                    read(targetFile.getPath(), ByteBuffer.allocate((int) FSStatConfig.BIGGER.getBsize()), FSStatConfig.BIGGER.getBsize(), 0, null);
+                }
+            }
+        }
+
         return 0;
     }
 
     @Override
     public int read(final String path, final ByteBuffer buffer, final long size, final long offset, final FileInfoWrapper info) {
         final AMemoryPath p = getPath(path);
-    
+
         if (p == null) {
             logger.warning("Failed to read file on " + path + ". No such file or directory (Error code " + -ErrorCodes.ENOENT() + ").");
             return -ErrorCodes.ENOENT();
         }
-        if (!(p instanceof MemoryFile)) {
+        if ((p instanceof MemoryDirectory)) {
             logger.warning("Failed to read file on " + path + ". Path is a directory (Error code " + -ErrorCodes.EISDIR() + ").");
             return -ErrorCodes.EISDIR();
         }
 
         logger.info("Read file on path " + path);
-
         return ((MemoryFile) p).read(buffer, size, offset);
     }
 
@@ -305,6 +319,34 @@ public class P2PFS
             return -ErrorCodes.ENOTDIR();
         }
         ((MemoryDirectory) p).read(filler);
+        return 0;
+    }
+
+    /**
+     * Writes the name of the target corresponding to the
+     * symlink on <code>path</code> to the provided ByteBuffer. <br>
+     * <b style="color:red">NOTE: Symbolic-link support requires only readlink and symlink.
+     * FUSE itself will take care of tracking symbolic links in paths, so your
+     * path-evaluation code doesn't need to worry about it.</b>
+     * 
+     * @param path The path to the symlink
+     * @param buffer The buffer to which the target filename should be written to
+     * @param size Size
+     */
+    @Override
+    public int readlink(final String path, final ByteBuffer buffer, final long size) {
+        final AMemoryPath p = getPath(path);
+
+        if (p == null) {
+            return -ErrorCodes.ENOENT();
+        }
+        if (!(p instanceof MemorySymLink)) {
+            return -ErrorCodes.EINVAL();
+        }
+
+        MemorySymLink symlink = (MemorySymLink) p;
+        buffer.put(symlink.getExistingPath().getName().getBytes());
+
         return 0;
     }
 
@@ -335,6 +377,39 @@ public class P2PFS
             return -ErrorCodes.ENOTDIR();
         }
         p.delete();
+        return 0;
+    }
+
+    /**
+     * A symbolic link <code>target</code> is created to <code>path</code>.
+     * (<code>target</code> is the name of the file created, <code>path</code> is the string used in creating the symbolic link) <br>
+     * <b style="color:red">NOTE: Symbolic-link support requires only readlink and symlink.
+     * FUSE itself will take care of tracking symbolic links in paths, so your
+     * path-evaluation code doesn't need to worry about it.</b>
+     * 
+     * @param path The already existing file to which the link should be created
+     * @param target The path of the symlink which points to <code>path</code>
+     */
+    @Override
+    public int symlink(final String path, final String target) {
+        final AMemoryPath existingPath = getPath(getLastComponent(path));
+        if (null == existingPath || target.isEmpty()) {
+            logger.warning("Could not create symlink '" + target + "' on file '" + path + "'. No such file or directory or target path is empty");
+            return -ErrorCodes.ENOENT();
+        }
+
+        final AMemoryPath newParent = getParentPath(target);
+        if (newParent == null) {
+            logger.warning("Could not create symlink '" + target + "' on file '" + path + "'. Parent directory does not exist");
+            return -ErrorCodes.ENOENT();
+        }
+        if (!(newParent instanceof MemoryDirectory)) {
+            logger.warning("Could not create symlink '" + target + "' on file '" + path + "'. Parent is not a direcotry");
+            return -ErrorCodes.ENOTDIR();
+        }
+
+        MemoryDirectory parentDir = (MemoryDirectory) newParent;
+        parentDir.symlink(existingPath, getLastComponent(target));
         return 0;
     }
 
@@ -436,8 +511,8 @@ public class P2PFS
         for (AMemoryPath path : dir.getContents()) {
             if (path instanceof MemoryDirectory) {
                 Set<String> dirSubPaths = getDirSubPaths((MemoryDirectory) path);
-                if( dirSubPaths.size() == 0){
-                    // this directory is empty 
+                if (dirSubPaths.size() == 0) {
+                    // this directory is empty
                     allPaths.add(path.getPath());
                 } else {
                     // directory ios not empty
