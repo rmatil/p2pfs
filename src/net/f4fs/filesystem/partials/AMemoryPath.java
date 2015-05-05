@@ -145,7 +145,7 @@ public abstract class AMemoryPath {
             this.name = newName;
 
             // update content key and store the files content on the updated key again
-            peer.putData(Number160.createHash(getPath()), new Data(content));
+            peer.putData(Number160.createHash(getPath()), new Data(content.array()));
             peer.putPath(Number160.createHash(getPath()), new Data(getPath()));
             
             logger.info("Renamed file with name '" + oldName + "' to '" + newName + "' on path '" + getPath() + "'.");
