@@ -21,6 +21,7 @@ import net.fusejna.FuseException;
 import net.fusejna.StructFuseFileInfo.FileInfoWrapper;
 import net.fusejna.StructStat.StatWrapper;
 import net.fusejna.StructStatvfs.StatvfsWrapper;
+import net.fusejna.types.TypeMode;
 import net.fusejna.types.TypeMode.ModeWrapper;
 import net.fusejna.util.FuseFilesystemAdapterFull;
 
@@ -179,15 +180,14 @@ public class P2PFS
         final AMemoryPath parent = getParentPath(path);
         if (parent instanceof MemoryDirectory) {
 
-            String fileName = getLastComponent(path);
-            // check if it is a file based on the filename
-            if (isFile(fileName)) {
-                ((MemoryDirectory) parent).mkfile(getLastComponent(path));
-            } else {
+            if (TypeMode.NodeType.DIRECTORY == mode.type()) {
                 ((MemoryDirectory) parent).mkdir(getLastComponent(path));
+                logger.info("Created directory   on path: " + path);
+            } else if (TypeMode.NodeType.FILE == mode.type()) {
+                ((MemoryDirectory) parent).mkfile(getLastComponent(path));
+                logger.info("Created file on path: " + path);
             }
 
-            logger.info("Created file on path: " + path);
             return 0;
         }
 
@@ -525,22 +525,5 @@ public class P2PFS
 
         return allPaths;
     }
-
-    /**
-     * Checks if the provided file is a file or a directory
-     * based on the existence of a dot in the last component of the path.
-     * 
-     * @param path The path to check
-     * @return True if it is a file, false otherwise
-     */
-    public boolean isFile(String path) {
-        String lastCompoment = getLastComponent(path);
-
-        if (!lastCompoment.contains(".")) {
-            return false;
-        }
-
-        return true;
-    }
-
 }
+
