@@ -5,7 +5,13 @@ import java.nio.ByteBuffer;
 import net.f4fs.filesystem.P2PFS;
 import net.f4fs.fspeer.FSPeer;
 
-
+/**
+ * An event which gets dispatched when the file is completely
+ * written, i.e. no chunks should be added anymore.
+ * 
+ * @author Raphael
+ *
+ */
 public class CompleteWriteEvent
         extends AEvent {
     

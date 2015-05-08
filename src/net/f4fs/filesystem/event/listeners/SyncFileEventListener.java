@@ -7,7 +7,12 @@ import net.f4fs.filesystem.event.events.AEvent;
 import net.f4fs.filesystem.event.events.AfterWriteEvent;
 import net.tomp2p.peers.Number160;
 
-
+/**
+ * Syncs files on disk with the ones on the DHT.
+ * 
+ * @author Reto
+ *
+ */
 public class SyncFileEventListener
         implements IEventListener {
 

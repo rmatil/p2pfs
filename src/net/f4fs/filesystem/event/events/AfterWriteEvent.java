@@ -3,7 +3,14 @@ package net.f4fs.filesystem.event.events;
 import net.f4fs.filesystem.P2PFS;
 import net.f4fs.fspeer.FSPeer;
 
-
+/**
+ * An event which gets dispatched after
+ * all files got either written completely to the DHT
+ * or not.
+ * 
+ * @author Raphael
+ *
+ */
 public class AfterWriteEvent
         extends AEvent {
     

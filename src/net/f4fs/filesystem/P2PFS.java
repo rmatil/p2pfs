@@ -79,10 +79,8 @@ public class P2PFS
         this.executorService = Executors.newCachedThreadPool();
 
         // start thread to maintain local FS
+        // note, that thrown exceptions are not shown...
         this.executorService.submit(this.fsFileMonitor);
-        
-//        Thread fsFileMonitorThread = new Thread(fsFileMonitor);
-//        fsFileMonitorThread.start();
         
         super.log(false);
     }

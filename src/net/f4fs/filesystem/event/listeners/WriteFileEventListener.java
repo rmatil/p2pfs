@@ -8,7 +8,12 @@ import net.f4fs.filesystem.event.events.CompleteWriteEvent;
 import net.tomp2p.peers.Number160;
 import net.tomp2p.storage.Data;
 
-
+/**
+ * Writes the file to the DHT when complete
+ * 
+ * @author Raphael
+ *
+ */
 public class WriteFileEventListener
         implements IEventListener {
     

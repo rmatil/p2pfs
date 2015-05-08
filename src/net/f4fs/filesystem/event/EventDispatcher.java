@@ -9,7 +9,13 @@ import java.util.logging.Logger;
 import net.f4fs.filesystem.event.events.AEvent;
 import net.f4fs.filesystem.event.listeners.IEventListener;
 
-
+/**
+ * Event dispatcher, on which event listeners can be registered
+ * for certain events, and events can be dispatched.
+ * 
+ * @author Raphael
+ *
+ */
 public class EventDispatcher {
 
     private Map<String, List<IEventListener>> eventListeners;
