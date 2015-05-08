@@ -39,7 +39,7 @@ public class FSPeer {
     private IPathPersistence pathPersistence;
 
     public FSPeer() {
-        this.persistence = PersistenceFactory.getVdhtOperations();
+        this.persistence = PersistenceFactory.getVersionedDhtOperations();
         this.pathPersistence = PersistenceFactory.getPathPersistence();
     }
 

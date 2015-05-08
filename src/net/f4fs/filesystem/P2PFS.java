@@ -5,14 +5,21 @@ import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.util.HashSet;
 import java.util.Set;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.TimeUnit;
 import java.util.logging.Logger;
 
 import net.f4fs.config.FSStatConfig;
+import net.f4fs.filesystem.fsfilemonitor.FSFileMonitor;
+import net.f4fs.filesystem.fsfilemonitor.IAfterCompleteWriteEventListener;
+import net.f4fs.filesystem.fsfilemonitor.ICompleteWriteEventListener;
+import net.f4fs.filesystem.fsfilemonitor.SyncFileEventListener;
+import net.f4fs.filesystem.fsfilemonitor.WriteFileEventListener;
 import net.f4fs.filesystem.partials.AMemoryPath;
 import net.f4fs.filesystem.partials.MemoryDirectory;
 import net.f4fs.filesystem.partials.MemoryFile;
 import net.f4fs.filesystem.partials.MemorySymLink;
-import net.f4fs.filesystem.util.FSFileSyncer;
 import net.f4fs.filesystem.util.FSFileUtils;
 import net.f4fs.fspeer.FSPeer;
 import net.fusejna.DirectoryFiller;
@@ -21,7 +28,6 @@ import net.fusejna.FuseException;
 import net.fusejna.StructFuseFileInfo.FileInfoWrapper;
 import net.fusejna.StructStat.StatWrapper;
 import net.fusejna.StructStatvfs.StatvfsWrapper;
-import net.fusejna.types.TypeMode;
 import net.fusejna.types.TypeMode.ModeWrapper;
 import net.fusejna.util.FuseFilesystemAdapterFull;
 
@@ -48,9 +54,9 @@ public class P2PFS
      */
     private static final Logger   logger = Logger.getLogger("P2PFS.class");
 
-    private Thread                fileSyncerThread;
+    private FSFileMonitor         fsFileMonitor;
 
-    private FSFileSyncer          fileSyncer;
+    private ExecutorService       executorService;
 
     /**
      * Creates a new instance of this file system.
@@ -64,11 +70,18 @@ public class P2PFS
             throws IOException {
 
         rootDirectory = new MemoryDirectory("/", peer);
+        
+        
+        ICompleteWriteEventListener writeFileEventListener = new WriteFileEventListener();
+        IAfterCompleteWriteEventListener syncFileEventListener = new SyncFileEventListener();
+        
+        this.fsFileMonitor = new FSFileMonitor(this, peer);
+        this.fsFileMonitor.registerCompleteWriteEventListener(writeFileEventListener);
+        this.fsFileMonitor.registerAfterCompleteWriteEventListener(syncFileEventListener);
+        this.executorService = Executors.newFixedThreadPool(1);
 
-        // start thread to get all file keys from dht
-        fileSyncer = new FSFileSyncer(this, peer);
-        fileSyncerThread = new Thread(fileSyncer);
-        fileSyncerThread.start(); // use start() instead of run()
+        // start thread to maintain local FS
+        this.executorService.submit(this.fsFileMonitor);
 
         super.log(false);
     }
@@ -96,17 +109,20 @@ public class P2PFS
             FSFileUtils.deleteFileOrFolder(mountPoint);
         }
 
-        if (null != fileSyncerThread) {
-            // indicate stop flag on runnable
-            fileSyncer.terminate();
-
-            try {
-                // wait until run() of runnable is terminated
-                fileSyncerThread.join();
-                logger.info("FSFileSyncer stopped successfully");
-            } catch (InterruptedException e) {
-                logger.warning("Could not terminate FSFileSyncer properly");
+        // shutdown file monitor
+        try {
+            logger.info("Attempt to shutdown thread executor service");
+            this.fsFileMonitor.terminate();
+            this.executorService.shutdown();
+            this.executorService.awaitTermination(3, TimeUnit.SECONDS);
+        } catch (InterruptedException e) {
+            logger.info("Tasks interrupted");
+        } finally {
+            if (!this.executorService.isTerminated()) {
+                logger.info("Cancel non-finished tasks");
             }
+            this.executorService.shutdownNow();
+            logger.info("Shutdown of executor service finished");
         }
     }
 
@@ -179,15 +195,28 @@ public class P2PFS
         }
         final AMemoryPath parent = getParentPath(path);
         if (parent instanceof MemoryDirectory) {
+            String fileName = FSFileUtils.getLastComponent(path);
+            // check if it is a file based on the filename
+            if (FSFileUtils.isFile(fileName)) {
+                ((MemoryDirectory) parent).mkfile(FSFileUtils.getLastComponent(path));
 
-            if (TypeMode.NodeType.DIRECTORY == mode.type()) {
-                ((MemoryDirectory) parent).mkdir(getLastComponent(path));
+                MemoryFile createdFile = (MemoryFile) ((MemoryDirectory) parent).find(FSFileUtils.getLastComponent(path));
+
+                if (!FSFileUtils.isContainedInVersionFolder(createdFile)) {
+                    // NOTE: we only add the file to the monitor
+                    // if it is not a version. This due to the procedure
+                    // how the versions get put into the vDHT: Version files get written
+                    // directly into the vDHT, then the FSFileSyncer creates them locally.
+                    // If we would not check this here, an infinite number of version folders
+                    // would be created in each other, containing the version of the version (of the version, ...)
+                    this.fsFileMonitor.addMonitoredFile(path, createdFile.getContent());                    
+                }
+            } else {
+                ((MemoryDirectory) parent).mkdir(FSFileUtils.getLastComponent(path));
                 logger.info("Created directory   on path: " + path);
-            } else if (TypeMode.NodeType.FILE == mode.type()) {
-                ((MemoryDirectory) parent).mkfile(getLastComponent(path));
-                logger.info("Created file on path: " + path);
             }
 
+            logger.info("Created file on path: " + path);
             return 0;
         }
 
@@ -213,22 +242,6 @@ public class P2PFS
     }
 
     /**
-     * Returns the last substring delimited by <i>/</i>.
-     * 
-     * @param path The path of which to get the last part
-     * @return The last part delimited by <i>/</i>
-     */
-    private String getLastComponent(String path) {
-        while (path.substring(path.length() - 1).equals("/")) {
-            path = path.substring(0, path.length() - 1);
-        }
-        if (path.isEmpty()) {
-            return "";
-        }
-        return path.substring(path.lastIndexOf("/") + 1);
-    }
-
-    /**
      * Get path to parent from provided path
      * 
      * @param path Path of which to get the path to its parent
@@ -249,7 +262,7 @@ public class P2PFS
         }
         final AMemoryPath parent = getParentPath(path);
         if (parent instanceof MemoryDirectory) {
-            ((MemoryDirectory) parent).mkdir(getLastComponent(path));
+            ((MemoryDirectory) parent).mkdir(FSFileUtils.getLastComponent(path));
             return 0;
         }
 
@@ -303,6 +316,20 @@ public class P2PFS
         if ((p instanceof MemoryDirectory)) {
             logger.warning("Failed to read file on " + path + ". Path is a directory (Error code " + -ErrorCodes.EISDIR() + ").");
             return -ErrorCodes.EISDIR();
+        }
+        
+        ByteBuffer monitoredFile = this.fsFileMonitor.getFileContent(path);
+        if (null != monitoredFile) {
+            final int bytesToRead = (int) Math.min(monitoredFile.capacity() - offset, size);
+            final byte[] bytesRead = new byte[bytesToRead];
+            
+            monitoredFile.position((int) offset);
+            monitoredFile.get(bytesRead, 0, bytesToRead);
+            buffer.put(bytesRead);
+            monitoredFile.position(0); // Rewind
+            
+            logger.info("Read contents from file on path '" + path + "' from file monitor");
+            return bytesToRead;
         }
 
         logger.info("Read file on path " + path);
@@ -392,7 +419,7 @@ public class P2PFS
      */
     @Override
     public int symlink(final String path, final String target) {
-        final AMemoryPath existingPath = getPath(getLastComponent(path));
+        final AMemoryPath existingPath = getPath(FSFileUtils.getLastComponent(path));
         if (null == existingPath || target.isEmpty()) {
             logger.warning("Could not create symlink '" + target + "' on file '" + path + "'. No such file or directory or target path is empty");
             return -ErrorCodes.ENOENT();
@@ -409,7 +436,7 @@ public class P2PFS
         }
 
         MemoryDirectory parentDir = (MemoryDirectory) newParent;
-        parentDir.symlink(existingPath, getLastComponent(target));
+        parentDir.symlink(existingPath, FSFileUtils.getLastComponent(target));
         return 0;
     }
 
@@ -449,9 +476,12 @@ public class P2PFS
             return -ErrorCodes.EISDIR();
         }
 
-        logger.info("Wrote to file on path " + path);
+        int returnCode = ((MemoryFile) p).write(buf, bufSize, writeOffset); 
 
-        return ((MemoryFile) p).write(buf, bufSize, writeOffset);
+        // overwrite monitored content and update countdown
+        this.fsFileMonitor.addMonitoredFile(p.getPath(), ((MemoryFile) p).getContent()); 
+
+        return returnCode;
     }
 
     @Override
@@ -526,4 +556,3 @@ public class P2PFS
         return allPaths;
     }
 }
-

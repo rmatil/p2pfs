@@ -5,6 +5,7 @@ import net.f4fs.persistence.IPersistence;
 import net.f4fs.persistence.dht.DHTOperations;
 import net.f4fs.persistence.path.PathOperations;
 import net.f4fs.persistence.vdht.VDHTOperations;
+import net.f4fs.persistence.versioned.VersionedDHTOperations;
 
 
 /**
@@ -13,11 +14,13 @@ import net.f4fs.persistence.vdht.VDHTOperations;
  */
 public class PersistenceFactory {
 
-    private static DHTOperations  dhtOperations;
-    private static VDHTOperations vDhtOperations;
-    private static PathOperations pathOperations;
+    private static DHTOperations          dhtOperations;
+    private static VDHTOperations         vDhtOperations;
+    private static VersionedDHTOperations versionedDhtOperations;
+    private static PathOperations         pathOperations;
 
-    private PersistenceFactory() {}
+    private PersistenceFactory() {
+    }
 
     /**
      * Returns an adapter to write, read, remove
@@ -30,7 +33,7 @@ public class PersistenceFactory {
         if (null == dhtOperations) {
             dhtOperations = new DHTOperations();
         }
-        
+
         return dhtOperations;
     }
 
@@ -38,8 +41,16 @@ public class PersistenceFactory {
         if (null == vDhtOperations) {
             vDhtOperations = new VDHTOperations();
         }
-        
+
         return vDhtOperations;
+    }
+    
+    public synchronized static IPersistence getVersionedDhtOperations() {
+        if (null == versionedDhtOperations) {
+            versionedDhtOperations = new VersionedDHTOperations();
+        }
+
+        return versionedDhtOperations;
     }
 
     /**
@@ -50,9 +61,9 @@ public class PersistenceFactory {
      */
     public synchronized static IPathPersistence getPathPersistence() {
         if (null == pathOperations) {
-            pathOperations = new PathOperations(); 
+            pathOperations = new PathOperations();
         }
-        
-        return pathOperations; 
+
+        return pathOperations;
     }
 }
