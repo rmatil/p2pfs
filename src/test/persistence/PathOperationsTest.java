@@ -7,7 +7,7 @@ import java.util.HashSet;
 import java.util.Set;
 
 import net.f4fs.fspeer.FSPeer;
-import net.f4fs.persistence.PathOperations;
+import net.f4fs.persistence.path.PathOperations;
 import net.tomp2p.dht.PeerDHT;
 import net.tomp2p.peers.Number160;
 import net.tomp2p.storage.Data;

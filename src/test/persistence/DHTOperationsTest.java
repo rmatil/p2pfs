@@ -5,7 +5,7 @@ import static org.junit.Assert.assertEquals;
 import java.io.IOException;
 
 import net.f4fs.fspeer.FSPeer;
-import net.f4fs.persistence.DHTOperations;
+import net.f4fs.persistence.dht.DHTOperations;
 import net.tomp2p.dht.PeerDHT;
 import net.tomp2p.peers.Number160;
 import net.tomp2p.storage.Data;

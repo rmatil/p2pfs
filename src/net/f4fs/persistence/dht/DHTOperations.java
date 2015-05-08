@@ -1,8 +1,9 @@
-package net.f4fs.persistence;
+package net.f4fs.persistence.dht;
 
 import net.f4fs.fspeer.GetListener;
 import net.f4fs.fspeer.PutListener;
 import net.f4fs.fspeer.RemoveListener;
+import net.f4fs.persistence.IPersistence;
 import net.tomp2p.dht.FutureGet;
 import net.tomp2p.dht.FuturePut;
 import net.tomp2p.dht.FutureRemove;

@@ -1,4 +1,4 @@
-package net.f4fs.persistence;
+package net.f4fs.persistence.vdht;
 
 import java.io.IOException;
 import java.util.Map;
@@ -6,6 +6,7 @@ import java.util.Random;
 import java.util.logging.Logger;
 
 import net.f4fs.fspeer.RemoveListener;
+import net.f4fs.persistence.IPersistence;
 import net.tomp2p.dht.FutureGet;
 import net.tomp2p.dht.FuturePut;
 import net.tomp2p.dht.FutureRemove;

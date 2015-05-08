@@ -1,9 +1,9 @@
 package net.f4fs.fspeer;
 
-import net.f4fs.persistence.DHTOperations;
 import net.f4fs.persistence.IPathPersistence;
 import net.f4fs.persistence.IPersistence;
-import net.f4fs.persistence.PathOperations;
+import net.f4fs.persistence.dht.DHTOperations;
+import net.f4fs.persistence.path.PathOperations;
 
 /**
  * Factory to retrieve multiple adapters which differ in how 

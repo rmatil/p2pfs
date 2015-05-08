@@ -1,4 +1,4 @@
-package net.f4fs.persistence;
+package net.f4fs.persistence.path;
 
 import java.io.IOException;
 import java.util.Collection;
@@ -11,6 +11,7 @@ import net.f4fs.config.Config;
 import net.f4fs.fspeer.GetListener;
 import net.f4fs.fspeer.PutListener;
 import net.f4fs.fspeer.RemoveListener;
+import net.f4fs.persistence.IPathPersistence;
 import net.tomp2p.dht.FutureGet;
 import net.tomp2p.dht.FuturePut;
 import net.tomp2p.dht.FutureRemove;
