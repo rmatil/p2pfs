@@ -8,7 +8,6 @@ import java.net.InetAddress;
 import java.net.URL;
 import java.util.Collection;
 import java.util.Set;
-import java.util.logging.Logger;
 
 import net.f4fs.persistence.IPathPersistence;
 import net.f4fs.persistence.IPersistence;
@@ -40,9 +39,8 @@ public class FSPeer {
     private IPathPersistence pathPersistence;
 
     public FSPeer() {
-        PersistenceFactory persistenceFactory = new PersistenceFactory();
-        this.persistence = persistenceFactory.getDhtOperations();
-        this.pathPersistence = persistenceFactory.getPathPersistence();
+        this.persistence = PersistenceFactory.getVdhtOperations();
+        this.pathPersistence = PersistenceFactory.getPathPersistence();
     }
 
     /**

@@ -5,8 +5,10 @@ import java.util.Map;
 import java.util.Random;
 import java.util.logging.Logger;
 
+import net.f4fs.fspeer.PersistenceFactory;
 import net.f4fs.fspeer.RemoveListener;
 import net.f4fs.persistence.IPersistence;
+import net.f4fs.persistence.VDHTArchiver;
 import net.tomp2p.dht.FutureGet;
 import net.tomp2p.dht.FuturePut;
 import net.tomp2p.dht.FutureRemove;
@@ -25,11 +27,15 @@ import net.tomp2p.utils.Pair;
  * 
  * @author Christian
  */
-public class VDHTOperations implements IPersistence {
+public class VDHTOperations
+        implements IPersistence {
 
-    private static final Random RND               = new Random(42L);
-    private static final int    NUMBER_OF_RETRIES = 5;
-    private static Logger       logger            = Logger.getLogger("VDHTOperations.class");
+    private static final Random       RND                 = new Random(42L);                            // TODO: random device
+    private static final IPersistence simpleDHTOperations = PersistenceFactory.getDhtOperations();
+    private static final int          NUMBER_OF_RETRIES   = 5;
+    private static final int          SLEEP_TIME          = 500;
+    private static Logger             logger              = Logger.getLogger("VDHTOperations.class");
+
 
 
     /**
@@ -40,29 +46,30 @@ public class VDHTOperations implements IPersistence {
      * 
      * @return latestData latest Data all peers agree on
      */
-	@Override
-	public Data getData(PeerDHT pPeer, Number160 pLocationKey)
-			throws InterruptedException {
+    @Override
+    public Data getData(PeerDHT pPeer, Number160 pLocationKey)
+            throws InterruptedException {
         Pair<Number640, Data> pair = null;
-        
-        for (int i = 0; i < NUMBER_OF_RETRIES; i++) {
-            FutureGet fg = pPeer.get(pLocationKey).getLatest().start().awaitUninterruptibly();
-            // check if all the peers agree on the same latest version, if not
-            // wait a little and try again
-            pair = checkVersions(fg.rawData());
+
+//        for (int i = 0; i < NUMBER_OF_RETRIES; i++) {
+//            FutureGet fg = pPeer.get(pLocationKey).getLatest().start().awaitUninterruptibly();
+            return simpleDHTOperations.getData(pPeer, pLocationKey);
             
-            if (pair != null) {
-                break;
-            }
-
-            logger.info("Get delay or fork - get");
-            Thread.sleep(RND.nextInt(500));
-        }
-
-        // we got the latest data
-        Data latestData = pair.element1();
-        return latestData;
-	}
+//            // check if all the peers agree on the same latest version, if not
+//            // wait a little and try again
+//            pair = checkVersions(fg.rawData());
+//
+//            if (pair != null) {
+//                break;
+//            }
+//
+//            logger.info("Get delay or fork - get");
+//            Thread.sleep(RND.nextInt(SLEEP_TIME));
+//        }
+//
+//        // we got the latest data
+//        return pair.element1();
+    }
 
     /**
      * Retrieves a specific version of a VDHT entry.
@@ -73,9 +80,9 @@ public class VDHTOperations implements IPersistence {
      * 
      * @return versionOfData all peers agree on
      */
-	@Override
-	public Data getDataOfVersion(PeerDHT pPeer, Number160 pLocationKey, Number160 pVersionKey)
-			throws InterruptedException {
+    @Override
+    public Data getDataOfVersion(PeerDHT pPeer, Number160 pLocationKey, Number160 pVersionKey)
+            throws InterruptedException {
         Pair<Number640, Data> pair = null;
 
         for (int i = 0; i < NUMBER_OF_RETRIES; i++) {
@@ -83,21 +90,20 @@ public class VDHTOperations implements IPersistence {
             // check if all the peers agree on the same latest version, if not
             // wait a little and try again
             pair = checkVersions(fg.rawData());
-            
+
             if (pair != null) {
                 break;
             }
-            
+
             logger.info("Get delay or fork - get");
-            Thread.sleep(RND.nextInt(500));
+            Thread.sleep(RND.nextInt(SLEEP_TIME));
         }
 
-        // we got the latest data
-        Data versionOfData = pair.element1();
-        return versionOfData;
-	}
+        // we got the latest version of data
+        return pair.element1();
+    }
 
-	
+
     /**
      * Stores a data entry in the VDHT at the specified location key.
      * 
@@ -105,12 +111,30 @@ public class VDHTOperations implements IPersistence {
      * @param pLocationKey location key of the data to save
      * @param pData data to be stored at specified location
      */
-	@Override
-	public void putData(PeerDHT pPeer, Number160 pLocationKey, Data pData)
-			throws InterruptedException, ClassNotFoundException, IOException {
-		Pair<Number640, Byte> pair2 = null;
+    @Override
+    public void putData(PeerDHT pPeer, Number160 pLocationKey, Data pData)
+            throws InterruptedException, ClassNotFoundException, IOException {
+        Pair<Number640, Byte> pair2 = null;
         
+        // Check if location key already exists
+        FutureGet fg = pPeer.get(pLocationKey).getLatest().start().awaitUninterruptibly();
+        if (fg.data() == null) { // TODO: is there a better check for this? What if it generally exists but hasn't spread to this peer yet?
+            // location key doesn't exist - simple put function is used
+            simpleDHTOperations.putData(pPeer, pLocationKey, pData);
+            System.out.println("put to dht");
+            return;
+        }
+        
+        System.out.println("put to vdht");
+        
+        // Archive old file with VDHTArchiver
+        VDHTArchiver archiver = new VDHTArchiver(pPeer);
+        archiver.archive(pLocationKey, fg.data());
+
+
+        // location key already exists versioning is applied
         for (int i = 0; i < NUMBER_OF_RETRIES; i++) {
+            System.out.println("Retry " + i + " of " + (NUMBER_OF_RETRIES - i));
             Pair<Number160, Data> pair = getAndUpdate(pPeer, pLocationKey, pData);
             if (pair == null) {
                 logger.warning("We cannot handle this kind of inconsistency automatically, handing over the the API dev");
@@ -123,56 +147,56 @@ public class VDHTOperations implements IPersistence {
             if (pair2 != null && pair2.element1() == 1) {
                 break;
             }
-            
+
             logger.info("Get delay or fork - get");
-            
+
             // if not removed, a low ttl will eventually get rid of it
             pPeer.remove(pLocationKey).versionKey(pair.element0()).start().awaitUninterruptibly();
-            Thread.sleep(RND.nextInt(500));
+            Thread.sleep(RND.nextInt(SLEEP_TIME));
         }
 
         if (pair2 != null && pair2.element1() == 1) {
+            System.out.println("Confirm write");
             FuturePut fp = pPeer.put(pLocationKey).versionKey(pair2.element0().versionKey()).putConfirm().data(new Data()).start().awaitUninterruptibly();
-            logger.warning("Stored: " + fp.failedReason());
         } else {
             logger.warning("We cannot handle this kind of inconsistency automatically, handing over the the API dev");
         }
-		
-	}
 
-	
-	/**
-	 * Removes the data of a specific location key
-	 * 
-	 * @param pPeer local DHT of the peer
-	 * @param pnKey location key of the data to be removed
-	 */
-	@Override
-	public void removeData(PeerDHT pPeer, Number160 pKey)
-			throws InterruptedException {
+    }
+
+
+    /**
+     * Removes the data of a specific location key
+     * 
+     * @param pPeer local DHT of the peer
+     * @param pnKey location key of the data to be removed
+     */
+    @Override
+    public void removeData(PeerDHT pPeer, Number160 pKey)
+            throws InterruptedException {
         FutureRemove futureRemove = pPeer.remove(pKey).start();
         futureRemove.addListener(new RemoveListener(pPeer.peerAddress().inetAddress().toString(), "Remove latest data"));
 
         futureRemove.await();
-	}
+    }
 
-	/**
-	 * Removes the data of a specific version of a location key
-	 * 
-	 * @param pPeer local DHT of the peer
-	 * @param pnKey location key of the data to be removed
-	 * @param pVersionKey version key of the data to be removed
-	 */
-	@Override
-	public void removeDataOfVersion(PeerDHT pPeer, Number160 pKey, Number160 pVersionKey)
-			throws InterruptedException {
-        FutureRemove futureRemove = pPeer.remove(pKey).versionKey(pVersionKey).start(); //TODO: Verify if version or location is remove!
+    /**
+     * Removes the data of a specific version of a location key
+     * 
+     * @param pPeer local DHT of the peer
+     * @param pnKey location key of the data to be removed
+     * @param pVersionKey version key of the data to be removed
+     */
+    @Override
+    public void removeDataOfVersion(PeerDHT pPeer, Number160 pKey, Number160 pVersionKey)
+            throws InterruptedException {
+        FutureRemove futureRemove = pPeer.remove(pKey).versionKey(pVersionKey).start(); // TODO: Verify if version or location is removed!
         futureRemove.addListener(new RemoveListener(pPeer.peerAddress().inetAddress().toString(), "Remove version data"));
 
         futureRemove.await();
-	}
-	
-	
+    }
+
+
     /**
      * Get the latest version and do modification.
      * Create new FilePath.
@@ -187,47 +211,54 @@ public class VDHTOperations implements IPersistence {
      */
     private static Pair<Number160, Data> getAndUpdate(PeerDHT peerDHT, Number160 pLocationKey, Data pFileData)
             throws InterruptedException, ClassNotFoundException, IOException {
-        Pair<Number640, Data> pair = null;
-        for (int i = 0; i < 5; i++) {
+
+        Pair<Number640, Data> oldFile = null;
+        for (int i = 0; i < NUMBER_OF_RETRIES; i++) {
             FutureGet fg = peerDHT.get(pLocationKey).getLatest().start().awaitUninterruptibly();
 
             // check if all the peers agree on the same latest version, if not
             // wait a little and try again
-            pair = checkVersions(fg.rawData());
-            if (pair != null) {
+            oldFile = checkVersions(fg.rawData());
+            if (oldFile != null) {
                 break;
             }
-            
+
             logger.info("Get delay or fork - get");
-            Thread.sleep(RND.nextInt(500));
+            Thread.sleep(RND.nextInt(SLEEP_TIME));
         }
-        
+
         // we got the latest data
-        if (pair != null) {
+        if (oldFile != null) {
             // update operation
-            // TODO: let user know about old versions
-            Data newData = pFileData;
-            Number160 v = pair.element0().versionKey();
-            long version = v.timestamp() + 1;
-            newData.addBasedOn(v);
-            // since we create a new version, we can access old versions as well
-            return new Pair<Number160, Data>(new Number160(version, newData.hash()), newData);
+
+            Number160 oldVersionKey = oldFile.element0().versionKey();
+
+            // Create handle new file with new version key
+//            Data newData = pFileData;
+//            long newVersionKey = oldVersionKey.timestamp() + 1;
+//            newData.addBasedOn(oldVersionKey);
+
+            // Return new new file version pair
+            // Note: since we create a new version, we can access old versions as well
+            return new Pair<Number160, Data>(pLocationKey, pFileData);
         }
-        
+
         return null;
     }
+
+
 
     /**
      * Check if all other peers agree with the local version.
      * 
      * @param rawData of FutureGet request
      * 
-     * @return a new Pair with the latest Key & latest Data
+     * @return a new Pair with the latest Key & latest Data if all other peers agree on it null otherwise
      */
     private static <K> Pair<Number640, K> checkVersions(Map<PeerAddress, Map<Number640, K>> rawData) {
         Number640 latestKey = null;
         K latestData = null;
-        
+
         for (Map.Entry<PeerAddress, Map<Number640, K>> entry : rawData.entrySet()) {
             if (latestData == null && latestKey == null) {
                 latestData = entry.getValue().values().iterator().next();
@@ -235,12 +266,12 @@ public class VDHTOperations implements IPersistence {
             } else {
                 if (!latestKey.equals(entry.getValue().keySet().iterator().next())
                         || !latestData.equals(entry.getValue().values().iterator().next())) {
-                    
+
                     return null;
                 }
             }
         }
-        
+
         return new Pair<Number640, K>(latestKey, latestData);
     }
 
