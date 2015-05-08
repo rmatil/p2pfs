@@ -1,15 +1,17 @@
 package net.f4fs.filesystem.fsfilemonitor;
 
-import java.io.IOException;
 import java.nio.ByteBuffer;
-import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.logging.Logger;
 
 import net.f4fs.filesystem.P2PFS;
+import net.f4fs.filesystem.event.EventDispatcher;
+import net.f4fs.filesystem.event.events.AfterWriteEvent;
+import net.f4fs.filesystem.event.events.BeforeWriteEvent;
+import net.f4fs.filesystem.event.events.CompleteWriteEvent;
+import net.f4fs.filesystem.event.listeners.IEventListener;
 import net.f4fs.filesystem.util.FSFileUtils;
 import net.f4fs.fspeer.FSPeer;
 import net.tomp2p.utils.Pair;
@@ -18,42 +20,28 @@ import net.tomp2p.utils.Pair;
 public class FSFileMonitor
         implements Runnable {
 
-    private Logger                                  logger = Logger.getLogger("FSFileMonitor.class");
+    private Logger                                 logger = Logger.getLogger("FSFileMonitor.class");
 
-    private List<IBeforeCompleteWriteEventListener> beforeCompleteWriteEventListeners;
+    private EventDispatcher                        eventDispatcher;
 
-    private List<IAfterCompleteWriteEventListener>  afterCompleteWriteEventListeners;
+    private Map<String, Pair<Integer, ByteBuffer>> monitoredFiles;
 
-    private List<ICompleteWriteEventListener>       completeWriteEventListeners;
+    private P2PFS                                  filesystem;
 
-    private Map<String, Pair<Integer, ByteBuffer>>  monitoredFiles;
+    private FSPeer                                 fsPeer;
 
-    private P2PFS                                   filesystem;
-
-    private FSPeer                                  fsPeer;
-
-    private boolean                                 isRunning;
+    private boolean                                isRunning;
 
     public FSFileMonitor(P2PFS pFilesystem, FSPeer pFsPeer) {
-        this.beforeCompleteWriteEventListeners = new ArrayList<>();
-        this.afterCompleteWriteEventListeners = new ArrayList<>();
-        this.completeWriteEventListeners = new ArrayList<>();
+        this.eventDispatcher = new EventDispatcher();
         this.monitoredFiles = new HashMap<>();
         this.filesystem = pFilesystem;
         this.fsPeer = pFsPeer;
         this.isRunning = true;
     }
-
-    public void registerAfterCompleteWriteEventListener(IAfterCompleteWriteEventListener pEvent) {
-        this.afterCompleteWriteEventListeners.add(pEvent);
-    }
-
-    public void registerBeforeCompleteWriteEventListener(IBeforeCompleteWriteEventListener pEvent) {
-        this.beforeCompleteWriteEventListeners.add(pEvent);
-    }
-
-    public void registerCompleteWriteEventListener(ICompleteWriteEventListener pEvent) {
-        this.completeWriteEventListeners.add(pEvent);
+    
+    public void addEventListener(IEventListener pEventListener) {
+        this.eventDispatcher.addEventListener(pEventListener);
     }
 
     public synchronized void addMonitoredFile(String pPath, ByteBuffer pContents) {
@@ -85,12 +73,11 @@ public class FSFileMonitor
 
     @Override
     public void run() {
-
+        
         while (this.isRunning) {
             // update FS
-            for (IBeforeCompleteWriteEventListener beforeCompleteWriteEventListener : this.beforeCompleteWriteEventListeners) {
-                beforeCompleteWriteEventListener.handleEvent(this.filesystem, this.fsPeer);
-            }
+            BeforeWriteEvent beforeWriteEvent = new BeforeWriteEvent(this.filesystem, this.fsPeer);
+            this.eventDispatcher.dispatchEvent(BeforeWriteEvent.eventName, beforeWriteEvent);
 
             Map<String, Pair<Integer, ByteBuffer>> notWrittenFiles = new HashMap<>();
             for (Entry<String, Pair<Integer, ByteBuffer>> entry : this.monitoredFiles.entrySet()) {
@@ -98,24 +85,17 @@ public class FSFileMonitor
                     // file is not ready yet to write to DHT
                     Pair<Integer, ByteBuffer> decreasedCounterPair = entry.getValue().element0(entry.getValue().element0() - 1);
                     notWrittenFiles.put(entry.getKey(), decreasedCounterPair);
+                    logger.info("Decrease counter for file on path '" + entry.getKey() + "'.");
                 } else {
-                    // update FS / save whole files
-                    for (ICompleteWriteEventListener completeWriteEventListener : this.completeWriteEventListeners) {
-                        try {
-                            completeWriteEventListener.handleEvent(this.filesystem, this.fsPeer, entry.getKey(), entry.getValue().element1());
-                        } catch (ClassNotFoundException | InterruptedException | IOException e) {
-                            // An error occured during event (e.g. peer could not save data)
-                            // Add this file again for next try
-                            notWrittenFiles.put(entry.getKey(), entry.getValue());
-                        }
-                    }
+                    // dispatch completeWriteEvent
+                    CompleteWriteEvent completeWriteEvent = new CompleteWriteEvent(this.filesystem, this.fsPeer, entry.getKey(), entry.getValue().element1());
+                    this.eventDispatcher.dispatchEvent(CompleteWriteEvent.eventName, completeWriteEvent);
                 }
             }
 
-            // update FS
-            for (IAfterCompleteWriteEventListener afterCompleteWriteEventListener : this.afterCompleteWriteEventListeners) {
-                afterCompleteWriteEventListener.handleEvent(this.filesystem, this.fsPeer);
-            }
+            // dispatch afterWriteEvent
+            AfterWriteEvent afterWriteEvent = new AfterWriteEvent(this.filesystem, this.fsPeer);
+            this.eventDispatcher.dispatchEvent(AfterWriteEvent.eventName, afterWriteEvent);
 
             this.monitoredFiles = notWrittenFiles;
 

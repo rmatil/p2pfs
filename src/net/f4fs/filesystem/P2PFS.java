@@ -11,11 +11,9 @@ import java.util.concurrent.TimeUnit;
 import java.util.logging.Logger;
 
 import net.f4fs.config.FSStatConfig;
+import net.f4fs.filesystem.event.listeners.SyncFileEventListener;
+import net.f4fs.filesystem.event.listeners.WriteFileEventListener;
 import net.f4fs.filesystem.fsfilemonitor.FSFileMonitor;
-import net.f4fs.filesystem.fsfilemonitor.IAfterCompleteWriteEventListener;
-import net.f4fs.filesystem.fsfilemonitor.ICompleteWriteEventListener;
-import net.f4fs.filesystem.fsfilemonitor.SyncFileEventListener;
-import net.f4fs.filesystem.fsfilemonitor.WriteFileEventListener;
 import net.f4fs.filesystem.partials.AMemoryPath;
 import net.f4fs.filesystem.partials.MemoryDirectory;
 import net.f4fs.filesystem.partials.MemoryFile;
@@ -72,17 +70,20 @@ public class P2PFS
         rootDirectory = new MemoryDirectory("/", peer);
         
         
-        ICompleteWriteEventListener writeFileEventListener = new WriteFileEventListener();
-        IAfterCompleteWriteEventListener syncFileEventListener = new SyncFileEventListener();
+        WriteFileEventListener writeFileEventListener = new WriteFileEventListener();
+        SyncFileEventListener syncFileEventListener = new SyncFileEventListener();
         
         this.fsFileMonitor = new FSFileMonitor(this, peer);
-        this.fsFileMonitor.registerCompleteWriteEventListener(writeFileEventListener);
-        this.fsFileMonitor.registerAfterCompleteWriteEventListener(syncFileEventListener);
-        this.executorService = Executors.newFixedThreadPool(1);
+        this.fsFileMonitor.addEventListener(writeFileEventListener);
+        this.fsFileMonitor.addEventListener(syncFileEventListener);
+        this.executorService = Executors.newCachedThreadPool();
 
         // start thread to maintain local FS
         this.executorService.submit(this.fsFileMonitor);
-
+        
+//        Thread fsFileMonitorThread = new Thread(fsFileMonitor);
+//        fsFileMonitorThread.start();
+        
         super.log(false);
     }
 
