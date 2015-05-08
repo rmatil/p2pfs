@@ -44,6 +44,14 @@ public class MemorySymLink
 
     @Override
     public void getattr(StatWrapper stat) {
+        // time of modification time
+        stat.atime(super.getLastModificationTimestamp());
+        // time of last access time
+        stat.mtime(super.getLastAccessTimestamp());
+        // Time when file status was last changed (inode data modification).
+        // Changed by the chmod(2), chown(2), link(2), mknod(2), rename(2), unlink(2), utimes(2) and write(2) system calls.
+        stat.ctime(super.getLastModificationTimestamp());
+
         stat.setMode(NodeType.SYMBOLIC_LINK);
     }
     

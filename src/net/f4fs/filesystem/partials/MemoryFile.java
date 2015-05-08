@@ -81,15 +81,13 @@ public class MemoryFile
 
     @Override
     public void getattr(final StatWrapper stat) {
-        long currentUnixTimestamp = System.currentTimeMillis() / 1000l;
-
-        // time of last access
-        stat.atime(currentUnixTimestamp);
-        // time of last data modification
-        stat.mtime(currentUnixTimestamp);
+        // time of modification time
+        stat.atime(super.getLastModificationTimestamp());
+        // time of last access time
+        stat.mtime(super.getLastAccessTimestamp());
         // Time when file status was last changed (inode data modification).
         // Changed by the chmod(2), chown(2), link(2), mknod(2), rename(2), unlink(2), utimes(2) and write(2) system calls.
-        stat.ctime(currentUnixTimestamp);
+        stat.ctime(super.getLastModificationTimestamp());
 
         // sets the optimal transfer block size: 
         // usually the one of the FS
@@ -142,6 +140,7 @@ public class MemoryFile
      * @return Number of bytes which got read
      */
     public int read(final ByteBuffer buffer, final long size, final long offset) {
+        super.setLastAccessTimestamp((System.currentTimeMillis() / 1000l));
         final int bytesToRead = (int) Math.min(contents.capacity() - offset, size);
         final byte[] bytesRead = new byte[bytesToRead];
 
@@ -181,6 +180,7 @@ public class MemoryFile
      * @param size The size to which it should be truncated
      */
     public synchronized void truncate(final long size) {
+        super.setLastModificationTimestamp((System.currentTimeMillis() / 1000l));
         if (size < contents.capacity()) {
             // Need to create a new, smaller buffer
             final ByteBuffer newContents = ByteBuffer.allocate((int) size);
@@ -215,6 +215,7 @@ public class MemoryFile
      * @return ErrorCode if failed, <i>bufSize</i> if succeeded
      */
     public int write(final ByteBuffer buffer, final long bufSize, final long writeOffset) {
+        super.setLastModificationTimestamp((System.currentTimeMillis() / 1000l));
         final int maxWriteIndex = (int) (writeOffset + bufSize);
         final byte[] bytesToWrite = new byte[(int) bufSize];
         synchronized (this) {

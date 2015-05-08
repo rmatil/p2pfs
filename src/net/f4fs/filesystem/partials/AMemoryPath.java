@@ -17,12 +17,32 @@ public abstract class AMemoryPath {
      */
     private static final Logger logger = Logger.getLogger("AMemoryPath.class");
 
+    /**
+     * The name of this path segment (i.e. dir-/file-/symlink-name)
+     */
     private String              name;
+
+    /**
+     * The parent of this path segment (i.e. a directory)
+     */
     private MemoryDirectory     parent;
+
     /**
      * The peer which mounted this file system
      */
     private FSPeer              peer;
+    
+    /**
+     * Unix timestamp (i.e. seconds since 1.1.1970) in seconds 
+     * representing the last access time
+     */
+    private long                lastAccessTimestamp;
+    
+    /**
+     * Unix timestamp (i.e. seconds since 1.1.1970) in seconds 
+     * representing the last modification time
+     */
+    private long                lastModificationTimestamp;
 
     public AMemoryPath(final String name, final FSPeer peer) {
         this(name, null, peer);
@@ -32,6 +52,9 @@ public abstract class AMemoryPath {
         this.name = name;
         this.parent = parent;
         this.peer = peer;
+        
+        this.lastAccessTimestamp = System.currentTimeMillis() / 1000l;
+        this.lastModificationTimestamp = this.lastAccessTimestamp;
 
         // Store an empty element
         try {
@@ -51,12 +74,14 @@ public abstract class AMemoryPath {
             logger.warning("Could not create MemoryPath with name '" + name + "' on path '" + getPath() + "'. Message: " + e.getMessage());
         }
     }
-    
+
     /**
      * Submits a symbolic link to the DHT named as provided in <b>target</b> pointing
      * to the file located represented by <b>existingPath</b>.
      * 
-     * <p style="color:red">Note: Does not add the content to the local disk</p>
+     * <p style="color:red">
+     * Note: Does not add the content to the local disk
+     * </p>
      * 
      * @param existingPath The already existing path on disk to which the link should point
      * @param target The name of the symbolic link
@@ -72,12 +97,12 @@ public abstract class AMemoryPath {
             // a symbolic link must contain the name of the target as content
             // as stated in <code>man ln</code>
             peer.putData(Number160.createHash(getPath()), new Data(target.getBytes()));
-            
+
             // create the symlink to the target
             peer.putPath(Number160.createHash(getPath()), new Data(existingPath.getPath()));
 
         } catch (InterruptedException | IOException | ClassNotFoundException e) {
-           logger.warning("Could not create symlink '" + target + "' on path '" + getPath() + "'");
+            logger.warning("Could not create symlink '" + target + "' on path '" + getPath() + "'");
         }
     }
 
@@ -85,12 +110,12 @@ public abstract class AMemoryPath {
         if (parent != null) {
             try {
                 String path = getPath();
-                
+
                 peer.removePath(Number160.createHash(path));
                 peer.removeData(Number160.createHash(path));
 
-                // be aware that this must be after getPath() 
-                // otherwise the parent dir will 
+                // be aware that this must be after getPath()
+                // otherwise the parent dir will
                 // be empty and another file gets deleted
                 parent.deleteChild(this);
                 parent = null;
@@ -147,7 +172,7 @@ public abstract class AMemoryPath {
             // update content key and store the files content on the updated key again
             peer.putData(Number160.createHash(getPath()), new Data(content.array()));
             peer.putPath(Number160.createHash(getPath()), new Data(getPath()));
-            
+
             logger.info("Renamed file with name '" + oldName + "' to '" + newName + "' on path '" + getPath() + "'.");
         } catch (InterruptedException | ClassNotFoundException | IOException e) {
             logger.warning("Could not rename to '" + newName + "' on path '" + getPath() + "'. Message: " + e.getMessage());
@@ -183,6 +208,22 @@ public abstract class AMemoryPath {
 
     public void setPeer(FSPeer peer) {
         this.peer = peer;
+    }
+    
+    public long getLastAccessTimestamp() {
+        return this.lastAccessTimestamp;
+    }
+
+    public void setLastAccessTimestamp(long pLastAccessTimestamp) {
+        this.lastAccessTimestamp = pLastAccessTimestamp;
+    }
+    
+    public long getLastModificationTimestamp() {
+        return this.lastModificationTimestamp;
+    }
+    
+    public void setLastModificationTimestamp(long pLastModificationTimestamp) {
+        this.lastModificationTimestamp = pLastModificationTimestamp;
     }
 
     /**

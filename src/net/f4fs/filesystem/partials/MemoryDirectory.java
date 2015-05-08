@@ -60,15 +60,13 @@ public class MemoryDirectory
 
     @Override
     public void getattr(final StatWrapper stat) {
-        long currentUnixTimestamp = System.currentTimeMillis() / 1000l;
-
-        // time of last access
-        stat.atime(currentUnixTimestamp);
-        // time of last data modification
-        stat.mtime(currentUnixTimestamp);
+     // time of modification time
+        stat.atime(super.getLastModificationTimestamp());
+        // time of last access time
+        stat.mtime(super.getLastAccessTimestamp());
         // Time when file status was last changed (inode data modification).
         // Changed by the chmod(2), chown(2), link(2), mknod(2), rename(2), unlink(2), utimes(2) and write(2) system calls.
-        stat.ctime(currentUnixTimestamp);
+        stat.ctime(super.getLastModificationTimestamp());
 
         // ID of device containing file
         // stat.dev(dev);
@@ -116,6 +114,7 @@ public class MemoryDirectory
     }
 
     public synchronized void read(final DirectoryFiller filler) {
+        super.setLastAccessTimestamp((System.currentTimeMillis() / 1000l));
         for (final AMemoryPath p : contents) {
             filler.add(p.getName());
         }
