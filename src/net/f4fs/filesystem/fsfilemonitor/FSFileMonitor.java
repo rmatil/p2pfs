@@ -8,7 +8,9 @@ import java.util.logging.Logger;
 
 import net.f4fs.filesystem.P2PFS;
 import net.f4fs.filesystem.event.EventDispatcher;
+import net.f4fs.filesystem.event.events.AfterCompleteWriteEvent;
 import net.f4fs.filesystem.event.events.AfterWriteEvent;
+import net.f4fs.filesystem.event.events.BeforeCompleteWriteEvent;
 import net.f4fs.filesystem.event.events.BeforeWriteEvent;
 import net.f4fs.filesystem.event.events.CompleteWriteEvent;
 import net.f4fs.filesystem.event.listeners.IEventListener;
@@ -87,9 +89,17 @@ public class FSFileMonitor
                     notWrittenFiles.put(entry.getKey(), decreasedCounterPair);
                     logger.info("Decrease counter for file on path '" + entry.getKey() + "'.");
                 } else {
+                    // dispatch beforeCompleteWriteEvent
+                    BeforeCompleteWriteEvent beforeCompleteWriteEvent = new BeforeCompleteWriteEvent(this.filesystem, this.fsPeer, entry.getKey());
+                    this.eventDispatcher.dispatchEvent(BeforeCompleteWriteEvent.eventName, beforeCompleteWriteEvent);
+                    
                     // dispatch completeWriteEvent
                     CompleteWriteEvent completeWriteEvent = new CompleteWriteEvent(this.filesystem, this.fsPeer, entry.getKey(), entry.getValue().element1());
                     this.eventDispatcher.dispatchEvent(CompleteWriteEvent.eventName, completeWriteEvent);
+                    
+                    // dispatch afterCompleteWriteEvent
+                    AfterCompleteWriteEvent afterCompleteWriteEvent = new AfterCompleteWriteEvent(this.filesystem, this.fsPeer, entry.getKey());
+                    this.eventDispatcher.dispatchEvent(AfterCompleteWriteEvent.eventName, afterCompleteWriteEvent);
                 }
             }
 
