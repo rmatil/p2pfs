@@ -411,6 +411,11 @@ public class P2PFS
         if (!(p instanceof MemoryDirectory)) {
             return -ErrorCodes.ENOTDIR();
         }
+        
+        if (!((MemoryDirectory) p).getContents().isEmpty()) {
+            return -ErrorCodes.ENOTEMPTY();
+        }
+        
         p.delete();
         return 0;
     }
