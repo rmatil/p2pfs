@@ -80,7 +80,9 @@ public class P2PFS
 
         // start thread to maintain local FS
         // note, that thrown exceptions are not shown...
-        this.executorService.submit(this.fsFileMonitor);
+//        this.executorService.submit(this.fsFileMonitor);
+        Thread t = new Thread(this.fsFileMonitor);
+        t.start();
         
         super.log(false);
     }

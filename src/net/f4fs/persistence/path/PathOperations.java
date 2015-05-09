@@ -53,6 +53,10 @@ public class PathOperations
         
         futureGet.await();
         
+        if (null == futureGet.data()) {
+            return null;
+        }
+        
         return (String) futureGet.data().object();
     }
 

@@ -8,7 +8,7 @@ import java.util.logging.Logger;
 import net.f4fs.fspeer.PersistenceFactory;
 import net.f4fs.fspeer.RemoveListener;
 import net.f4fs.persistence.IPersistence;
-import net.f4fs.persistence.VDHTArchiver;
+import net.f4fs.persistence.VersionArchiver;
 import net.tomp2p.dht.FutureGet;
 import net.tomp2p.dht.FuturePut;
 import net.tomp2p.dht.FutureRemove;
@@ -128,8 +128,8 @@ public class VDHTOperations
         System.out.println("put to vdht");
         
         // Archive old file with VDHTArchiver
-        VDHTArchiver archiver = new VDHTArchiver(pPeer);
-        archiver.archive(pLocationKey, fg.data());
+        VersionArchiver archiver = new VersionArchiver();
+        archiver.archive(pPeer, pLocationKey, fg.data());
 
 
         // location key already exists versioning is applied
