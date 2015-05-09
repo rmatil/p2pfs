@@ -7,6 +7,7 @@ import java.util.HashSet;
 import java.util.Set;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 import java.util.logging.Logger;
 
@@ -54,6 +55,8 @@ public class P2PFS
 
     private FSFileMonitor         fsFileMonitor;
 
+    private Future                fsFileMonitorFuture;
+
     private ExecutorService       executorService;
 
     /**
@@ -69,14 +72,13 @@ public class P2PFS
 
         rootDirectory = new MemoryDirectory("/", peer);
         
+        //WriteFileEventListener writeFileEventListener = new WriteFileEventListener();
+        //SyncFileEventListener syncFileEventListener = new SyncFileEventListener();
         
-        WriteFileEventListener writeFileEventListener = new WriteFileEventListener();
-        SyncFileEventListener syncFileEventListener = new SyncFileEventListener();
-        
-        this.fsFileMonitor = new FSFileMonitor(this, peer);
-        this.fsFileMonitor.addEventListener(writeFileEventListener);
-        this.fsFileMonitor.addEventListener(syncFileEventListener);
-        this.executorService = Executors.newCachedThreadPool();
+        //this.fsFileMonitor = new FSFileMonitor(this, peer);
+        //this.fsFileMonitor.addEventListener(writeFileEventListener);
+        //this.fsFileMonitor.addEventListener(syncFileEventListener);
+        //this.executorService = Executors.newCachedThreadPool();
 
         // Difference between execute and submit:
         // A task queued with execute() that generates some Throwable will cause the 
@@ -115,22 +117,6 @@ public class P2PFS
     public void afterUnmount(final File mountPoint) {
         if (mountPoint.exists()) {
             FSFileUtils.deleteFileOrFolder(mountPoint);
-        }
-
-        // shutdown file monitor
-        try {
-            logger.info("Attempt to shutdown thread executor service");
-            this.fsFileMonitor.terminate();
-            this.executorService.shutdown();
-            this.executorService.awaitTermination(3, TimeUnit.SECONDS);
-        } catch (InterruptedException e) {
-            logger.info("Tasks interrupted");
-        } finally {
-            if (!this.executorService.isTerminated()) {
-                logger.info("Cancel non-finished tasks");
-            }
-            this.executorService.shutdownNow();
-            logger.info("Shutdown of executor service finished");
         }
     }
 
@@ -217,7 +203,7 @@ public class P2PFS
                     // directly into the vDHT, then the FSFileSyncer creates them locally.
                     // If we would not check this here, an infinite number of version folders
                     // would be created in each other, containing the version of the version (of the version, ...)
-                    this.fsFileMonitor.addMonitoredFile(path, createdFile.getContent());                    
+                    this.fsFileMonitor.addMonitoredFile(path, createdFile.getContent());
                 }
             } else {
                 ((MemoryDirectory) parent).mkdir(FSFileUtils.getLastComponent(path));
@@ -325,17 +311,17 @@ public class P2PFS
             logger.warning("Failed to read file on " + path + ". Path is a directory (Error code " + -ErrorCodes.EISDIR() + ").");
             return -ErrorCodes.EISDIR();
         }
-        
+
         ByteBuffer monitoredFile = this.fsFileMonitor.getFileContent(path);
         if (null != monitoredFile) {
             final int bytesToRead = (int) Math.min(monitoredFile.capacity() - offset, size);
             final byte[] bytesRead = new byte[bytesToRead];
-            
+
             monitoredFile.position((int) offset);
             monitoredFile.get(bytesRead, 0, bytesToRead);
             buffer.put(bytesRead);
             monitoredFile.position(0); // Rewind
-            
+
             logger.info("Read contents from file on path '" + path + "' from file monitor");
             return bytesToRead;
         }
@@ -489,10 +475,10 @@ public class P2PFS
             return -ErrorCodes.EISDIR();
         }
 
-        int returnCode = ((MemoryFile) p).write(buf, bufSize, writeOffset); 
+        int returnCode = ((MemoryFile) p).write(buf, bufSize, writeOffset);
 
         // overwrite monitored content and update countdown
-        this.fsFileMonitor.addMonitoredFile(p.getPath(), ((MemoryFile) p).getContent()); 
+        this.fsFileMonitor.addMonitoredFile(p.getPath(), ((MemoryFile) p).getContent());
 
         return returnCode;
     }

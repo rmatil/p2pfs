@@ -4,16 +4,23 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-
-import org.json.simple.parser.ParseException;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
+import java.util.concurrent.TimeUnit;
 
 import net.f4fs.bootstrapserver.BootstrapServerAccess;
 import net.f4fs.config.Config;
 import net.f4fs.filesystem.P2PFS;
+import net.f4fs.filesystem.event.listeners.SyncFileEventListener;
+import net.f4fs.filesystem.event.listeners.WriteFileEventListener;
+import net.f4fs.filesystem.fsfilemonitor.FSFileMonitor;
 import net.f4fs.fspeer.FSPeer;
 import net.f4fs.util.DhtOperationsCommand;
 import net.f4fs.util.IpAddressJsonParser;
 import net.f4fs.util.ShutdownHookThread;
+
+import org.json.simple.parser.ParseException;
 
 
 /**
@@ -109,7 +116,40 @@ public class Startup {
             Runtime.getRuntime().addShutdownHook(new ShutdownHookThread(myIP, Config.DEFAULT.getPort()));
 
             // start file system with the connected peer
-            new P2PFS(fsPeer).mountAndCreateIfNotExists(Config.DEFAULT.getMountPoint());
+            P2PFS filesystem = new P2PFS(fsPeer);
+            
+            WriteFileEventListener writeFileEventListener = new WriteFileEventListener();
+            SyncFileEventListener syncFileEventListener = new SyncFileEventListener();
+
+            FSFileMonitor fsFileMonitor = new FSFileMonitor(filesystem, fsPeer);
+            fsFileMonitor.addEventListener(writeFileEventListener);
+            fsFileMonitor.addEventListener(syncFileEventListener);
+            ExecutorService executorService = Executors.newCachedThreadPool();
+
+            // start thread to maintain local FS
+            // note, that thrown exceptions are not shown...
+            executorService.submit(fsFileMonitor);
+
+            filesystem.mountAndCreateIfNotExists(Config.DEFAULT.getMountPoint());
+            
+            // shutdown file monitor here, as P2PFS can not be terminated,
+            // if this would be done in afterUnmount due to the still running
+            // process of fileMonitor (P2PFS would wait for FSFileMonitor, which would
+            // wait, until P2PFS gets unmounted...)
+            try {
+                fsFileMonitor.terminate();
+                
+                executorService.shutdown();
+                executorService.awaitTermination(3, TimeUnit.SECONDS);
+            } catch (InterruptedException e) {
+                System.out.println("Still running tasks interrupted");
+            } finally {
+                if (!executorService.isTerminated()) {
+                    System.out.println("Cancel non-finished tasks");
+                }
+                executorService.shutdownNow();
+                System.out.println("Shutdown of executor service finished");
+            }
 
             // maybe start command line interface
             if (Config.DEFAULT.getStartCommandLineInterface()) {

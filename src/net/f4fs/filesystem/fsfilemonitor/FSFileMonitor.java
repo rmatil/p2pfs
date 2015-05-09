@@ -112,7 +112,7 @@ public class FSFileMonitor
             try {
                 Thread.sleep(1000);
             } catch (InterruptedException e) {
-                e.printStackTrace();
+                logger.info("FSFileMonitor got interrupted");
             }
         }
 
