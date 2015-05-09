@@ -71,10 +71,10 @@ public class P2PFS
             throws IOException {
 
         rootDirectory = new MemoryDirectory("/", peer);
-        
+
         //WriteFileEventListener writeFileEventListener = new WriteFileEventListener();
         //SyncFileEventListener syncFileEventListener = new SyncFileEventListener();
-        
+
         //this.fsFileMonitor = new FSFileMonitor(this, peer);
         //this.fsFileMonitor.addEventListener(writeFileEventListener);
         //this.fsFileMonitor.addEventListener(syncFileEventListener);
@@ -91,9 +91,17 @@ public class P2PFS
         // the original Throwable as its cause (accessible by calling getCause() 
         // on the ExecutionException).
         // See http://stackoverflow.com/questions/3929342/choose-between-executorservices-submit-and-executorservices-execute
-        this.executorService.execute(this.fsFileMonitor);
-        
+        //this.executorService.execute(this.fsFileMonitor);
+
         super.log(false);
+    }
+
+    public FSFileMonitor getFsFileMonitor() {
+        return fsFileMonitor;
+    }
+
+    public void setFsFileMonitor(FSFileMonitor fsFileMonitor) {
+        this.fsFileMonitor = fsFileMonitor;
     }
 
     /**

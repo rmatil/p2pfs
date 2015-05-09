@@ -117,13 +117,16 @@ public class Startup {
 
             // start file system with the connected peer
             P2PFS filesystem = new P2PFS(fsPeer);
-            
+
             WriteFileEventListener writeFileEventListener = new WriteFileEventListener();
             SyncFileEventListener syncFileEventListener = new SyncFileEventListener();
 
             FSFileMonitor fsFileMonitor = new FSFileMonitor(filesystem, fsPeer);
             fsFileMonitor.addEventListener(writeFileEventListener);
             fsFileMonitor.addEventListener(syncFileEventListener);
+
+            filesystem.setFsFileMonitor(fsFileMonitor);
+
             ExecutorService executorService = Executors.newCachedThreadPool();
 
             // start thread to maintain local FS
