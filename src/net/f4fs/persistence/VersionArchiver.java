@@ -235,8 +235,6 @@ public class VersionArchiver
             // Remove path
             pathOperations.removePath(peerDHT, Number160.createHash(versionToDelete));
             System.out.println("Pruned version folder");
-        } else {
-            System.out.println("Did not prune version folder");
         }
 
         // put version queue back to version folder
