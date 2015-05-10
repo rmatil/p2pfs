@@ -4,7 +4,7 @@ import net.f4fs.filesystem.event.events.AEvent;
 
 /**
  * An interface which all event listeners must implement
- * to use the Eventdispatcher
+ * to use {@link net.f4fs.filesystem.event.EventDispatcher EventDispatcher}.
  * 
  * @author Raphael
  *

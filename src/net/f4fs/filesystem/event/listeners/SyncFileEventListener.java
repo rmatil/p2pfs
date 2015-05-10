@@ -8,7 +8,8 @@ import net.f4fs.filesystem.event.events.AfterWriteEvent;
 import net.tomp2p.peers.Number160;
 
 /**
- * Syncs files on disk with the ones on the DHT.
+ * Synchronizes files on disk with the ones on the DHT.
+ * Gets invoked after all completely written files are written to the DHT.
  * 
  * @author Reto
  *

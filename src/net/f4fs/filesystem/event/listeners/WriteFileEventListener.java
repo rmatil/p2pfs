@@ -10,7 +10,7 @@ import net.tomp2p.peers.Number160;
 import net.tomp2p.storage.Data;
 
 /**
- * Writes the file to the DHT when complete
+ * Writes the file to the DHT when complete.
  * 
  * @author Raphael
  *

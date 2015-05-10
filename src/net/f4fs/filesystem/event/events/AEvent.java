@@ -1,5 +1,11 @@
 package net.f4fs.filesystem.event.events;
 
+/**
+ * An object representing an event for the defined <code>eventName</code>
+ * 
+ * @author Raphael
+ *
+ */
 public abstract class AEvent {
     
     /**

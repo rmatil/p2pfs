@@ -7,7 +7,11 @@ import net.f4fs.fspeer.FSPeer;
 
 /**
  * An event which gets dispatched when the file is completely
- * written, i.e. no chunks should be added anymore.
+ * written, i.e. no chunks will be added anymore to the file.
+ * Holds the context of the the file system, the peer, the file name of
+ * the file which is complete and should be written by an event listener
+ * registered to this event, and finally the content which represents 
+ * the complete file. 
  * 
  * @author Raphael
  *

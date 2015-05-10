@@ -19,6 +19,32 @@ import net.f4fs.fspeer.FSPeer;
 import net.tomp2p.utils.Pair;
 
 
+/**
+ * Dispatches the following events according to the state of the file system:
+ * <ul>
+ * <li>
+ * <code>filesystem.before_write_event</code>: Each time, before a check is made, if the file is complete and should be written (including writing the file if it is complete)</li>
+ * <li>
+ * <code>filesystem.after_write_event</code>: Each time, after an attempt is made to check if the file is complete and should be written (including writing the file if it is
+ * complete)</li>
+ * <li>
+ * <code>filesystem.before_complete_write_event</code>: Each time, a file is complete and before it should be written</li>
+ * <li>
+ * <code>filesystem.complete_write_event</code>: Each time, a file is complete and should be written</li>
+ * <li>
+ * <code>filesystem.after_complete_write_event</code>: Each time, a file is complete and was written</li>
+ * </ul>
+ * 
+ * Until now, the {@link net.f4fs.filesystem.event.listeners.WriteFileEventListener WriteFileEventListener} is
+ * registered to the <code>filesystem.complete_write_event</code>. That means, it writes each
+ * file to the DHT when it is complete on the physical disk. <br>
+ * The {@link net.f4fs.filesystem.event.listeners.SyncFileEventListener SyncFileEventListeners} is invoked
+ * each time a <code>filesystem.after_write_event</code> is dispatched. That
+ * means, it only synchronizes the physical disk after all missing files are completely written to the DHT.
+ * 
+ * @author Raphael
+ *
+ */
 public class FSFileMonitor
         implements Runnable {
 
@@ -41,11 +67,32 @@ public class FSFileMonitor
         this.fsPeer = pFsPeer;
         this.isRunning = true;
     }
-    
+
+    /**
+     * Registers an event listener
+     * 
+     * @param pEventListener The event listener to be registered
+     */
     public void addEventListener(IEventListener pEventListener) {
         this.eventDispatcher.addEventListener(pEventListener);
     }
 
+    /**
+     * Adds a <i>monitored</i> file to the FileMonitor. Overwrites an already existing
+     * entry with the same path, i.e. the provided input must be complete until the current chunk
+     * written to the physical disk.
+     * 
+     * <p style="color:red">
+     * Note: Make sure that not only single chunks are provided to this method as they would get overwritten each time you call this method with the same path
+     * </p>
+     * 
+     * <p>
+     * <b>Note</b>: To prevent FUSE's temporary files from monitoring, all files which start with <i>._FILENAME</i> are ignored
+     * <p>
+     * 
+     * @param pPath The path to the file which should be monitored if completely written
+     * @param pContents All contents written until now for the file (i.e. not only single chunks)
+     */
     public synchronized void addMonitoredFile(String pPath, ByteBuffer pContents) {
         // NOTE: we do not save FUSE's temporary files. They
         // always start with "._<FILENAME>"
@@ -58,6 +105,13 @@ public class FSFileMonitor
         logger.info("Wrote chunk to file on path '" + pPath + "' containing '" + pContents.capacity() + "' bytes to FSFileMonitor");
     }
 
+    /**
+     * Returns the current written file contents of the file located at <code>pPath</code>
+     * 
+     * @param pPath The path to the file which contents should be returned
+     * 
+     * @return The file contents written until now
+     */
     public synchronized ByteBuffer getFileContent(String pPath) {
         Pair<Integer, ByteBuffer> file = this.monitoredFiles.get(pPath);
 
@@ -75,7 +129,7 @@ public class FSFileMonitor
 
     @Override
     public void run() {
-        
+
         while (this.isRunning) {
             // update FS
             BeforeWriteEvent beforeWriteEvent = new BeforeWriteEvent(this.filesystem, this.fsPeer);
@@ -92,11 +146,11 @@ public class FSFileMonitor
                     // dispatch beforeCompleteWriteEvent
                     BeforeCompleteWriteEvent beforeCompleteWriteEvent = new BeforeCompleteWriteEvent(this.filesystem, this.fsPeer, entry.getKey());
                     this.eventDispatcher.dispatchEvent(BeforeCompleteWriteEvent.eventName, beforeCompleteWriteEvent);
-                    
+
                     // dispatch completeWriteEvent
                     CompleteWriteEvent completeWriteEvent = new CompleteWriteEvent(this.filesystem, this.fsPeer, entry.getKey(), entry.getValue().element1());
                     this.eventDispatcher.dispatchEvent(CompleteWriteEvent.eventName, completeWriteEvent);
-                    
+
                     // dispatch afterCompleteWriteEvent
                     AfterCompleteWriteEvent afterCompleteWriteEvent = new AfterCompleteWriteEvent(this.filesystem, this.fsPeer, entry.getKey());
                     this.eventDispatcher.dispatchEvent(AfterCompleteWriteEvent.eventName, afterCompleteWriteEvent);
