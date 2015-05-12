@@ -31,15 +31,15 @@ import net.tomp2p.storage.Data;
  */
 public class FSPeer {
 
-    private PeerDHT          peer;
+    private PeerDHT               peer;
 
-    private IPersistence     persistence;
+    private IPersistence          persistence;
 
-    private IPathPersistence pathPersistence;
-    
+    private IPathPersistence      pathPersistence;
+
     private BootstrapServerAccess bootstrapServerAccess;
-    
-    private String myIp;
+
+    private String                myIp;
 
     public FSPeer() {
         this.persistence = PersistenceFactory.getVersionedDhtOperations();
@@ -63,9 +63,9 @@ public class FSPeer {
 
         // b.addInterface("eth0");
         peer = new PeerBuilderDHT(new PeerBuilder(new Number160(RandomDevice.INSTANCE.getRand())).ports(Config.DEFAULT.getPort()).bindings(b).start()).start();
-        setMyIP();
+        setMyIp();
         postIpPortPair(myIp, Config.DEFAULT.getPort());
-        
+
         System.out.println("[Peer@" + myIp + "]: Server started listening to: " + DiscoverNetworks.discoverInterfaces(b));
         System.out.println("[Peer@" + myIp + "]: Address visible to outside is " + peer.peerAddress());
     }
@@ -89,9 +89,9 @@ public class FSPeer {
 
         // b.addInterface("eth0");
         peer = new PeerBuilderDHT(new PeerBuilder(new Number160(RandomDevice.INSTANCE.getRand())).ports(Config.DEFAULT.getPort()).bindings(b).start()).start();
-        setMyIP();
+        setMyIp();
         postIpPortPair(myIp, Config.DEFAULT.getPort());
-        
+
         System.out.println("[Peer@" + myIp + "]: Client started and listening to: " + DiscoverNetworks.discoverInterfaces(b));
         System.out.println("[Peer@" + myIp + "]: Address visible to outside is " + peer.peerAddress());
 
@@ -251,22 +251,22 @@ public class FSPeer {
     public PeerDHT getPeerDHT() {
         return this.peer;
     }
-    
-    private void postIpPortPair(String ip, int port){
+
+    private void postIpPortPair(String ip, int port) {
         bootstrapServerAccess.postIpPortPair(ip, port);
     }
-    
-    private void removeIpPortPair(String ip, int port){
+
+    private void removeIpPortPair(String ip, int port) {
         bootstrapServerAccess.removeIpPortPair(ip, port);
     }
-    
-    private void setMyIP(){
-        if (peer != null){
+
+    private void setMyIp() {
+        if (peer != null) {
             myIp = peer.peerAddress().inetAddress().getHostAddress();
         }
     }
-    
-    public String getMyIP(){
+
+    public String getMyIp() {
         return myIp;
     }
 }

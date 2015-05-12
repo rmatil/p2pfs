@@ -29,7 +29,6 @@ public class Startup {
     public Startup() {
         bootstrapServerAccess = new BootstrapServerAccess();
         fsPeer = new FSPeer();
-        //myIP = fsPeer.findLocalIp();
     }
 
     /**
@@ -101,7 +100,7 @@ public class Startup {
 
             // Add shutdown hook so that IP address gets removed from server when
             // user does not terminate program correctly on
-            Runtime.getRuntime().addShutdownHook(new ShutdownHookThread(fsPeer.getMyIP(), Config.DEFAULT.getPort()));
+            Runtime.getRuntime().addShutdownHook(new ShutdownHookThread(fsPeer.getMyIp(), Config.DEFAULT.getPort()));
 
             // start file system with the connected peer
             new P2PFS(fsPeer).mountAndCreateIfNotExists(Config.DEFAULT.getMountPoint());
