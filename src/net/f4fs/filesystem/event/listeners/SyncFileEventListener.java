@@ -34,7 +34,7 @@ public class SyncFileEventListener
             // create local non-existing files
             for (String key : keys) {
                 if (afterWriteEvent.getFilesystem().getPath(key) == null) {
-
+                    System.out.println("Created file again...!?!");
                     // check whether the path is a link, that means key and target are different
                     String foundPath = afterWriteEvent.getFsPeer().getPath(Number160.createHash(key));
                     if (null != foundPath && !key.equals(foundPath)) {
