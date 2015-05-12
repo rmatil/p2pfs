@@ -39,7 +39,7 @@ public class FSPeer {
     
     private BootstrapServerAccess bootstrapServerAccess;
     
-    private String myIP;
+    private String myIp;
 
     public FSPeer() {
         this.persistence = PersistenceFactory.getVersionedDhtOperations();
@@ -64,10 +64,10 @@ public class FSPeer {
         // b.addInterface("eth0");
         peer = new PeerBuilderDHT(new PeerBuilder(new Number160(RandomDevice.INSTANCE.getRand())).ports(Config.DEFAULT.getPort()).bindings(b).start()).start();
         setMyIP();
-        postIpPortPair(myIP, Config.DEFAULT.getPort());
+        postIpPortPair(myIp, Config.DEFAULT.getPort());
         
-        System.out.println("[Peer@" + myIP + "]: Server started listening to: " + DiscoverNetworks.discoverInterfaces(b));
-        System.out.println("[Peer@" + myIP + "]: Address visible to outside is " + peer.peerAddress());
+        System.out.println("[Peer@" + myIp + "]: Server started listening to: " + DiscoverNetworks.discoverInterfaces(b));
+        System.out.println("[Peer@" + myIp + "]: Address visible to outside is " + peer.peerAddress());
     }
 
     /**
@@ -90,16 +90,16 @@ public class FSPeer {
         // b.addInterface("eth0");
         peer = new PeerBuilderDHT(new PeerBuilder(new Number160(RandomDevice.INSTANCE.getRand())).ports(Config.DEFAULT.getPort()).bindings(b).start()).start();
         setMyIP();
-        postIpPortPair(myIP, Config.DEFAULT.getPort());
+        postIpPortPair(myIp, Config.DEFAULT.getPort());
         
-        System.out.println("[Peer@" + myIP + "]: Client started and listening to: " + DiscoverNetworks.discoverInterfaces(b));
-        System.out.println("[Peer@" + myIP + "]: Address visible to outside is " + peer.peerAddress());
+        System.out.println("[Peer@" + myIp + "]: Client started and listening to: " + DiscoverNetworks.discoverInterfaces(b));
+        System.out.println("[Peer@" + myIp + "]: Address visible to outside is " + peer.peerAddress());
 
         InetAddress address = Inet4Address.getByName(connectionIpAddress);
         PeerAddress connectionPeerAddress = new PeerAddress(Number160.ZERO, address, connectionPort, connectionPort);
 
-        System.out.println("[Peer@" + myIP + "]: Connected to " + connectionPeerAddress);
-        bootstrapServerAccess.postIpPortPair(myIP, Config.DEFAULT.getPort());
+        System.out.println("[Peer@" + myIp + "]: Connected to " + connectionPeerAddress);
+        bootstrapServerAccess.postIpPortPair(myIp, Config.DEFAULT.getPort());
 
         // Future Discover
         FutureDiscover futureDiscover = peer.peer().discover().inetAddress(address).ports(connectionPort).start();
@@ -110,14 +110,14 @@ public class FSPeer {
         futureBootstrap.awaitUninterruptibly();
 
         Collection<PeerAddress> addressList = peer.peerBean().peerMap().all();
-        System.out.println("[Peer@" + myIP + "]: Address list size: " + addressList.size());
+        System.out.println("[Peer@" + myIp + "]: Address list size: " + addressList.size());
 
         if (futureDiscover.isSuccess()) {
-            System.out.println("[Peer@" + myIP + "]: Outside IP address is " + futureDiscover.peerAddress());
+            System.out.println("[Peer@" + myIp + "]: Outside IP address is " + futureDiscover.peerAddress());
             return true;
         }
 
-        System.out.println("[Peer@" + myIP + "]: Failed " + futureDiscover.failedReason());
+        System.out.println("[Peer@" + myIp + "]: Failed " + futureDiscover.failedReason());
         return false;
     }
 
@@ -262,11 +262,11 @@ public class FSPeer {
     
     private void setMyIP(){
         if (peer != null){
-            myIP = peer.peerAddress().toString();
+            myIp = peer.peerAddress().inetAddress().getHostAddress();
         }
     }
     
     public String getMyIP(){
-        return myIP;
+        return myIp;
     }
 }
