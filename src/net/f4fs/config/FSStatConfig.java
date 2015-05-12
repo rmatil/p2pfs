@@ -7,7 +7,9 @@ package net.f4fs.config;
  */
 public enum FSStatConfig {
     DEFAULT(4000L, 1000L, 200L, 180L, 5L, 29L),
-    BIGGER(4000L, 100000L, 98000L, 90000L, 10L, 58L);
+    BIGGER(4000L, 100000L, 98000L, 90000L, 10L, 58L),
+    RESIZEINIT(4000L, 10000L, 9800L, 9000L, 5L, 29L),
+    RESIZE(4000L, 10000L, 9800L, 9000L, 5L, 29L);
 
     /**
      * Optimal transfer block size
@@ -67,6 +69,14 @@ public enum FSStatConfig {
     public long getBsize() {
         return _bsize;
     }
+    
+    
+    /**
+     * @param bsize
+     */
+    public void setBsize(long bsize) {
+        this._bsize = bsize;
+    }
 
     
     /**
@@ -75,14 +85,26 @@ public enum FSStatConfig {
     public long getBlocks() {
         return _blocks;
     }
-
-
+    
+    /** 
+     * @param blocks
+     */
+    public void setBlocks(long blocks) {
+        this._blocks = blocks;
+    }
     
     /**
      * @return Total free blocks on the file system
      */
     public long getBfree() {
         return _bfree;
+    }
+    
+    /**
+     * @param bfree
+     */
+    public void setBfree(long bfree) {
+        this._bfree = bfree;
     }
 
     
@@ -91,6 +113,13 @@ public enum FSStatConfig {
      */
     public long getBavail() {
         return _bavail;
+    }
+    
+    /** 
+     * @param bavail
+     */
+    public void setBavail(long bavail) {
+        this._bavail = bavail;
     }
 
     /**
@@ -101,10 +130,24 @@ public enum FSStatConfig {
     }
     
     /**
+     * @param files
+     */
+    public void setFiles(long files) {
+        this._files = files;
+    }
+    
+    /**
      * @return Free file nodes in the file system
      */
     public long getFfree() {
         return _ffree;
+    }
+    
+    /**
+     * @param ffree
+     */
+    public void setFfree(long ffree) {
+        this._ffree = ffree;
     }
 
 }
