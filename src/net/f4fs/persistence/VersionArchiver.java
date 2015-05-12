@@ -106,7 +106,7 @@ public class VersionArchiver
 
         if (filePath == null) {
             logger.warning("Could not retrieve filePath for versionFolder.");
-            throw new IOException();
+            throw new IOException("Could not retrieve file path. However, this is needed to create the version folder. Aborting...");
         }
 
         int slashIndex = filePath.lastIndexOf("/");
