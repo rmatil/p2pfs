@@ -33,14 +33,20 @@ public class SyncFileEventListener
 
             // create local non-existing files
             for (String key : keys) {
+                if (key.equals("/")) {
+                    // no changes are allowed to root directory
+                    continue;
+                }
+
                 if (afterWriteEvent.getFilesystem().getPath(key) == null) {
-                    System.out.println("Created file again...!?!");
                     // check whether the path is a link, that means key and target are different
                     String foundPath = afterWriteEvent.getFsPeer().getPath(Number160.createHash(key));
                     if (null != foundPath && !key.equals(foundPath)) {
                         // target key is different from source key -> is a symlink
+                        logger.info("Call 'symlink' for target '" + foundPath + "' on path '" + key + "'");
                         afterWriteEvent.getFilesystem().symlink(foundPath, key);
                     } else {
+                        logger.info("Call 'create' for file/dir on path '" + key + "'");
                         afterWriteEvent.getFilesystem().create(key, null, null);
                     }
                 }
