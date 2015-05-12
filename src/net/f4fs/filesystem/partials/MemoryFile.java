@@ -189,16 +189,9 @@ public class MemoryFile
             // writes as much bytes of contents into bytesRead
             contents.get(bytesRead);
 
-            try {
-                // try to update the shortened value
-                super.getPeer().putData(Number160.createHash(getPath()), new Data(bytesRead));
-
-                // only if DHT update succeeds update the value on disk
-                newContents.put(bytesRead);
-                contents = newContents;
-            } catch (InterruptedException | ClassNotFoundException | IOException e) {
-                logger.warning("Could not truncate the contents of the file on path '" + getPath() + "'. Message: " + e.getMessage());
-            }
+            // update the value on disk
+            newContents.put(bytesRead);
+            contents = newContents;
         }
     }
 
