@@ -96,7 +96,8 @@ public class P2PFS
         // on the ExecutionException).
         // See http://stackoverflow.com/questions/3929342/choose-between-executorservices-submit-and-executorservices-execute
         this.executorService.execute(this.fsFileMonitor);
-
+        
+        dynamicFsSize();
         super.log(false);
     }
 

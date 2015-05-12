@@ -35,7 +35,6 @@ public class FSResizePeerMapChangeListener implements PeerMapChangeListener{
         FSStatConfig.RESIZE.setBlocks(size * FSStatConfig.RESIZEINIT.getBlocks());
         FSStatConfig.RESIZE.setBfree(size * FSStatConfig.RESIZEINIT.getBfree());
         FSStatConfig.RESIZE.setBavail(size * FSStatConfig.RESIZEINIT.getBavail());
-        System.out.println("AAAAAAAAAAAAAAAAA SIZE:" + size);
     }
 
 }
