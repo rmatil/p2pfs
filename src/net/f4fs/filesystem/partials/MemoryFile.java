@@ -220,21 +220,10 @@ public class MemoryFile
             }
             buffer.get(bytesToWrite, 0, (int) bufSize);
 
-            try {
-                // NOTE: this must be before the data gets stored in the DHT
-                // because otherwise the latest chunk of data will not be stored in there
-                contents.position((int) writeOffset);
-                contents.put(bytesToWrite);
-                contents.position(0); // Rewind
-
-                // NOTE: write gets called multiple times for the same file, because
-                // it is written in chunks. Because we do not now, when everything of a certain file is
-                // written, overwrite the contents in the DHT
-                super.getPeer().putData(Number160.createHash(getPath()), new Data(contents.array()));
-            } catch (InterruptedException | ClassNotFoundException | IOException e) {
-                logger.warning("Could not write to file on path '" + getPath() + "'. Message; " + e.getMessage());
-                return -ErrorCodes.EIO();
-            }
+            // update with this chunk
+            contents.position((int) writeOffset);
+            contents.put(bytesToWrite);
+            contents.position(0); // Rewind
         }
 
         return (int) bufSize;
