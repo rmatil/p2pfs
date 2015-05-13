@@ -45,7 +45,7 @@ public class VersionArchiver
     /**
      * Access to all stored files
      */
-    private final IPersistence     simpleDHTOperations;
+    private final IPersistence     dhtOperations;
 
     /**
      * Access to the DHT
@@ -55,7 +55,7 @@ public class VersionArchiver
 
     public VersionArchiver() {
         this.pathOperations = PersistenceFactory.getPathPersistence();
-        this.simpleDHTOperations = PersistenceFactory.getDhtOperations();
+        this.dhtOperations = PersistenceFactory.getChunkedDhtOperations();
     }
 
     /**
@@ -171,7 +171,7 @@ public class VersionArchiver
         ArrayBlockingQueue<String> versionQueue = new ArrayBlockingQueue<String>(MAX_VERSIONS + 1);
 
         // Put version queue
-        simpleDHTOperations.putData(peerDHT, Number160.createHash(pVersionQueuePath), new Data(versionQueue));
+        dhtOperations.putData(peerDHT, Number160.createHash(pVersionQueuePath), new Data(versionQueue));
         pathOperations.putPath(peerDHT, Number160.createHash(pVersionFolderPath), new Data(pVersionFolderPath));
 
         logger.info("Added version folder on path '" + pVersionFolderPath + "' to the DHT");
@@ -198,16 +198,16 @@ public class VersionArchiver
         String pathToArchive = pVersionFolderPath.concat("/").concat(pFilename.replace('.', '_')).concat("_").concat(currentVersion).concat(".").concat(pFileExtension);
 
         // Put data of old version
-        simpleDHTOperations.putData(peerDHT, Number160.createHash(pathToArchive), pOldFile);
+        dhtOperations.putData(peerDHT, Number160.createHash(pathToArchive), pOldFile);
         pathOperations.putPath(peerDHT, Number160.createHash(pathToArchive), new Data(pathToArchive));
 
         // get version queue from version folder and add new version to queue
         @SuppressWarnings("unchecked")
-        ArrayBlockingQueue<String> versionQueue = (ArrayBlockingQueue<String>) simpleDHTOperations.getData(peerDHT, Number160.createHash(pVersionQueuePath)).object();
+        ArrayBlockingQueue<String> versionQueue = (ArrayBlockingQueue<String>) dhtOperations.getData(peerDHT, Number160.createHash(pVersionQueuePath)).object();
         versionQueue.put(pathToArchive);
 
         // put version queue back to version folder
-        simpleDHTOperations.putData(peerDHT, Number160.createHash(pVersionQueuePath), new Data(versionQueue));
+        dhtOperations.putData(peerDHT, Number160.createHash(pVersionQueuePath), new Data(versionQueue));
     }
 
     /**
@@ -225,13 +225,13 @@ public class VersionArchiver
 
         // get version queue from version folder
         @SuppressWarnings("unchecked")
-        ArrayBlockingQueue<String> versionQueue = (ArrayBlockingQueue<String>) simpleDHTOperations.getData(peerDHT, Number160.createHash(pVersionQueuePath)).object();
+        ArrayBlockingQueue<String> versionQueue = (ArrayBlockingQueue<String>) dhtOperations.getData(peerDHT, Number160.createHash(pVersionQueuePath)).object();
 
         if (versionQueue.size() > MAX_VERSIONS) {
             // delete version
             String versionToDelete = versionQueue.remove();
             // Remove file
-            simpleDHTOperations.removeData(peerDHT, Number160.createHash(versionToDelete));
+            dhtOperations.removeData(peerDHT, Number160.createHash(versionToDelete));
             // Remove path
             pathOperations.removePath(peerDHT, Number160.createHash(versionToDelete));
             System.out.println("Pruned version folder");
@@ -240,6 +240,6 @@ public class VersionArchiver
         }
 
         // put version queue back to version folder
-        simpleDHTOperations.putData(peerDHT, Number160.createHash(pVersionQueuePath), new Data(versionQueue));
+        dhtOperations.putData(peerDHT, Number160.createHash(pVersionQueuePath), new Data(versionQueue));
     }
 }
