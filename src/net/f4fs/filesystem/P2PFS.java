@@ -284,6 +284,8 @@ public class P2PFS
         final AMemoryPath parent = getParentPath(path);
         if (parent instanceof MemoryDirectory) {
             ((MemoryDirectory) parent).mkdir(FSFileUtils.getLastComponent(path));
+            // add dir to fsFileMonitor
+            this.fsFileMonitor.addMonitoredFile(path, ByteBuffer.allocate(0));
             return 0;
         }
 
