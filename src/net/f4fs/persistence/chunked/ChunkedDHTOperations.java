@@ -13,11 +13,9 @@ import net.tomp2p.futures.BaseFutureImpl;
 import net.tomp2p.peers.Number160;
 import net.tomp2p.storage.Data;
 
-import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
-import java.io.IOException;
-import java.io.ObjectInputStream;
+import java.io.*;
 import java.lang.reflect.Type;
+import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.Arrays;
 
@@ -42,17 +40,15 @@ public class ChunkedDHTOperations implements IPersistence {
         Type chunkHashesType = new TypeToken<ArrayList<Number160>>(){}.getType();
         ArrayList<Number160> chunkHashes = null;
         try {
-            chunkHashes = new Gson().fromJson((String) listFutureGet.data().object(), chunkHashesType);
-        } catch (ClassNotFoundException e) {
-            e.printStackTrace();
-        } catch (IOException e) {
+            chunkHashes = new Gson().fromJson(new String(listFutureGet.data().toBytes(), "UTF-8"), chunkHashesType);
+        } catch (UnsupportedEncodingException e) {
             e.printStackTrace();
         }
 
         if (chunkHashes != null) {
             ArrayList<byte[]> chunks = new ArrayList<>(chunkHashes.size());
 
-            ArrayList<FutureGet> chunkFuturGets = new ArrayList<>();
+            ArrayList<FutureGet> chunkFutureGets = new ArrayList<>();
 
             // Get all the chunks
             for (int i = 0; i < chunkHashes.size(); i++) {
@@ -61,15 +57,15 @@ public class ChunkedDHTOperations implements IPersistence {
                         pPeer.peerAddress().inetAddress().toString(),
                         "Get chunk " + i + " of " + (chunkHashes.size() - 1)));
 
-                chunkFuturGets.add(ft);
+                chunkFutureGets.add(ft);
             }
 
             // Wait for the chunks to arrive, and store them in the list.
-            for (int i = 0; i < chunkFuturGets.size(); i++) {
-                chunkFuturGets.get(i).await();
-                System.out.println("Wait for chunk " + i + " of " + (chunkFuturGets.size() - 1));
+            for (int i = 0; i < chunkFutureGets.size(); i++) {
+                chunkFutureGets.get(i).await();
+                System.out.println("Wait for chunk " + i + " of " + (chunkFutureGets.size() - 1));
 
-                chunks.add(i, chunkFuturGets.get(i).data().toBytes());
+                chunks.add(i, chunkFutureGets.get(i).data().toBytes());
             }
 
             //int totalBytes = chunks.stream().mapToInt(c -> c.length).sum();
@@ -121,13 +117,13 @@ public class ChunkedDHTOperations implements IPersistence {
         ArrayList<Number160> chunkHashes = new ArrayList<>();
 
         for (byte[] chunk : chunks) {
-            chunkHashes.add(new Number160(chunk));
+            chunkHashes.add(Number160.createHash(chunk.toString()));
         }
 
         ArrayList<FuturePut> futurePuts = new ArrayList<>();
 
         // Storing the chunk list
-        FuturePut futurePutList = pPeer.put(pLocationKey).data(new Data(new Gson().toJson(chunkHashes))).start();
+        FuturePut futurePutList = pPeer.put(pLocationKey).data(new Data(new Gson().toJson(chunkHashes).getBytes(Charset.forName("UTF-8")))).start();
         futurePutList.addListener(new PutListener(
                 pPeer.peerAddress().inetAddress().toString(),
                 "Put chunk list"));
