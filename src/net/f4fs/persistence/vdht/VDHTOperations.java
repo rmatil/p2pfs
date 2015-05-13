@@ -129,38 +129,39 @@ public class VDHTOperations
         
         // Archive old file with VDHTArchiver
         VersionArchiver archiver = new VersionArchiver();
-        archiver.archive(pPeer, pLocationKey, fg.data());
+        throw new IOException("Breaking changes introduced here. Archiving not possible. Aborting...");
+//        archiver.archive(pPeer, pLocationKey, fg.data());
 
 
         // location key already exists versioning is applied
-        for (int i = 0; i < NUMBER_OF_RETRIES; i++) {
-            System.out.println("Retry " + i + " of " + (NUMBER_OF_RETRIES - i));
-            Pair<Number160, Data> pair = getAndUpdate(pPeer, pLocationKey, pData);
-            if (pair == null) {
-                logger.warning("We cannot handle this kind of inconsistency automatically, handing over the the API dev");
-                return;
-            }
-
-            FuturePut fp = pPeer.put(pLocationKey).data(Number160.ZERO, pair.element1().prepareFlag(), pair.element0()).start().awaitUninterruptibly();
-            pair2 = checkVersions(fp.rawResult());
-            // 1 is PutStatus.OK_PREPARED
-            if (pair2 != null && pair2.element1() == 1) {
-                break;
-            }
-
-            logger.info("Get delay or fork - get");
-
-            // if not removed, a low ttl will eventually get rid of it
-            pPeer.remove(pLocationKey).versionKey(pair.element0()).start().awaitUninterruptibly();
-            Thread.sleep(RND.nextInt(SLEEP_TIME));
-        }
-
-        if (pair2 != null && pair2.element1() == 1) {
-            System.out.println("Confirm write");
-            FuturePut fp = pPeer.put(pLocationKey).versionKey(pair2.element0().versionKey()).putConfirm().data(new Data()).start().awaitUninterruptibly();
-        } else {
-            logger.warning("We cannot handle this kind of inconsistency automatically, handing over the the API dev");
-        }
+//        for (int i = 0; i < NUMBER_OF_RETRIES; i++) {
+//            System.out.println("Retry " + i + " of " + (NUMBER_OF_RETRIES - i));
+//            Pair<Number160, Data> pair = getAndUpdate(pPeer, pLocationKey, pData);
+//            if (pair == null) {
+//                logger.warning("We cannot handle this kind of inconsistency automatically, handing over the the API dev");
+//                return;
+//            }
+//
+//            FuturePut fp = pPeer.put(pLocationKey).data(Number160.ZERO, pair.element1().prepareFlag(), pair.element0()).start().awaitUninterruptibly();
+//            pair2 = checkVersions(fp.rawResult());
+//            // 1 is PutStatus.OK_PREPARED
+//            if (pair2 != null && pair2.element1() == 1) {
+//                break;
+//            }
+//
+//            logger.info("Get delay or fork - get");
+//
+//            // if not removed, a low ttl will eventually get rid of it
+//            pPeer.remove(pLocationKey).versionKey(pair.element0()).start().awaitUninterruptibly();
+//            Thread.sleep(RND.nextInt(SLEEP_TIME));
+//        }
+//
+//        if (pair2 != null && pair2.element1() == 1) {
+//            System.out.println("Confirm write");
+//            FuturePut fp = pPeer.put(pLocationKey).versionKey(pair2.element0().versionKey()).putConfirm().data(new Data()).start().awaitUninterruptibly();
+//        } else {
+//            logger.warning("We cannot handle this kind of inconsistency automatically, handing over the the API dev");
+//        }
 
     }
 

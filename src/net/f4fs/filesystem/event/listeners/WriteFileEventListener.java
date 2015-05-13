@@ -37,10 +37,10 @@ public class WriteFileEventListener
         if (0 != writeEvent.getContent().capacity()) {
             try {
                 Data oldData = writeEvent.getFsPeer().getData(Number160.createHash(writeEvent.getPath()));
-                
+
                 // data is a already a byte array, no need to get the object of it
                 if (null != oldData && oldData.toBytes().length > 0) {
-                    this.archiver.archive(writeEvent.getFsPeer().getPeerDHT(), Number160.createHash(writeEvent.getPath()), oldData);                    
+                    this.archiver.archive(writeEvent.getFsPeer(), Number160.createHash(writeEvent.getPath()), oldData);
                 }
             } catch (ClassNotFoundException | IOException | InterruptedException e) {
                 this.logger.warning("Could not archive file on path '" + writeEvent.getPath() + "'. An error occurred during fetching old data. Message: " + e.getMessage());
@@ -49,6 +49,7 @@ public class WriteFileEventListener
         
         try {
             writeEvent.getFsPeer().putData(Number160.createHash(writeEvent.getPath()), new Data(writeEvent.getContent().array()));
+            writeEvent.getFsPeer().putPath(Number160.createHash(writeEvent.getPath()), new Data(writeEvent.getPath()));
         } catch (ClassNotFoundException | InterruptedException | IOException e) {
             this.logger.severe("Could not save whole file on path '" + writeEvent.getPath() + "'. An error occurred during saving to DHT. Message: " + e.getMessage());
         }

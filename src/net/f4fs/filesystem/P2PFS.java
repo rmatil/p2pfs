@@ -480,6 +480,10 @@ public class P2PFS
             return -ErrorCodes.EISDIR();
         }
         ((MemoryFile) p).truncate(offset);
+        
+        // overwrite monitored content and update countdown
+        this.fsFileMonitor.addMonitoredFile(path, ((MemoryFile) p).getContent());
+        
         return 0;
     }
 

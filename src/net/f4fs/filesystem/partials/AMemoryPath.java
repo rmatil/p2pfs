@@ -66,10 +66,7 @@ public abstract class AMemoryPath {
                 logger.info("MemoryPath with name '" + name + "' already existed in the DHT on path '" + getPath() + "'. Creating it locallay...");
                 return;
             }
-
-            peer.putData(Number160.createHash(getPath()), new Data(new byte[0]));
-            peer.putPath(Number160.createHash(getPath()), new Data(getPath()));
-
+            
         } catch (IOException | InterruptedException | ClassNotFoundException e) {
             logger.warning("Could not create MemoryPath with name '" + name + "' on path '" + getPath() + "'. Message: " + e.getMessage());
         }
