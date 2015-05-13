@@ -558,6 +558,8 @@ public class P2PFS
         Set<String> allPaths = new HashSet<>();
         allPaths.add("/");
         allPaths.addAll(getDirSubPaths(rootDirectory));
+        // get also all monitored files
+        allPaths.addAll(this.fsFileMonitor.getMonitoredFilePaths());
         return allPaths;
     }
 

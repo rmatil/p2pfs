@@ -4,6 +4,7 @@ import java.nio.ByteBuffer;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Set;
 import java.util.logging.Logger;
 
 import net.f4fs.filesystem.P2PFS;
@@ -120,6 +121,10 @@ public class FSFileMonitor
         }
 
         return file.element1();
+    }
+    
+    public synchronized Set<String> getMonitoredFilePaths() {
+        return this.monitoredFiles.keySet();
     }
 
     public void terminate() {
