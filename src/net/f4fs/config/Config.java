@@ -5,8 +5,6 @@ import java.util.concurrent.TimeUnit;
 
 /**
  * Main configuration file. Adapt if necessary.
- *
- * Created by samuel on 31.03.15.
  */
 public enum Config {
     DEFAULT("http", "188.226.178.35", 4000, "tabequals4", "ip-addresses", "ip-addresses/new", "ip-addresses/remove", "keepAlive", 5, TimeUnit.MINUTES, "./P2PFS", false, "keys", 4096),

@@ -11,9 +11,11 @@ import java.util.Arrays;
 import net.f4fs.config.Config;
 import net.f4fs.fspeer.GetListener;
 import net.f4fs.fspeer.PutListener;
+import net.f4fs.fspeer.RemoveListener;
 import net.f4fs.persistence.IPersistence;
 import net.tomp2p.dht.FutureGet;
 import net.tomp2p.dht.FuturePut;
+import net.tomp2p.dht.FutureRemove;
 import net.tomp2p.dht.PeerDHT;
 import net.tomp2p.peers.Number160;
 import net.tomp2p.storage.Data;
@@ -21,9 +23,13 @@ import net.tomp2p.storage.Data;
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
 
-
 /**
  * Chunks the data before storage and dechunks them on retrieval.
+ *
+ * The chunks' keys are generated as follows:
+ *  Number160.createHash(pLocationKey.toString() + new String(chunk))
+ *
+ * Where `chunk` is the byte array of that specific chunk.
  */
 public class ChunkedDHTOperations
         implements IPersistence {
@@ -52,7 +58,7 @@ public class ChunkedDHTOperations
             e.printStackTrace();
         }
 
-        if (chunkHashes != null) {
+        if (null != chunkHashes) {
             ArrayList<byte[]> chunks = new ArrayList<>(chunkHashes.size());
 
             ArrayList<FutureGet> chunkFutureGets = new ArrayList<>();
@@ -70,7 +76,7 @@ public class ChunkedDHTOperations
             // Wait for the chunks to arrive, and store them in the list.
             for (int i = 0; i < chunkFutureGets.size(); i++) {
                 chunkFutureGets.get(i).await();
-                System.out.println("Wait for chunk " + i + " of " + (chunkFutureGets.size() - 1));
+                System.out.println("Wait for chunk " + (i + 1) + " of " + chunkFutureGets.size());
 
                 chunks.add(i, chunkFutureGets.get(i).data().toBytes());
             }
@@ -81,11 +87,9 @@ public class ChunkedDHTOperations
             chunks.forEach(chunk -> byteArrayOutputStream.write(chunk, 0, chunk.length));
 
             return new Data(byteArrayOutputStream.toByteArray());
-
-        } else {
-            System.out.println("Couldn't get the chunks!");
-            return null;
         }
+
+        return null;
     }
 
     @Override
@@ -124,7 +128,7 @@ public class ChunkedDHTOperations
         ArrayList<Number160> chunkHashes = new ArrayList<>();
 
         for (byte[] chunk : chunks) {
-            chunkHashes.add(Number160.createHash(new String(chunk)));
+            chunkHashes.add(Number160.createHash(pLocationKey.toString() + new String(chunk)));
         }
 
         ArrayList<FuturePut> futurePuts = new ArrayList<>();
@@ -147,7 +151,7 @@ public class ChunkedDHTOperations
                     .start();
             futurePutList.addListener(new PutListener(
                     pPeer.peerAddress().inetAddress().toString(),
-                    "Put chunk " + i + " of " + (chunks.size() - 1)));
+                    "Put chunk " + (i + 1) + " of " + chunks.size()));
             futurePuts.add(fp);
         }
 
@@ -157,9 +161,47 @@ public class ChunkedDHTOperations
     }
 
     @Override
-    public void removeData(PeerDHT pPeer, Number160 pKey)
-            throws InterruptedException {
-        // remove data && hash list
+    public void removeData(PeerDHT pPeer, Number160 pKey) throws InterruptedException {
+        ArrayList<FutureRemove> futureRemoves = new ArrayList<>();
+
+        // Since the content is stored in chunks, we need to get the chunk list first.
+        FutureGet listFutureGet = pPeer.get(pKey).start();
+        listFutureGet.addListener(new GetListener(
+                pPeer.peerAddress().inetAddress().toString(),
+                "Get chunk list"));
+        listFutureGet.await();
+
+        // Got it, now we can delete the list.
+        FutureRemove listRemove = pPeer.remove(pKey).start();
+        listRemove.addListener(
+                new RemoveListener(pPeer.peerAddress().inetAddress().toString(),
+                "Remove chunk list"));
+
+        futureRemoves.add(listRemove);
+
+        // If it's not an directory, delete
+        if (null != listFutureGet.data()) {
+            Type chunkHashesType = new TypeToken<ArrayList<Number160>>(){}.getType();
+            ArrayList<Number160> chunkHashes = null;
+            try {
+                chunkHashes = new Gson().fromJson(
+                        new String(listFutureGet.data().toBytes(), "UTF-8"), chunkHashesType);
+            } catch (UnsupportedEncodingException e) {
+                e.printStackTrace();
+            }
+
+            // ... and delete the chunks themselves.
+            for (int i = 0; i < chunkHashes.size(); i++) {
+                FutureRemove fr = pPeer.remove(chunkHashes.get(i)).start();
+                fr.addListener(new RemoveListener(
+                        pPeer.peerAddress().inetAddress().toString(),
+                        "Remove chunk " + (i + 1) + " of " + chunkHashes.size()));
+
+                futureRemoves.add(fr);
+            }
+        }
+
+        for (FutureRemove fr : futureRemoves) { fr.await(); }
     }
 
     @Override
