@@ -8,6 +8,7 @@ import java.util.Set;
 
 import net.f4fs.bootstrapserver.BootstrapServerAccess;
 import net.f4fs.config.Config;
+import net.f4fs.config.FSStatConfig;
 import net.f4fs.persistence.IPathPersistence;
 import net.f4fs.persistence.IPersistence;
 import net.f4fs.util.RandomDevice;
@@ -39,7 +40,7 @@ public class FSPeer {
 
     private BootstrapServerAccess bootstrapServerAccess;
 
-    private String                myIp;
+    private String                myIp = "127.0.0.1";
 
     public FSPeer() {
         this.persistence = PersistenceFactory.getVersionedDhtOperations();
@@ -63,7 +64,7 @@ public class FSPeer {
 
         // b.addInterface("eth0");
         peer = new PeerBuilderDHT(new PeerBuilder(new Number160(RandomDevice.INSTANCE.getRand())).ports(Config.DEFAULT.getPort()).bindings(b).start()).start();
-        setMyIp();
+        //setMyIp();
         postIpPortPair(myIp, Config.DEFAULT.getPort());
 
         System.out.println("[Peer@" + myIp + "]: Server started listening to: " + DiscoverNetworks.discoverInterfaces(b));
@@ -89,7 +90,7 @@ public class FSPeer {
 
         // b.addInterface("eth0");
         peer = new PeerBuilderDHT(new PeerBuilder(new Number160(RandomDevice.INSTANCE.getRand())).ports(Config.DEFAULT.getPort()).bindings(b).start()).start();
-        setMyIp();
+        //setMyIp();
         postIpPortPair(myIp, Config.DEFAULT.getPort());
 
         System.out.println("[Peer@" + myIp + "]: Client started and listening to: " + DiscoverNetworks.discoverInterfaces(b));
@@ -114,6 +115,9 @@ public class FSPeer {
 
         if (futureDiscover.isSuccess()) {
             System.out.println("[Peer@" + myIp + "]: Outside IP address is " + futureDiscover.peerAddress());
+            
+            // Set initial size of FS according to the number of connected peers.
+            FSStatConfig.initialFsSize(addressList.size() + 1);
             return true;
         }
 

@@ -97,6 +97,8 @@ public class P2PFS
         // See http://stackoverflow.com/questions/3929342/choose-between-executorservices-submit-and-executorservices-execute
         this.executorService.execute(this.fsFileMonitor);
         
+        
+        // Enables dynamic resizing of the FS.
         dynamicFsSize();
         super.log(false);
     }
@@ -585,7 +587,7 @@ public class P2PFS
         return allPaths;
     }
     
-    public void dynamicFsSize() {
+    private void dynamicFsSize() {
         FSResizePeerMapChangeListener peerMapChangeListener = new FSResizePeerMapChangeListener(peer.getPeerDHT());
         peer.getPeerDHT().peerBean().peerMap().addPeerMapChangeListener(peerMapChangeListener);
     }

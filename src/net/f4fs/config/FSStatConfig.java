@@ -60,8 +60,26 @@ public enum FSStatConfig {
         _files = files;
         _ffree = ffree;
     }
-
-
+    
+    /**
+     * Set initial FS size if dynamic resizing is enabled.
+     * 
+     * @param fsSize number of connected peers to the DHT
+     */
+    public static void initialFsSize(int fsSize){
+        resize(fsSize);
+    }
+    
+    /**
+     * Resize the FS if dynamic resizing is enabled.
+     * 
+     * @param fsSize the number of connected peers to the DHT
+     */
+    public static void resize(int fsSize){
+        RESIZE.setBlocks(fsSize * RESIZEINIT.getBlocks());
+        RESIZE.setBfree(fsSize * RESIZEINIT.getBfree());
+        RESIZE.setBavail(fsSize * RESIZEINIT.getBavail());
+    }
     
     /**
      * @return Optimal transfer block size
