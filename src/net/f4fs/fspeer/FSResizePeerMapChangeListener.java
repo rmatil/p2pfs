@@ -18,7 +18,6 @@ public class FSResizePeerMapChangeListener implements PeerMapChangeListener{
     @Override
     public void peerInserted(PeerAddress arg0, boolean arg1) {
         resize();
-        System.out.println("BLABLABLA");
     }
 
     @Override
@@ -33,7 +32,7 @@ public class FSResizePeerMapChangeListener implements PeerMapChangeListener{
     
     private void resize() {
         int size = peer.peerBean().peerMap().all().size();
-        FSStatConfig.resize(size + 1);
+        FSStatConfig.RESIZE.resize(size + 1);
     }
 
 }

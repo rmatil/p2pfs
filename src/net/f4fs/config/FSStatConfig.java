@@ -8,7 +8,8 @@ package net.f4fs.config;
 public enum FSStatConfig {
     DEFAULT(4000L, 1000L, 200L, 180L, 5L, 29L),
     BIGGER(4000L, 100000L, 98000L, 90000L, 10L, 58L),
-    RESIZEINIT(4000L, 10000L, 9800L, 9000L, 5L, 29L),
+    
+    INIT(4000L, 10000L, 9800L, 9000L, 5L, 29L),
     RESIZE(4000L, 10000L, 9800L, 9000L, 5L, 29L);
 
     /**
@@ -66,7 +67,7 @@ public enum FSStatConfig {
      * 
      * @param fsSize number of connected peers to the DHT
      */
-    public static void initialFsSize(int fsSize){
+    public void initialFsSize(int fsSize){
         resize(fsSize);
     }
     
@@ -75,10 +76,10 @@ public enum FSStatConfig {
      * 
      * @param fsSize the number of connected peers to the DHT
      */
-    public static void resize(int fsSize){
-        RESIZE.setBlocks(fsSize * RESIZEINIT.getBlocks());
-        RESIZE.setBfree(fsSize * RESIZEINIT.getBfree());
-        RESIZE.setBavail(fsSize * RESIZEINIT.getBavail());
+    public void resize(int fsSize){
+        setBlocks(fsSize * INIT.getBlocks());
+        setBfree(fsSize * INIT.getBfree());
+        setBavail(fsSize * INIT.getBavail());
     }
     
     /**
