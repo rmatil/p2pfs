@@ -4,7 +4,9 @@ import net.f4fs.filesystem.P2PFS;
 import net.f4fs.fspeer.FSPeer;
 
 /**
- * An event which gets dispatched before the file is completely written
+ * An event which gets dispatched before the file is completely written.
+ * Holds the context of the file system, the peer and the file path which is
+ * ready to be written to the DHT, i.e. it is completely written on the local disk.
  * 
  * @author Raphael
  *

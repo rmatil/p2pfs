@@ -5,8 +5,8 @@ import net.f4fs.fspeer.FSPeer;
 
 /**
  * An event which gets dispatched before
- * all files got either written completely to the DHT
- * or not.
+ * all files got either written completely to the DHT or not.
+ * Provides access to the file system and the peer.
  * 
  * @author Raphael
  *

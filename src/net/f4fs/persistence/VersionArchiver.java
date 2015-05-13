@@ -106,7 +106,7 @@ public class VersionArchiver
 
         if (filePath == null) {
             logger.warning("Could not retrieve filePath for versionFolder.");
-            throw new IOException();
+            throw new IOException("Could not retrieve file path. However, this is needed to create the version folder. Aborting...");
         }
 
         int slashIndex = filePath.lastIndexOf("/");
@@ -235,8 +235,6 @@ public class VersionArchiver
             // Remove path
             pathOperations.removePath(peerDHT, Number160.createHash(versionToDelete));
             System.out.println("Pruned version folder");
-        } else {
-            System.out.println("Did not prune version folder");
         }
 
         // put version queue back to version folder

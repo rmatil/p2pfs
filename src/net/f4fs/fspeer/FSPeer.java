@@ -1,14 +1,13 @@
 package net.f4fs.fspeer;
 
-import java.io.BufferedReader;
 import java.io.IOException;
-import java.io.InputStreamReader;
 import java.net.Inet4Address;
 import java.net.InetAddress;
-import java.net.URL;
 import java.util.Collection;
 import java.util.Set;
 
+import net.f4fs.bootstrapserver.BootstrapServerAccess;
+import net.f4fs.config.Config;
 import net.f4fs.persistence.IPathPersistence;
 import net.f4fs.persistence.IPersistence;
 import net.f4fs.util.RandomDevice;
@@ -32,16 +31,21 @@ import net.tomp2p.storage.Data;
  */
 public class FSPeer {
 
-    private PeerDHT          peer;
+    private PeerDHT               peer;
 
-    private IPersistence     persistence;
+    private IPersistence          persistence;
 
-    private IPathPersistence pathPersistence;
+    private IPathPersistence      pathPersistence;
+
+    private BootstrapServerAccess bootstrapServerAccess;
+
+    private String                myIp;
 
     public FSPeer() {
         // this.persistence = PersistenceFactory.getVersionedDhtOperations();
         this.persistence = PersistenceFactory.getChunkedDhtOperations();
         this.pathPersistence = PersistenceFactory.getPathPersistence();
+        this.bootstrapServerAccess = new BootstrapServerAccess();
     }
 
     /**
@@ -52,16 +56,19 @@ public class FSPeer {
      * 
      * @throws Exception
      */
-    public void startAsBootstrapPeer(String myIP, int myPort)
+    public void startAsBootstrapPeer()
             throws Exception {
 
         Bindings b = new Bindings().addProtocol(StandardProtocolFamily.INET).addAddress(
-                InetAddress.getByName(myIP));
+                Inet4Address.getLocalHost());
 
         // b.addInterface("eth0");
-        peer = new PeerBuilderDHT(new PeerBuilder(new Number160(RandomDevice.INSTANCE.getRand())).ports(myPort).bindings(b).start()).start();
-        System.out.println("[Peer@" + myIP + "]: Server started listening to: " + DiscoverNetworks.discoverInterfaces(b));
-        System.out.println("[Peer@" + myIP + "]: Address visible to outside is " + peer.peerAddress());
+        peer = new PeerBuilderDHT(new PeerBuilder(new Number160(RandomDevice.INSTANCE.getRand())).ports(Config.DEFAULT.getPort()).bindings(b).start()).start();
+        setMyIp();
+        postIpPortPair(myIp, Config.DEFAULT.getPort());
+
+        System.out.println("[Peer@" + myIp + "]: Server started listening to: " + DiscoverNetworks.discoverInterfaces(b));
+        System.out.println("[Peer@" + myIp + "]: Address visible to outside is " + peer.peerAddress());
     }
 
     /**
@@ -75,21 +82,25 @@ public class FSPeer {
      * 
      * @throws Exception
      */
-    public boolean startPeer(String myIP, int myPort, String connectionIpAddress, int connectionPort)
+    public boolean startPeer(String connectionIpAddress, int connectionPort)
             throws Exception {
 
         Bindings b = new Bindings().addProtocol(StandardProtocolFamily.INET).addAddress(
-                InetAddress.getByName(myIP));
+                Inet4Address.getLocalHost());
 
         // b.addInterface("eth0");
-        peer = new PeerBuilderDHT(new PeerBuilder(new Number160(RandomDevice.INSTANCE.getRand())).ports(myPort).bindings(b).start()).start();
-        System.out.println("[Peer@" + myIP + "]: Client started and listening to: " + DiscoverNetworks.discoverInterfaces(b));
-        System.out.println("[Peer@" + myIP + "]: Address visible to outside is " + peer.peerAddress());
+        peer = new PeerBuilderDHT(new PeerBuilder(new Number160(RandomDevice.INSTANCE.getRand())).ports(Config.DEFAULT.getPort()).bindings(b).start()).start();
+        setMyIp();
+        postIpPortPair(myIp, Config.DEFAULT.getPort());
+
+        System.out.println("[Peer@" + myIp + "]: Client started and listening to: " + DiscoverNetworks.discoverInterfaces(b));
+        System.out.println("[Peer@" + myIp + "]: Address visible to outside is " + peer.peerAddress());
 
         InetAddress address = Inet4Address.getByName(connectionIpAddress);
         PeerAddress connectionPeerAddress = new PeerAddress(Number160.ZERO, address, connectionPort, connectionPort);
 
-        System.out.println("[Peer@" + myIP + "]: Connected to " + connectionPeerAddress);
+        System.out.println("[Peer@" + myIp + "]: Connected to " + connectionPeerAddress);
+        bootstrapServerAccess.postIpPortPair(myIp, Config.DEFAULT.getPort());
 
         // Future Discover
         FutureDiscover futureDiscover = peer.peer().discover().inetAddress(address).ports(connectionPort).start();
@@ -100,14 +111,14 @@ public class FSPeer {
         futureBootstrap.awaitUninterruptibly();
 
         Collection<PeerAddress> addressList = peer.peerBean().peerMap().all();
-        System.out.println("[Peer@" + myIP + "]: Address list size: " + addressList.size());
+        System.out.println("[Peer@" + myIp + "]: Address list size: " + addressList.size());
 
         if (futureDiscover.isSuccess()) {
-            System.out.println("[Peer@" + myIP + "]: Outside IP address is " + futureDiscover.peerAddress());
+            System.out.println("[Peer@" + myIp + "]: Outside IP address is " + futureDiscover.peerAddress());
             return true;
         }
 
-        System.out.println("[Peer@" + myIP + "]: Failed " + futureDiscover.failedReason());
+        System.out.println("[Peer@" + myIp + "]: Failed " + futureDiscover.failedReason());
         return false;
     }
 
@@ -115,6 +126,7 @@ public class FSPeer {
      * Shuts down this peer
      */
     public void shutdown() {
+        removeIpPortPair(peer.peerAddress().toString(), Config.DEFAULT.getPort());
         peer.shutdown();
     }
 
@@ -134,43 +146,6 @@ public class FSPeer {
         System.out.println("Done");
     }
 
-    /**
-     * Tries to fetch the IP address of this peer in the local network
-     * 
-     * @return The found IP address
-     */
-    public String findLocalIp() {
-        String ip = "";
-
-        try {
-            ip = Inet4Address.getLocalHost().getHostAddress();
-        } catch (IOException pEx) {
-            pEx.printStackTrace();
-        }
-        return ip;
-    }
-
-
-    /**
-     * Tries to fetch the IP address seen from outside
-     * 
-     * @return The IP Address
-     */
-    public String findExternalIp() {
-        BufferedReader bufferedReader;
-        String ip = "";
-
-        try {
-            URL ipRequest = new URL("http://checkip.amazonaws.com");
-            bufferedReader = new BufferedReader(new InputStreamReader(ipRequest.openStream()));
-            ip = bufferedReader.readLine();
-            bufferedReader.close();
-        } catch (IOException pEx) {
-            pEx.printStackTrace();
-        }
-
-        return ip;
-    }
 
     /**
      * Gets the value stored on the given key
@@ -276,5 +251,23 @@ public class FSPeer {
 
     public PeerDHT getPeerDHT() {
         return this.peer;
+    }
+
+    private void postIpPortPair(String ip, int port) {
+        bootstrapServerAccess.postIpPortPair(ip, port);
+    }
+
+    private void removeIpPortPair(String ip, int port) {
+        bootstrapServerAccess.removeIpPortPair(ip, port);
+    }
+
+    private void setMyIp() {
+        if (peer != null) {
+            myIp = peer.peerAddress().inetAddress().getHostAddress();
+        }
+    }
+
+    public String getMyIp() {
+        return myIp;
     }
 }

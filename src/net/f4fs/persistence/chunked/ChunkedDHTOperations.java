@@ -1,7 +1,13 @@
 package net.f4fs.persistence.chunked;
 
-import com.google.gson.Gson;
-import com.google.gson.reflect.TypeToken;
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.io.UnsupportedEncodingException;
+import java.lang.reflect.Type;
+import java.nio.charset.Charset;
+import java.util.ArrayList;
+import java.util.Arrays;
+
 import net.f4fs.config.Config;
 import net.f4fs.fspeer.GetListener;
 import net.f4fs.fspeer.PutListener;
@@ -9,22 +15,22 @@ import net.f4fs.persistence.IPersistence;
 import net.tomp2p.dht.FutureGet;
 import net.tomp2p.dht.FuturePut;
 import net.tomp2p.dht.PeerDHT;
-import net.tomp2p.futures.BaseFutureImpl;
 import net.tomp2p.peers.Number160;
 import net.tomp2p.storage.Data;
 
-import java.io.*;
-import java.lang.reflect.Type;
-import java.nio.charset.Charset;
-import java.util.ArrayList;
-import java.util.Arrays;
+import com.google.gson.Gson;
+import com.google.gson.reflect.TypeToken;
+
 
 /**
  * Chunks the data before storage and dechunks them on retrieval.
  */
-public class ChunkedDHTOperations implements IPersistence {
+public class ChunkedDHTOperations
+        implements IPersistence {
+
     @Override
-    public Data getData(PeerDHT pPeer, Number160 pLocationKey) throws InterruptedException {
+    public Data getData(PeerDHT pPeer, Number160 pLocationKey)
+            throws InterruptedException {
         // Get chunk list
         FutureGet listFutureGet = pPeer.get(pLocationKey).start();
         listFutureGet.addListener(new GetListener(
@@ -37,7 +43,7 @@ public class ChunkedDHTOperations implements IPersistence {
             return listFutureGet.data();
         }
 
-        Type chunkHashesType = new TypeToken<ArrayList<Number160>>(){}.getType();
+        Type chunkHashesType = new TypeToken<ArrayList<Number160>>() {}.getType();
         ArrayList<Number160> chunkHashes = null;
         try {
             chunkHashes = new Gson().fromJson(
@@ -69,7 +75,7 @@ public class ChunkedDHTOperations implements IPersistence {
                 chunks.add(i, chunkFutureGets.get(i).data().toBytes());
             }
 
-            //int totalBytes = chunks.stream().mapToInt(c -> c.length).sum();
+            // int totalBytes = chunks.stream().mapToInt(c -> c.length).sum();
 
             ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
             chunks.forEach(chunk -> byteArrayOutputStream.write(chunk, 0, chunk.length));
@@ -145,11 +151,14 @@ public class ChunkedDHTOperations implements IPersistence {
             futurePuts.add(fp);
         }
 
-        for (FuturePut fp : futurePuts) { fp.await(); }
+        for (FuturePut fp : futurePuts) {
+            fp.await();
+        }
     }
 
     @Override
-    public void removeData(PeerDHT pPeer, Number160 pKey) throws InterruptedException {
+    public void removeData(PeerDHT pPeer, Number160 pKey)
+            throws InterruptedException {
         // remove data && hash list
     }
 

@@ -10,7 +10,7 @@ import net.tomp2p.peers.Number160;
 import net.tomp2p.storage.Data;
 
 /**
- * Writes the file to the DHT when complete
+ * Writes the file to the DHT when complete.
  * 
  * @author Raphael
  *
@@ -49,6 +49,7 @@ public class WriteFileEventListener
         
         try {
             writeEvent.getFsPeer().putData(Number160.createHash(writeEvent.getPath()), new Data(writeEvent.getContent().array()));
+            writeEvent.getFsPeer().putPath(Number160.createHash(writeEvent.getPath()), new Data(writeEvent.getPath()));
         } catch (ClassNotFoundException | InterruptedException | IOException e) {
             this.logger.severe("Could not save whole file on path '" + writeEvent.getPath() + "'. An error occurred during saving to DHT. Message: " + e.getMessage());
         }

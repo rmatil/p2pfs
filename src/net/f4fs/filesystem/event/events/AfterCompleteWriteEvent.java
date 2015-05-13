@@ -4,7 +4,9 @@ import net.f4fs.filesystem.P2PFS;
 import net.f4fs.fspeer.FSPeer;
 
 /**
- * An event which gets dispatched after the file is completely written
+ * An event which gets dispatched after the file is completely written.
+ * Holds the context of the files ystem and and provides access to the peer
+ * and the file path which is completely written
  * 
  * @author Raphael
  *

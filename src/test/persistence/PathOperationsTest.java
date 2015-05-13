@@ -18,9 +18,6 @@ import org.junit.Test;
 
 public class PathOperationsTest {
 
-    private static String         TEST_IP            = "";
-    private static int            TEST_PORT          = 4000;
-
     private static Number160      TEST_DATA_DIR_KEY = null;
     private static Data           TEST_DATA_DIR      = null;
 
@@ -36,9 +33,8 @@ public class PathOperationsTest {
         pathOperations = new PathOperations();
 
         FSPeer fsPeer = new FSPeer();
-        TEST_IP = fsPeer.findLocalIp();
 
-        fsPeer.startAsBootstrapPeer(TEST_IP, TEST_PORT);
+        fsPeer.startAsBootstrapPeer();
         peerDht = fsPeer.getPeerDHT();
 
         TEST_DATA_DIR_KEY = Number160.createHash("/this/is/a/path");
