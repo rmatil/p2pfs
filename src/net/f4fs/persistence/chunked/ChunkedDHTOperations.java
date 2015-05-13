@@ -40,7 +40,8 @@ public class ChunkedDHTOperations implements IPersistence {
         Type chunkHashesType = new TypeToken<ArrayList<Number160>>(){}.getType();
         ArrayList<Number160> chunkHashes = null;
         try {
-            chunkHashes = new Gson().fromJson(new String(listFutureGet.data().toBytes(), "UTF-8"), chunkHashesType);
+            chunkHashes = new Gson().fromJson(
+                    new String(listFutureGet.data().togit Bytes(), "UTF-8"), chunkHashesType);
         } catch (UnsupportedEncodingException e) {
             e.printStackTrace();
         }
@@ -117,13 +118,16 @@ public class ChunkedDHTOperations implements IPersistence {
         ArrayList<Number160> chunkHashes = new ArrayList<>();
 
         for (byte[] chunk : chunks) {
-            chunkHashes.add(Number160.createHash(chunk.toString()));
+            chunkHashes.add(Number160.createHash(new String(chunk)));
         }
 
         ArrayList<FuturePut> futurePuts = new ArrayList<>();
 
         // Storing the chunk list
-        FuturePut futurePutList = pPeer.put(pLocationKey).data(new Data(new Gson().toJson(chunkHashes).getBytes(Charset.forName("UTF-8")))).start();
+        FuturePut futurePutList = pPeer
+                .put(pLocationKey)
+                .data(new Data(new Gson().toJson(chunkHashes).getBytes(Charset.forName("UTF-8"))))
+                .start();
         futurePutList.addListener(new PutListener(
                 pPeer.peerAddress().inetAddress().toString(),
                 "Put chunk list"));
@@ -131,7 +135,10 @@ public class ChunkedDHTOperations implements IPersistence {
 
         // Storing the chunks
         for (int i = 0; i < chunks.size(); i++) {
-            FuturePut fp = pPeer.put(chunkHashes.get(i)).data(new Data(chunks.get(i))).start();
+            FuturePut fp = pPeer
+                    .put(chunkHashes.get(i))
+                    .data(new Data(chunks.get(i)))
+                    .start();
             futurePutList.addListener(new PutListener(
                     pPeer.peerAddress().inetAddress().toString(),
                     "Put chunk " + i + " of " + (chunks.size() - 1)));
