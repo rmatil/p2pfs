@@ -185,9 +185,34 @@ public class VersionArchiver
 
         // Put version queue
         this.fsPeer.putData(Number160.createHash(pVersionQueuePath), new Data(versionQueue));
+        
+        // Put version folder
         this.fsPeer.putPath(Number160.createHash(pVersionFolderPath), new Data(pVersionFolderPath));
 
         logger.info("Added version folder on path '" + pVersionFolderPath + "' to the DHT");
+    }
+    
+    /**
+     * Removes the version folder on the given path.
+     * The version queue gets stored in the DHT on the path given
+     * 
+     * @param pVersionQueuePath The path to the version queue in the DHT
+     * @param pVersionFolderPath The path of the version folder
+     * 
+     * @throws IOException If an error happened during getting the path of the file
+     * @throws ClassNotFoundException If an error happened during getting the path of the file
+     * @throws InterruptedException If an error happened during getting the path of the file
+     */
+    protected void removeVersionFolder(String pVersionQueuePath, String pVersionFolderPath)
+            throws InterruptedException, IOException, ClassNotFoundException {
+
+        // Remove version queue
+        this.fsPeer.removeData(Number160.createHash(pVersionQueuePath));
+        
+        // Remove version folder
+        this.fsPeer.removePath(Number160.createHash(pVersionFolderPath));
+        
+        logger.info("Removed version folder/queue on path '" + pVersionFolderPath + "' from the DHT");
     }
 
 
