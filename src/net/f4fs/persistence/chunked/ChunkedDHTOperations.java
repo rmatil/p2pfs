@@ -41,7 +41,7 @@ public class ChunkedDHTOperations implements IPersistence {
         ArrayList<Number160> chunkHashes = null;
         try {
             chunkHashes = new Gson().fromJson(
-                    new String(listFutureGet.data().togit Bytes(), "UTF-8"), chunkHashesType);
+                    new String(listFutureGet.data().toBytes(), "UTF-8"), chunkHashesType);
         } catch (UnsupportedEncodingException e) {
             e.printStackTrace();
         }
