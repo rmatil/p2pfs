@@ -38,7 +38,7 @@ public class MemorySymLink
         // add the target's path as content as required
         // and stated in <code>man ln</code>
         contents = ByteBuffer.wrap(target.getBytes());
-        
+
         logger.info("Created symlink '" + target + "' on path '" + getPath() + "' to file on path '" + existingPath.getPath() + "'.");
     }
 

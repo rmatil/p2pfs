@@ -466,6 +466,11 @@ public class P2PFS
 
         MemoryDirectory parentDir = (MemoryDirectory) newParent;
         parentDir.symlink(existingPath, FSFileUtils.getLastComponent(target));
+        
+        // add symlink to monitored files
+        MemorySymLink symlink = (MemorySymLink) parentDir.find(FSFileUtils.getLastComponent(target));
+        this.fsFileMonitor.addMonitoredFile(symlink.getPath(), symlink.getContents());
+
         return 0;
     }
 
