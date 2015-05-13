@@ -2,7 +2,7 @@ package net.f4fs.persistence;
 
 import java.io.IOException;
 
-import net.tomp2p.dht.PeerDHT;
+import net.f4fs.fspeer.FSPeer;
 import net.tomp2p.peers.Number160;
 import net.tomp2p.storage.Data;
 
@@ -27,7 +27,7 @@ public interface IArchiver {
      * @throws IOException If the version folder could not be retrieved
      * @throws InterruptedException If the thread of fetching/putting data from/to the DHT has been interrupted
      */
-    public void archive(PeerDHT pPeerDht, Number160 pLocationKey, Data pOldFile)
+    public void archive(FSPeer pFsPeer, Number160 pLocationKey, Data pOldFile)
             throws ClassNotFoundException, IOException, InterruptedException;
 
 }

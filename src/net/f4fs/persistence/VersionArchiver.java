@@ -8,8 +8,7 @@ import java.util.Map;
 import java.util.concurrent.ArrayBlockingQueue;
 import java.util.logging.Logger;
 
-import net.f4fs.fspeer.PersistenceFactory;
-import net.tomp2p.dht.PeerDHT;
+import net.f4fs.fspeer.FSPeer;
 import net.tomp2p.peers.Number160;
 import net.tomp2p.storage.Data;
 
@@ -27,44 +26,31 @@ import net.tomp2p.storage.Data;
 public class VersionArchiver
         implements IArchiver {
 
-    public static final int        MAX_VERSIONS        = 5;
+    public static final int MAX_VERSIONS        = 5;
 
-    protected final String         DIRECTORY_PATH      = "directroy_path";
-    protected final String         FILE_NAME           = "file_name";
-    protected final String         FILE_EXTENSION      = "file_extension";
-    protected final String         VERSION_FOLDER_PATH = "version_folder_path";
-    protected final String         VERSION_QUEUE_PATH  = "version_queue_path";
-
-    private Logger                 logger              = Logger.getLogger("VersionArchiver.class");
-
-    /**
-     * Access to all stored paths
-     */
-    private final IPathPersistence pathOperations;
-
-    /**
-     * Access to all stored files
-     */
-    private final IPersistence     dhtOperations;
+    protected final String  DIRECTORY_PATH      = "directroy_path";
+    protected final String  FILE_NAME           = "file_name";
+    protected final String  FILE_EXTENSION      = "file_extension";
+    protected final String  VERSION_FOLDER_PATH = "version_folder_path";
+    protected final String  VERSION_QUEUE_PATH  = "version_queue_path";
+    private Logger          logger              = Logger.getLogger("VersionArchiver.class");
 
     /**
      * Access to the DHT
      */
-    private PeerDHT                peerDHT;
+    private FSPeer          fsPeer;
 
 
     public VersionArchiver() {
-        this.pathOperations = PersistenceFactory.getPathPersistence();
-        this.dhtOperations = PersistenceFactory.getChunkedDhtOperations();
     }
 
     /**
      * {@inheritDoc}
      */
-    public void archive(PeerDHT pPeerDht, Number160 pLocationKey, Data pOldFile)
+    public void archive(FSPeer pFsPeer, Number160 pLocationKey, Data pOldFile)
             throws ClassNotFoundException, IOException, InterruptedException {
 
-        this.peerDHT = pPeerDht;
+        this.fsPeer = pFsPeer;
 
         // Create paths from locationKey
         Map<String, String> extractedPaths = this.extractPaths(pLocationKey);
@@ -102,7 +88,7 @@ public class VersionArchiver
     protected Map<String, String> extractPaths(Number160 pLocationKey)
             throws IOException, ClassNotFoundException, InterruptedException {
 
-        String filePath = this.pathOperations.getPath(peerDHT, pLocationKey);
+        String filePath = this.fsPeer.getPath(pLocationKey);
 
         if (filePath == null) {
             logger.warning("Could not retrieve filePath for versionFolder.");
@@ -142,7 +128,7 @@ public class VersionArchiver
     protected boolean versionFolderExists(String pVersionFolderPath)
             throws ClassNotFoundException, InterruptedException, IOException {
 
-        String retrievedVersionFolderPath = pathOperations.getPath(peerDHT, Number160.createHash(pVersionFolderPath));
+        String retrievedVersionFolderPath = this.fsPeer.getPath(Number160.createHash(pVersionFolderPath));
 
         if (retrievedVersionFolderPath != null) {
             logger.info("Version folder does exist already on path '" + pVersionFolderPath + "'");
@@ -171,8 +157,8 @@ public class VersionArchiver
         ArrayBlockingQueue<String> versionQueue = new ArrayBlockingQueue<String>(MAX_VERSIONS + 1);
 
         // Put version queue
-        dhtOperations.putData(peerDHT, Number160.createHash(pVersionQueuePath), new Data(versionQueue));
-        pathOperations.putPath(peerDHT, Number160.createHash(pVersionFolderPath), new Data(pVersionFolderPath));
+        this.fsPeer.putData(Number160.createHash(pVersionQueuePath), new Data(versionQueue));
+        this.fsPeer.putPath(Number160.createHash(pVersionFolderPath), new Data(pVersionFolderPath));
 
         logger.info("Added version folder on path '" + pVersionFolderPath + "' to the DHT");
     }
@@ -198,16 +184,16 @@ public class VersionArchiver
         String pathToArchive = pVersionFolderPath.concat("/").concat(pFilename.replace('.', '_')).concat("_").concat(currentVersion).concat(".").concat(pFileExtension);
 
         // Put data of old version
-        dhtOperations.putData(peerDHT, Number160.createHash(pathToArchive), pOldFile);
-        pathOperations.putPath(peerDHT, Number160.createHash(pathToArchive), new Data(pathToArchive));
+        this.fsPeer.putData(Number160.createHash(pathToArchive), pOldFile);
+        this.fsPeer.putPath(Number160.createHash(pathToArchive), new Data(pathToArchive));
 
         // get version queue from version folder and add new version to queue
         @SuppressWarnings("unchecked")
-        ArrayBlockingQueue<String> versionQueue = (ArrayBlockingQueue<String>) dhtOperations.getData(peerDHT, Number160.createHash(pVersionQueuePath)).object();
+        ArrayBlockingQueue<String> versionQueue = (ArrayBlockingQueue<String>) this.fsPeer.getData(Number160.createHash(pVersionQueuePath)).object();
         versionQueue.put(pathToArchive);
 
         // put version queue back to version folder
-        dhtOperations.putData(peerDHT, Number160.createHash(pVersionQueuePath), new Data(versionQueue));
+        this.fsPeer.putData(Number160.createHash(pVersionQueuePath), new Data(versionQueue));
     }
 
     /**
@@ -225,19 +211,19 @@ public class VersionArchiver
 
         // get version queue from version folder
         @SuppressWarnings("unchecked")
-        ArrayBlockingQueue<String> versionQueue = (ArrayBlockingQueue<String>) dhtOperations.getData(peerDHT, Number160.createHash(pVersionQueuePath)).object();
+        ArrayBlockingQueue<String> versionQueue = (ArrayBlockingQueue<String>) this.fsPeer.getData(Number160.createHash(pVersionQueuePath)).object();
 
         if (versionQueue.size() > MAX_VERSIONS) {
             // delete version
             String versionToDelete = versionQueue.remove();
             // Remove file
-            dhtOperations.removeData(peerDHT, Number160.createHash(versionToDelete));
+            this.fsPeer.removeData(Number160.createHash(versionToDelete));
             // Remove path
-            pathOperations.removePath(peerDHT, Number160.createHash(versionToDelete));
+            this.fsPeer.removePath(Number160.createHash(versionToDelete));
             System.out.println("Pruned version folder");
         }
 
         // put version queue back to version folder
-        dhtOperations.putData(peerDHT, Number160.createHash(pVersionQueuePath), new Data(versionQueue));
+        this.fsPeer.putData(Number160.createHash(pVersionQueuePath), new Data(versionQueue));
     }
 }
