@@ -215,7 +215,8 @@ public class P2PFS
 
                 try {
                     // check if file does not exist yet in the DHT
-                    if (null != this.peer.getPath(Number160.createHash(path))) {
+                    if (null == this.peer.getPath(Number160.createHash(path))) {
+                        // create file if it does not exist yet
                         MemoryFile createdFile = (MemoryFile) ((MemoryDirectory) parent).find(FSFileUtils.getLastComponent(path));
 
                         if (!FSFileUtils.isContainedInVersionFolder(createdFile)) {
@@ -558,9 +559,11 @@ public class P2PFS
         Set<String> allPaths = new HashSet<>();
         allPaths.add("/");
         allPaths.addAll(getDirSubPaths(rootDirectory));
-        // get also all monitored files
-        allPaths.addAll(this.fsFileMonitor.getMonitoredFilePaths());
         return allPaths;
+    }
+    
+    public Set<String> getMonitoredFilePaths() {
+        return this.fsFileMonitor.getMonitoredFilePaths();
     }
 
     /**

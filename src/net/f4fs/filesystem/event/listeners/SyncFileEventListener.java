@@ -31,6 +31,8 @@ public class SyncFileEventListener
         try {
             Set<String> localPaths = afterWriteEvent.getFilesystem().getAllPaths();
             Set<String> keys = afterWriteEvent.getFsPeer().getAllPaths();
+            // add monitored files to prevent local removing -> removing in the DHT
+            keys.addAll(afterWriteEvent.getFilesystem().getMonitoredFilePaths());
 
             // create local non-existing files
             for (String key : keys) {
