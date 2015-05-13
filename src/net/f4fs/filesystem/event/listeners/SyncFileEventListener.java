@@ -5,6 +5,7 @@ import java.util.logging.Logger;
 
 import net.f4fs.filesystem.event.events.AEvent;
 import net.f4fs.filesystem.event.events.AfterWriteEvent;
+import net.f4fs.filesystem.util.FSFileUtils;
 import net.tomp2p.peers.Number160;
 
 /**
@@ -33,7 +34,7 @@ public class SyncFileEventListener
 
             // create local non-existing files
             for (String key : keys) {
-                if (key.equals("/")) {
+                if (FSFileUtils.isRootDirectory(key)) {
                     // no changes are allowed to root directory
                     continue;
                 }
@@ -55,6 +56,10 @@ public class SyncFileEventListener
             // remove deleted files / dirs / symlinks / ...
             localPaths.removeAll(keys); // list of all localPaths which are removed in the DHT
             for (String pathToDelete : localPaths) {
+                if (FSFileUtils.isRootDirectory(pathToDelete)) {
+                    // no changes are allowed to root directory
+                    continue;
+                }
                 logger.info("Call removal of element on path '" + pathToDelete + "'. LocalPaths: " + localPaths + ", DHTPaths: " + keys);
                 afterWriteEvent.getFilesystem().unlink(pathToDelete);
             }
@@ -69,5 +74,4 @@ public class SyncFileEventListener
     public String getEventName() {
         return AfterWriteEvent.eventName;
     }
-
 }

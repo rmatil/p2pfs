@@ -86,4 +86,14 @@ public class FSFileUtils {
         
         return false;   
     }
+    
+    /**
+     * Returns true if the given path is equal to '/'
+     * 
+     * @param pPath The path to check 
+     * @return True if equal to '/', false otherwise
+     */
+    public static boolean isRootDirectory(String pPath) {
+        return pPath.equals("/");
+    }
 }
