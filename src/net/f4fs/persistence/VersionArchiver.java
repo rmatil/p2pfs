@@ -68,6 +68,32 @@ public class VersionArchiver
         // Make sure the version folder doesn't bloat.
         this.pruneVersionFolder(extractedPaths.get(this.VERSION_QUEUE_PATH));
     }
+    
+    public void removeVersions(FSPeer pFsPeer, Number160 pLocationKey) throws ClassNotFoundException, IOException, InterruptedException{
+        
+        this.fsPeer = pFsPeer;
+
+        // Create paths from locationKey
+        Map<String, String> extractedPaths = this.extractPaths(pLocationKey);
+        
+        if (this.versionFolderExists(extractedPaths.get(this.VERSION_FOLDER_PATH))) {
+            // Version folder exists
+            
+            // Get version queue from version folder
+            @SuppressWarnings("unchecked")
+            ArrayBlockingQueue<String> versionQueue = (ArrayBlockingQueue<String>) this.fsPeer.getData(Number160.createHash(this.VERSION_QUEUE_PATH)).object();
+
+            // Delete all version files
+            while (!versionQueue.isEmpty()){
+                String versionToDelete = versionQueue.remove();
+                this.fsPeer.removeData(Number160.createHash(versionToDelete));
+            }
+            
+            // Delete version queue and version folder
+            removeVersionFolder(this.VERSION_QUEUE_PATH, this.VERSION_FOLDER_PATH);
+            
+        }
+    }
 
     /**
      * Extract paths for the given file of the location key
