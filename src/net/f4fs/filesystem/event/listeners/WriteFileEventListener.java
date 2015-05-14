@@ -46,7 +46,7 @@ public class WriteFileEventListener
                     this.archiver.archive(writeEvent.getFsPeer(), Number160.createHash(writeEvent.getPath()), oldData);
                 }
             } catch (ClassNotFoundException | IOException | InterruptedException e) {
-                this.logger.error("Could not archive file on path '" + writeEvent.getPath() + "'. An error occurred during fetching old data. StackTrace: " + e.getStackTrace().toString());
+                this.logger.error("Could not archive file on path '" + writeEvent.getPath() + "'. An error occurred during fetching old data. Message: " + e.getMessage());
             }
         }
 
@@ -54,7 +54,7 @@ public class WriteFileEventListener
             writeEvent.getFsPeer().putData(Number160.createHash(writeEvent.getPath()), new Data(writeEvent.getContent().array()));
             writeEvent.getFsPeer().putPath(Number160.createHash(writeEvent.getPath()), new Data(writeEvent.getPath()));
         } catch (ClassNotFoundException | InterruptedException | IOException e) {
-            this.logger.error("Could not save whole file on path '" + writeEvent.getPath() + "'. An error occurred during saving to DHT. StackTrace: " + e.getStackTrace().toString());
+            this.logger.error("Could not save whole file on path '" + writeEvent.getPath() + "'. An error occurred during saving to DHT. Message: " + e.getMessage());
         }
 
         logger.info("Wrote whole file on path '" + writeEvent.getPath() + "' containing '" + writeEvent.getContent().capacity() + "' bytes to DHT");

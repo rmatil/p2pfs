@@ -173,7 +173,8 @@ public class FSFileMonitor
             try {
                 Thread.sleep(1000);
             } catch (InterruptedException e) {
-                this.logger.error(e.getStackTrace().toString());
+                this.logger.error(e.getMessage());
+                e.printStackTrace();
             }
         }
 

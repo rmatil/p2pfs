@@ -69,14 +69,15 @@ public class MemoryFile
             logger.info("Created File with name '" + name + "' on path '" + getPath() + "'.");
 
         } catch (final IOException | InterruptedException | ClassNotFoundException e) {
-            logger.error("Could not create file with name '" + name + "' on path '" + getPath() + "'. StackTrace: " + e.getStackTrace().toString());
-
+            logger.error("Could not create file with name '" + name + "' on path '" + getPath() + "'. Message: " + e.getMessage());
+            e.printStackTrace();
             try {
                 // remove file (also the content key in the location keys)
                 super.getPeer().removeData(Number160.createHash(getPath()));
                 super.getPeer().removePath(Number160.createHash(getPath()));
             } catch (InterruptedException e1) {
-                logger.error("Could not create file with name '" + name + "' on path '" + getPath() + "'. Message: " + e.getStackTrace().toString());
+                logger.error("Could not create file with name '" + name + "' on path '" + getPath() + "'. Message: " + e.getMessage());
+                e.printStackTrace();
             }
         }
     }
@@ -159,7 +160,8 @@ public class MemoryFile
                 contents = ByteBuffer.wrap(data.toBytes());
 
             } catch (ClassNotFoundException | IOException | InterruptedException e) {
-                logger.error("Could not read contents of file on path '" + getPath() + "'. StackTrace: " + e.getStackTrace().toString());
+                logger.error("Could not read contents of file on path '" + getPath() + "'. StackTrace: " + e.getMessage());
+                e.printStackTrace();
                 return -ErrorCodes.EIO();
             }
 

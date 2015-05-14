@@ -232,7 +232,7 @@ public class P2PFS
                         }
                     }
                 } catch (ClassNotFoundException | InterruptedException | IOException e) {
-                    this.logger.error("Failed to add a monitored file '" + path + "'. Check if it exists already in the DHT failed. StackTrace: " + e.getStackTrace().toString());
+                    this.logger.error("Failed to add a monitored file '" + path + "'. Check if it exists already in the DHT failed. Message: " + e.getMessage());
                     e.printStackTrace();
                 }
             } else {

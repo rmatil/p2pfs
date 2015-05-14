@@ -70,7 +70,8 @@ public class SyncFileEventListener
             }
 
         } catch (Exception pEx) {
-            this.logger.error(pEx.getStackTrace().toString());
+            this.logger.error(pEx.getMessage());
+            pEx.printStackTrace();
         }
 
     }

@@ -70,7 +70,8 @@ public abstract class AMemoryPath {
             }
 
         } catch (IOException | InterruptedException | ClassNotFoundException e) {
-            logger.error("Could not create MemoryPath with name '" + name + "' on path '" + getPath() + "'. StackTrace: " + e.getStackTrace().toString());
+            logger.error("Could not create MemoryPath with name '" + name + "' on path '" + getPath() + "'. Message: " + e.getMessage());
+            e.printStackTrace();
         }
     }
 
@@ -101,7 +102,8 @@ public abstract class AMemoryPath {
             peer.putPath(Number160.createHash(getPath()), new Data(existingPath.getPath()));
 
         } catch (InterruptedException | IOException | ClassNotFoundException e) {
-            logger.error("Could not create symlink '" + target + "' on path '" + getPath() + "'. StackTrace: " + e.getStackTrace().toString());
+            logger.error("Could not create symlink '" + target + "' on path '" + getPath() + "'. Message: " + e.getMessage());
+            e.printStackTrace();
         }
     }
 
@@ -121,7 +123,8 @@ public abstract class AMemoryPath {
 
                 logger.info("Removed file on path " + path + " from the DHT");
             } catch (InterruptedException e) {
-                logger.error("Could not remove file on path " + getPath() + ". StackTrace: " + e.getStackTrace().toString());
+                logger.error("Could not remove file on path " + getPath() + ". Message: " + e.getMessage());
+                e.printStackTrace();
             }
         }
     }
@@ -174,7 +177,8 @@ public abstract class AMemoryPath {
 
             logger.info("Renamed file with name '" + oldName + "' to '" + newName + "' on path '" + getPath() + "'.");
         } catch (InterruptedException | ClassNotFoundException | IOException e) {
-            logger.error("Could not rename to '" + newName + "' on path '" + getPath() + "'. StackTrace: " + e.getStackTrace().toString());
+            logger.error("Could not rename to '" + newName + "' on path '" + getPath() + "'. Message: " + e.getMessage());
+            e.printStackTrace();
             // reset in case renaming didn't work as expected
             name = oldName;
         }
