@@ -1,4 +1,4 @@
-package main.log;
+package net.f4fs.util;
 
 import org.apache.log4j.Level;
 import org.apache.log4j.PatternLayout;
