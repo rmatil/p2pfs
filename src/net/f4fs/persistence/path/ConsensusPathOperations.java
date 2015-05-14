@@ -5,7 +5,6 @@ import java.util.Collection;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Map;
-import java.util.Random;
 import java.util.Set;
 import java.util.logging.Logger;
 
@@ -14,11 +13,8 @@ import net.f4fs.fspeer.GetListener;
 import net.f4fs.fspeer.PersistenceFactory;
 import net.f4fs.fspeer.RemoveListener;
 import net.f4fs.persistence.IPathPersistence;
-import net.f4fs.persistence.IPersistence;
-import net.f4fs.persistence.VersionArchiver;
 import net.f4fs.util.RandomDevice;
 import net.tomp2p.dht.FutureGet;
-import net.tomp2p.dht.FuturePut;
 import net.tomp2p.dht.FutureRemove;
 import net.tomp2p.dht.PeerDHT;
 import net.tomp2p.peers.Number160;
@@ -29,7 +25,7 @@ import net.tomp2p.utils.Pair;
 
 
 /**
- * ConsensusPathOperations returns path keys only after all other peers agree on the latest content.
+ * ConsensusPathOperations retrieves and stores path keys only after all other peers agree on the latest content.
  * 
  * @author Christian
  */
@@ -40,8 +36,20 @@ public class ConsensusPathOperations
     private static final IPathPersistence directPathOperations = PersistenceFactory.getDirectPathOperations();
     private static final int              NUMBER_OF_RETRIES    = 5;
     private static final int              SLEEP_TIME           = 500;
-    private static Logger                 logger               = Logger.getLogger("VDHTOperations.class");
+    private static Logger                 logger               = Logger.getLogger("ConsensusPathOperations.class");
 
+    
+    /**
+     * Retrieves all path strings from the DHTs master location path key.
+     * 
+     * @param pPeer local DHT of the peer
+     * @param pContentKey content key of the requested entry
+     * 
+     * @return keys Map<string> containing all paths currently in the DHT & that all peers agree on otherwise null.
+     * @throws IOException
+     * @throws ClassNotFoundException
+     * @throws InterruptedException
+     */
     @Override
     public Set<String> getAllPaths(PeerDHT pPeer)
             throws InterruptedException, ClassNotFoundException, IOException {
@@ -86,14 +94,15 @@ public class ConsensusPathOperations
     }
 
     /**
-     * Retrieves the latest path entry according to the specified key.
+     * Retrieves the path string to a requested content key from the DHTs master location path key.
      * 
      * @param pPeer local DHT of the peer
-     * @param pLocationKey location key of the requested entry
+     * @param pContentKey content key of the requested entry
      * 
-     * @return latestData latest Data all peers agree on
+     * @return String with path that all peers agree on otherwise null.
      * @throws IOException
      * @throws ClassNotFoundException
+     * @throws InterruptedException
      */
     @Override
     public String getPath(PeerDHT pPeer, Number160 pContentKey)
@@ -131,13 +140,15 @@ public class ConsensusPathOperations
 
 
     /**
-     * Stores a data entry in the VDHT at the specified location key.
+     * Stores a path entry in the DHT under the master location path key.
+     * If there is an inconsistency the function attempts to wait before writing.
      * 
      * @param pPeer local DHT of the peer
-     * @param pLocationKey location key of the data to save
-     * @param pData data to be stored at specified location
+     * @param pContentKey content key of the data to save
+     * @param pData path string wrapped in a Data element
      * @throws IOException 
-     * @throws ClassNotFoundException 
+     * @throws ClassNotFoundException
+     * @throws InterruptedException
      */
     @Override
     public void putPath(PeerDHT pPeer, Number160 pContentKey, Data pData)
