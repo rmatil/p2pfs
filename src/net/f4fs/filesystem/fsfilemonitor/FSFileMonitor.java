@@ -5,7 +5,9 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
-import java.util.logging.Logger;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import net.f4fs.filesystem.P2PFS;
 import net.f4fs.filesystem.event.EventDispatcher;
@@ -49,7 +51,7 @@ import net.tomp2p.utils.Pair;
 public class FSFileMonitor
         implements Runnable {
 
-    private Logger                                 logger = Logger.getLogger("FSFileMonitor.class");
+    private final Logger                           logger = LoggerFactory.getLogger("FSFileMonitor.class");
 
     private EventDispatcher                        eventDispatcher;
 
@@ -103,7 +105,7 @@ public class FSFileMonitor
 
         Pair<Integer, ByteBuffer> pair = new Pair<>(new Integer(1), pContents);
         this.monitoredFiles.put(pPath, pair);
-        logger.info("Wrote chunk to file on path '" + pPath + "' containing '" + pContents.capacity() + "' bytes to FSFileMonitor");
+        this.logger.info("Wrote chunk to file on path '" + pPath + "' containing '" + pContents.capacity() + "' bytes to FSFileMonitor");
     }
 
     /**
@@ -122,7 +124,7 @@ public class FSFileMonitor
 
         return file.element1();
     }
-    
+
     public synchronized Set<String> getMonitoredFilePaths() {
         return this.monitoredFiles.keySet();
     }
@@ -146,7 +148,7 @@ public class FSFileMonitor
                     // file is not ready yet to write to DHT
                     Pair<Integer, ByteBuffer> decreasedCounterPair = entry.getValue().element0(entry.getValue().element0() - 1);
                     notWrittenFiles.put(entry.getKey(), decreasedCounterPair);
-                    logger.info("Decrease counter for file on path '" + entry.getKey() + "'.");
+                    logger.debug("Decrease counter for file on path '" + entry.getKey() + "'.");
                 } else {
                     // dispatch beforeCompleteWriteEvent
                     BeforeCompleteWriteEvent beforeCompleteWriteEvent = new BeforeCompleteWriteEvent(this.filesystem, this.fsPeer, entry.getKey());
@@ -171,7 +173,7 @@ public class FSFileMonitor
             try {
                 Thread.sleep(1000);
             } catch (InterruptedException e) {
-                e.printStackTrace();
+                this.logger.error(e.getStackTrace().toString());
             }
         }
 

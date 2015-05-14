@@ -17,13 +17,13 @@ public class ShutdownHookThread
      * from the bootstrap server
      */
     private String ipAddress;
-    
+
     /**
-     * The port to the IP address to remove 
+     * The port to the IP address to remove
      * from the bootstrap server
      */
-    private int port;
-    
+    private int    port;
+
     /**
      * Creates a new instance of this object
      * 
@@ -34,7 +34,7 @@ public class ShutdownHookThread
         this.ipAddress = pIpAddress;
         this.port = pPort;
     }
-    
+
     public void run() {
         BootstrapServerAccess bootsrapServerAccess = new BootstrapServerAccess();
         System.out.println();

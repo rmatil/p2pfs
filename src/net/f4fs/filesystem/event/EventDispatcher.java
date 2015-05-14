@@ -4,10 +4,13 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.logging.Logger;
 
 import net.f4fs.filesystem.event.events.AEvent;
 import net.f4fs.filesystem.event.listeners.IEventListener;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 
 /**
  * Event dispatcher, on which event listeners can be registered
@@ -20,7 +23,7 @@ public class EventDispatcher {
 
     private Map<String, List<IEventListener>> eventListeners;
 
-    private static final Logger               logger = Logger.getLogger("EventDispatcher.class");
+    private final Logger                      logger = LoggerFactory.getLogger("EventDispatcher.class");
 
     public EventDispatcher() {
         this.eventListeners = new HashMap<>();
@@ -32,17 +35,17 @@ public class EventDispatcher {
         }
 
         this.eventListeners.get(pEventListener.getEventName()).add(pEventListener);
-        logger.info("Add event listener for event '" + pEventListener.getEventName() + "'");
+        this.logger.debug("Add event listener for event '" + pEventListener.getEventName() + "'");
     }
 
     public void dispatchEvent(String pEventName, AEvent pEvent) {
-        logger.info("Dispatched event '" + pEventName + "'.");
-        
+        this.logger.debug("Dispatched event '" + pEventName + "'.");
+
         if (!this.eventListeners.containsKey(pEventName)) {
             // no event registered for this event name
             return;
         }
-        
+
         for (IEventListener entry : this.eventListeners.get(pEventName)) {
             entry.handleEvent(pEvent);
         }

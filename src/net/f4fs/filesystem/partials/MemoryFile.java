@@ -3,7 +3,6 @@ package net.f4fs.filesystem.partials;
 import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.nio.charset.StandardCharsets;
-import java.util.logging.Logger;
 
 import net.f4fs.config.FSStatConfig;
 import net.f4fs.fspeer.FSPeer;
@@ -13,13 +12,16 @@ import net.fusejna.types.TypeMode.NodeType;
 import net.tomp2p.peers.Number160;
 import net.tomp2p.storage.Data;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 
 public class MemoryFile
         extends AMemoryPath {
 
-    private ByteBuffer contents = ByteBuffer.allocate(0);
+    private ByteBuffer   contents = ByteBuffer.allocate(0);
 
-    private Logger     logger   = Logger.getLogger("MemoryFile.class");
+    private final Logger logger   = LoggerFactory.getLogger("MemoryFile.class");
 
     /**
      * Creates a new instance of this file in the DHT
@@ -29,7 +31,7 @@ public class MemoryFile
      */
     public MemoryFile(final String name, FSPeer peer) {
         super(name, peer);
-        logger.info("Created File with name '" + name + "' without parent");
+        this.logger.info("Created File with name '" + name + "' without parent");
     }
 
     /**
@@ -42,7 +44,7 @@ public class MemoryFile
      */
     public MemoryFile(final String name, final MemoryDirectory parent, final FSPeer peer) {
         super(name, parent, peer);
-        logger.info("Created File with name '" + name + "' on path '" + getPath() + "'.");
+        this.logger.info("Created File with name '" + name + "' on path '" + getPath() + "'.");
     }
 
     /**
@@ -67,14 +69,14 @@ public class MemoryFile
             logger.info("Created File with name '" + name + "' on path '" + getPath() + "'.");
 
         } catch (final IOException | InterruptedException | ClassNotFoundException e) {
-            logger.warning("Could not create file with name '" + name + "' on path '" + getPath() + "'. Message: " + e.getMessage());
+            logger.error("Could not create file with name '" + name + "' on path '" + getPath() + "'. StackTrace: " + e.getStackTrace().toString());
 
             try {
                 // remove file (also the content key in the location keys)
                 super.getPeer().removeData(Number160.createHash(getPath()));
                 super.getPeer().removePath(Number160.createHash(getPath()));
             } catch (InterruptedException e1) {
-                logger.warning("Could not create file with name '" + name + "' on path '" + getPath() + "'. Message: " + e.getMessage());
+                logger.error("Could not create file with name '" + name + "' on path '" + getPath() + "'. Message: " + e.getStackTrace().toString());
             }
         }
     }
@@ -89,13 +91,13 @@ public class MemoryFile
         // Changed by the chmod(2), chown(2), link(2), mknod(2), rename(2), unlink(2), utimes(2) and write(2) system calls.
         stat.ctime(super.getLastModificationTimestamp());
 
-        // sets the optimal transfer block size: 
+        // sets the optimal transfer block size:
         // usually the one of the FS
         stat.blksize(FSStatConfig.BIGGER.getBsize());
-        // The actual number of blocks allocated for the file in 512-byte units. 
+        // The actual number of blocks allocated for the file in 512-byte units.
         // As short symbolic links are stored in the inode, this number may be zero.
         stat.blocks(contents.capacity() / 512l);
-        
+
         // ID of device containing file
         // stat.dev(dev);
 
@@ -105,25 +107,25 @@ public class MemoryFile
         // Group ID of the file
         // stat.gid(gid);
 
-        // Note: if ino and rdev are taken together, they uniquely 
+        // Note: if ino and rdev are taken together, they uniquely
         // identify the file among multiple filesystems
         // File serial number
         // stat.ino(ino); // only unique on the current FS
         // Device ID
-        // stat.rdev(rdev); 
-                
+        // stat.rdev(rdev);
+
         // Number of hard links which link to this file
         // Hard links are multiple directory entries which link to the same file -> created by link system call.
         // From man link: "A hard link to a file is indistinguishable from the original directory entry; any changes to a file are effectively inde-
-        // pendent of the name used to reference the file.  Hard links may not normally refer to directories and may not span file systems."
+        // pendent of the name used to reference the file. Hard links may not normally refer to directories and may not span file systems."
         // TODO: how do we check these?
         // stat.nlink(0);
-        
+
         // set access modes
         stat.setMode(NodeType.FILE, true, true, true, true, true, true, true, true, true);
         stat.size(contents.capacity());
-        
-        // NOTE: according to the manual entry of man 2 stat these fields should not be changed 
+
+        // NOTE: according to the manual entry of man 2 stat these fields should not be changed
         // RESERVED: DO NOT USE!
         // stat.lspare(lspare);
         // RESERVED: DO NOT USE!
@@ -149,7 +151,7 @@ public class MemoryFile
                 Data data = super.getPeer().getData(Number160.createHash(getPath()));
 
                 if (null == data) {
-                    logger.warning("Could not read file on path '" + getPath() + "' from the DHT. Data was null");
+                    logger.warn("Could not read file on path '" + getPath() + "' from the DHT. Data was null");
                     return -ErrorCodes.EIO();
                 }
 
@@ -157,7 +159,7 @@ public class MemoryFile
                 contents = ByteBuffer.wrap(data.toBytes());
 
             } catch (ClassNotFoundException | IOException | InterruptedException e) {
-                logger.warning("Could not read contents of file on path '" + getPath() + "'. Message: " + e.getMessage());
+                logger.error("Could not read contents of file on path '" + getPath() + "'. StackTrace: " + e.getStackTrace().toString());
                 return -ErrorCodes.EIO();
             }
 
@@ -192,6 +194,8 @@ public class MemoryFile
             // update the value on disk
             newContents.put(bytesRead);
             contents = newContents;
+            
+            this.logger.info("Truncated '" + this.getPath() + "' to '" + size + "' bytes");
         }
     }
 
@@ -225,6 +229,8 @@ public class MemoryFile
             contents.put(bytesToWrite);
             contents.position(0); // Rewind
         }
+        
+        this.logger.info("Wrote '" + bufSize + "' bytes starting at offset '" + writeOffset + "' to file on path '" + this.getPath() + "'");
 
         return (int) bufSize;
     }

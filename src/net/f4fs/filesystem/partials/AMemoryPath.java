@@ -2,7 +2,9 @@ package net.f4fs.filesystem.partials;
 
 import java.io.IOException;
 import java.nio.ByteBuffer;
-import java.util.logging.Logger;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import net.f4fs.fspeer.FSPeer;
 import net.fusejna.StructStat.StatWrapper;
@@ -15,34 +17,34 @@ public abstract class AMemoryPath {
     /**
      * Logger instance
      */
-    private static final Logger logger = Logger.getLogger("AMemoryPath.class");
+    private final Logger    logger = LoggerFactory.getLogger("AMemoryPath.class");
 
     /**
      * The name of this path segment (i.e. dir-/file-/symlink-name)
      */
-    private String              name;
+    private String          name;
 
     /**
      * The parent of this path segment (i.e. a directory)
      */
-    private MemoryDirectory     parent;
+    private MemoryDirectory parent;
 
     /**
      * The peer which mounted this file system
      */
-    private FSPeer              peer;
-    
+    private FSPeer          peer;
+
     /**
-     * Unix timestamp (i.e. seconds since 1.1.1970) in seconds 
+     * Unix timestamp (i.e. seconds since 1.1.1970) in seconds
      * representing the last access time
      */
-    private long                lastAccessTimestamp;
-    
+    private long            lastAccessTimestamp;
+
     /**
-     * Unix timestamp (i.e. seconds since 1.1.1970) in seconds 
+     * Unix timestamp (i.e. seconds since 1.1.1970) in seconds
      * representing the last modification time
      */
-    private long                lastModificationTimestamp;
+    private long            lastModificationTimestamp;
 
     public AMemoryPath(final String name, final FSPeer peer) {
         this(name, null, peer);
@@ -52,7 +54,7 @@ public abstract class AMemoryPath {
         this.name = name;
         this.parent = parent;
         this.peer = peer;
-        
+
         this.lastAccessTimestamp = System.currentTimeMillis() / 1000l;
         this.lastModificationTimestamp = this.lastAccessTimestamp;
 
@@ -63,12 +65,12 @@ public abstract class AMemoryPath {
             Data data = peer.getData(Number160.createHash(getPath()));
 
             if (null != data) {
-                logger.info("MemoryPath with name '" + name + "' already existed in the DHT on path '" + getPath() + "'. Creating it locallay...");
+                logger.debug("MemoryPath with name '" + name + "' already existed in the DHT on path '" + getPath() + "'. Creating it locallay...");
                 return;
             }
-            
+
         } catch (IOException | InterruptedException | ClassNotFoundException e) {
-            logger.warning("Could not create MemoryPath with name '" + name + "' on path '" + getPath() + "'. Message: " + e.getMessage());
+            logger.error("Could not create MemoryPath with name '" + name + "' on path '" + getPath() + "'. StackTrace: " + e.getStackTrace().toString());
         }
     }
 
@@ -99,7 +101,7 @@ public abstract class AMemoryPath {
             peer.putPath(Number160.createHash(getPath()), new Data(existingPath.getPath()));
 
         } catch (InterruptedException | IOException | ClassNotFoundException e) {
-            logger.warning("Could not create symlink '" + target + "' on path '" + getPath() + "'");
+            logger.error("Could not create symlink '" + target + "' on path '" + getPath() + "'. StackTrace: " + e.getStackTrace().toString());
         }
     }
 
@@ -119,7 +121,7 @@ public abstract class AMemoryPath {
 
                 logger.info("Removed file on path " + path + " from the DHT");
             } catch (InterruptedException e) {
-                logger.warning("Could not remove file on path " + getPath() + ". Message: " + e.getMessage());
+                logger.error("Could not remove file on path " + getPath() + ". StackTrace: " + e.getStackTrace().toString());
             }
         }
     }
@@ -172,7 +174,7 @@ public abstract class AMemoryPath {
 
             logger.info("Renamed file with name '" + oldName + "' to '" + newName + "' on path '" + getPath() + "'.");
         } catch (InterruptedException | ClassNotFoundException | IOException e) {
-            logger.warning("Could not rename to '" + newName + "' on path '" + getPath() + "'. Message: " + e.getMessage());
+            logger.error("Could not rename to '" + newName + "' on path '" + getPath() + "'. StackTrace: " + e.getStackTrace().toString());
             // reset in case renaming didn't work as expected
             name = oldName;
         }
@@ -206,7 +208,7 @@ public abstract class AMemoryPath {
     public void setPeer(FSPeer peer) {
         this.peer = peer;
     }
-    
+
     public long getLastAccessTimestamp() {
         return this.lastAccessTimestamp;
     }
@@ -214,11 +216,11 @@ public abstract class AMemoryPath {
     public void setLastAccessTimestamp(long pLastAccessTimestamp) {
         this.lastAccessTimestamp = pLastAccessTimestamp;
     }
-    
+
     public long getLastModificationTimestamp() {
         return this.lastModificationTimestamp;
     }
-    
+
     public void setLastModificationTimestamp(long pLastModificationTimestamp) {
         this.lastModificationTimestamp = pLastModificationTimestamp;
     }
