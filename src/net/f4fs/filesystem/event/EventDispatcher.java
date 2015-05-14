@@ -23,7 +23,7 @@ public class EventDispatcher {
 
     private Map<String, List<IEventListener>> eventListeners;
 
-    private final Logger                      logger = LoggerFactory.getLogger("EventDispatcher.class");
+    private final Logger                      logger = LoggerFactory.getLogger(EventDispatcher.class);
 
     public EventDispatcher() {
         this.eventListeners = new HashMap<>();

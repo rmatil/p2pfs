@@ -21,7 +21,7 @@ import org.slf4j.LoggerFactory;
 public class WriteFileEventListener
         implements IEventListener {
 
-    private final Logger logger = LoggerFactory.getLogger("WriteFileEventListener.class");
+    private final Logger logger = LoggerFactory.getLogger(WriteFileEventListener.class);
 
     protected VersionArchiver   archiver;
 

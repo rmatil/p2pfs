@@ -53,7 +53,7 @@ public class P2PFS
     /**
      * Logger instance
      */
-    private final Logger          logger = LoggerFactory.getLogger("P2PFS.class");
+    private final Logger          logger = LoggerFactory.getLogger(P2PFS.class);
 
     private FSFileMonitor         fsFileMonitor;
 

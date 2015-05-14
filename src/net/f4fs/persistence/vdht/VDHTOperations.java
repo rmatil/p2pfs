@@ -35,7 +35,7 @@ public class VDHTOperations
     private static final IPersistence simpleDHTOperations = PersistenceFactory.getDhtOperations();
     private static final int          NUMBER_OF_RETRIES   = 5;
     private static final int          SLEEP_TIME          = 500;
-    private final Logger              logger              = LoggerFactory.getLogger("VDHTOperations.class");
+    private final Logger              logger              = LoggerFactory.getLogger(VDHTOperations.class);
 
 
 

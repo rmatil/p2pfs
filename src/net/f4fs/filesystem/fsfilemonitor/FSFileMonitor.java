@@ -51,7 +51,7 @@ import net.tomp2p.utils.Pair;
 public class FSFileMonitor
         implements Runnable {
 
-    private final Logger                           logger = LoggerFactory.getLogger("FSFileMonitor.class");
+    private final Logger                           logger = LoggerFactory.getLogger(FSFileMonitor.class);
 
     private EventDispatcher                        eventDispatcher;
 

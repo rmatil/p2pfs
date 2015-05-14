@@ -21,7 +21,7 @@ public class MemoryFile
 
     private ByteBuffer   contents = ByteBuffer.allocate(0);
 
-    private final Logger logger   = LoggerFactory.getLogger("MemoryFile.class");
+    private final Logger logger   = LoggerFactory.getLogger(MemoryFile.class);
 
     /**
      * Creates a new instance of this file in the DHT

@@ -21,7 +21,7 @@ import org.slf4j.LoggerFactory;
 public class SyncFileEventListener
         implements IEventListener {
 
-    private final Logger logger = LoggerFactory.getLogger("SyncFileEventListener.class");
+    private final Logger logger = LoggerFactory.getLogger(SyncFileEventListener.class);
 
     @Override
     public void handleEvent(AEvent pEvent) {

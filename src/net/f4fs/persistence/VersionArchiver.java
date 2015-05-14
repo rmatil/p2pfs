@@ -36,7 +36,7 @@ public class VersionArchiver
     protected final String  VERSION_FOLDER_PATH = "version_folder_path";
     protected final String  VERSION_QUEUE_PATH  = "version_queue_path";
 
-    private final Logger    logger              = LoggerFactory.getLogger("VersionArchiver.class");
+    private final Logger    logger              = LoggerFactory.getLogger(VersionArchiver.class);
 
     /**
      * Access to the DHT

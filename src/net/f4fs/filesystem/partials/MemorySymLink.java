@@ -13,7 +13,7 @@ import org.slf4j.LoggerFactory;
 public class MemorySymLink
         extends AMemoryPath {
 
-    private final Logger logger   = LoggerFactory.getLogger("MemorySymlink.class");
+    private final Logger logger   = LoggerFactory.getLogger(MemorySymLink.class);
     private String       target;
     private AMemoryPath  existingPath;
 

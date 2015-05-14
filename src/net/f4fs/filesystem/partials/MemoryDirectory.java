@@ -15,7 +15,7 @@ import org.slf4j.LoggerFactory;
 public class MemoryDirectory
         extends AMemoryPath {
 
-    private final Logger            logger   = LoggerFactory.getLogger("MemoryDirectory.class");
+    private final Logger            logger   = LoggerFactory.getLogger(MemoryDirectory.class);
 
     private final List<AMemoryPath> contents = new ArrayList<AMemoryPath>();
 

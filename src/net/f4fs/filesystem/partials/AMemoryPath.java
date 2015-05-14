@@ -17,7 +17,7 @@ public abstract class AMemoryPath {
     /**
      * Logger instance
      */
-    private final Logger    logger = LoggerFactory.getLogger("AMemoryPath.class");
+    private final Logger    logger = LoggerFactory.getLogger(AMemoryPath.class);
 
     /**
      * The name of this path segment (i.e. dir-/file-/symlink-name)
