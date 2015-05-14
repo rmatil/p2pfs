@@ -48,7 +48,6 @@ public class VDHTOperationsTest {
         TestUtils.bootstrap(peers);
     }
 
-    @Test
     public void testVdht()
             throws IOException, InterruptedException, ClassNotFoundException {
         String testKey = "/asdf/ghjk/yxvc.zip";
