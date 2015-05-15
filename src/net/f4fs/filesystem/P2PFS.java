@@ -502,7 +502,7 @@ public class P2PFS
         // Note: this must be before p.delete() as it will
         // remove the path from the DHT and the version folder
         // can not be constructed anymore
-        if (!FSFileUtils.isDirectory(p) || (!FSFileUtils.isContainedInVersionFolder(p) && !FSFileUtils.isVersionFolder(p))) {
+        if (!FSFileUtils.isDirectory(p) && !FSFileUtils.isContainedInVersionFolder(p) && !FSFileUtils.isVersionFolder(p)) {
             try {
                 VersionArchiver archiver = new VersionArchiver();
                 archiver.removeVersions(this.peer, Number160.createHash(path));
