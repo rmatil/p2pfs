@@ -21,7 +21,7 @@ import net.tomp2p.peers.Number640;
 import net.tomp2p.storage.Data;
 
 
-public class PathOperations
+public class DirectPathOperations
         implements IPathPersistence {
 
     @Override

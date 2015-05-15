@@ -20,6 +20,7 @@ import net.f4fs.filesystem.partials.MemoryFile;
 import net.f4fs.filesystem.partials.MemorySymLink;
 import net.f4fs.filesystem.util.FSFileUtils;
 import net.f4fs.fspeer.FSPeer;
+import net.f4fs.persistence.VersionArchiver;
 import net.fusejna.DirectoryFiller;
 import net.fusejna.ErrorCodes;
 import net.fusejna.FuseException;
@@ -69,7 +70,7 @@ public class P2PFS
      */
     public P2PFS(FSPeer pPeer)
             throws IOException {
-        
+
         this.peer = pPeer;
 
         rootDirectory = new MemoryDirectory("/", this.peer);
@@ -466,7 +467,7 @@ public class P2PFS
 
         MemoryDirectory parentDir = (MemoryDirectory) newParent;
         parentDir.symlink(existingPath, FSFileUtils.getLastComponent(target));
-        
+
         // add symlink to monitored files
         MemorySymLink symlink = (MemorySymLink) parentDir.find(FSFileUtils.getLastComponent(target));
         this.fsFileMonitor.addMonitoredFile(symlink.getPath(), symlink.getContents());
@@ -484,10 +485,10 @@ public class P2PFS
             return -ErrorCodes.EISDIR();
         }
         ((MemoryFile) p).truncate(offset);
-        
+
         // overwrite monitored content and update countdown
         this.fsFileMonitor.addMonitoredFile(path, ((MemoryFile) p).getContent());
-        
+
         return 0;
     }
 
@@ -497,7 +498,21 @@ public class P2PFS
         if (p == null) {
             return -ErrorCodes.ENOENT();
         }
+
+        // Note: this must be before p.delete() as it will
+        // remove the path from the DHT and the version folder
+        // can not be constructed anymore
+        if (!FSFileUtils.isDirectory(p) || (!FSFileUtils.isContainedInVersionFolder(p) && !FSFileUtils.isVersionFolder(p))) {
+            try {
+                VersionArchiver archiver = new VersionArchiver();
+                archiver.removeVersions(this.peer, Number160.createHash(path));
+            } catch (ClassNotFoundException | IOException | InterruptedException e) {
+                e.printStackTrace();
+            }
+        }
+
         p.delete();
+
         return 0;
     }
 
@@ -566,7 +581,7 @@ public class P2PFS
         allPaths.addAll(getDirSubPaths(rootDirectory));
         return allPaths;
     }
-    
+
     public Set<String> getMonitoredFilePaths() {
         return this.fsFileMonitor.getMonitoredFilePaths();
     }

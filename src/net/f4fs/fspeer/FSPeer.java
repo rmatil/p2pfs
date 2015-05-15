@@ -43,7 +43,7 @@ public class FSPeer {
 
     public FSPeer() {
         this.persistence = PersistenceFactory.getVersionedDhtOperations();
-        this.pathPersistence = PersistenceFactory.getPathPersistence();
+        this.pathPersistence = PersistenceFactory.getConsensusPathOperations();
         this.bootstrapServerAccess = new BootstrapServerAccess();
     }
 
@@ -217,9 +217,11 @@ public class FSPeer {
      * @param pValue The data to store
      * 
      * @throws InterruptedException If a failure happened during await of future
+     * @throws IOException 
+     * @throws ClassNotFoundException 
      */
     public void putPath(Number160 pContentKey, Data pValue)
-            throws InterruptedException {
+            throws InterruptedException, ClassNotFoundException, IOException {
         this.pathPersistence.putPath(this.peer, pContentKey, pValue);
     }
 
