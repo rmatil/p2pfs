@@ -13,7 +13,7 @@
 		<testSourceDirectory>src/test</testSourceDirectory>
 		<resources>
 			<resource>
-				<directory>src/net/resources</directory>
+				<directory>src/resources</directory>
 			</resource>
 		</resources>
 		<testResources>
