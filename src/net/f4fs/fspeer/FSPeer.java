@@ -102,7 +102,7 @@ public class FSPeer {
         bootstrapServerAccess.postIpPortPair(myIp, Config.DEFAULT.getPort());
 
         // Future Discover
-        FutureDiscover futureDiscover = peer.peer().discover().inetAddress(address).ports(connectionPort).discoverTimeoutSec(20).start();
+        FutureDiscover futureDiscover = peer.peer().discover().inetAddress(address).ports(connectionPort).start();
         futureDiscover.awaitUninterruptibly();
 
         // Future Bootstrap - slave
