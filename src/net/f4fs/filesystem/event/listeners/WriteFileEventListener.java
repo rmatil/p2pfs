@@ -5,6 +5,7 @@ import java.util.logging.Logger;
 
 import net.f4fs.filesystem.event.events.AEvent;
 import net.f4fs.filesystem.event.events.CompleteWriteEvent;
+import net.f4fs.filesystem.util.FSFileUtils;
 import net.f4fs.persistence.VersionArchiver;
 import net.tomp2p.peers.Number160;
 import net.tomp2p.storage.Data;
@@ -39,7 +40,8 @@ public class WriteFileEventListener
                 Data oldData = writeEvent.getFsPeer().getData(Number160.createHash(writeEvent.getPath()));
 
                 // data is a already a byte array, no need to get the object of it
-                if (null != oldData && oldData.toBytes().length > 0) {
+                if (null != oldData && oldData.toBytes().length > 0 &&
+                        !FSFileUtils.isDirectory(writeEvent.getFilesystem().getPath(writeEvent.getPath()))) {
                     this.archiver.archive(writeEvent.getFsPeer(), Number160.createHash(writeEvent.getPath()), oldData);
                 }
             } catch (ClassNotFoundException | IOException | InterruptedException e) {

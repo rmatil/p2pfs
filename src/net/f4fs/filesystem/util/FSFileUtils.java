@@ -71,6 +71,20 @@ public class FSFileUtils {
     }
     
     /**
+     * Checks if path is a directory
+     * 
+     * @param pPath The path to check
+     * @return True, if it is, false otherwise
+     */
+    public static boolean isDirectory(AMemoryPath pPath) {
+        if (!(pPath instanceof MemoryDirectory)) {
+            return false;
+        }
+        
+        return true;
+    }
+    
+    /**
      * Returns true, if the given Path is contained
      * in a version folder, i.e. a folder starting
      * with a dot.
@@ -85,6 +99,26 @@ public class FSFileUtils {
         }
         
         return false;   
+    }
+    
+    /**
+     * Checks whether the given path is a version folder, 
+     * i.e. it begins with a dot.
+     * 
+     * @param pPath The path to check
+     * @return True if is version folder, false otherwise
+     */
+    public static boolean isVersionFolder(AMemoryPath pPath) {
+        if (!(pPath instanceof MemoryDirectory)) {
+            return false;
+        }
+        
+        MemoryDirectory dir = (MemoryDirectory) pPath;
+        if (dir.getName().startsWith(".")) {
+            return true;
+        }
+        
+        return false;
     }
     
     /**
