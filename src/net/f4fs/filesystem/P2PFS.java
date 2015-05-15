@@ -8,7 +8,6 @@ import java.util.Set;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
-import java.util.logging.Logger;
 
 import net.f4fs.config.FSStatConfig;
 import net.f4fs.filesystem.event.listeners.SyncFileEventListener;
@@ -31,6 +30,9 @@ import net.fusejna.types.TypeMode.ModeWrapper;
 import net.fusejna.util.FuseFilesystemAdapterFull;
 import net.tomp2p.peers.Number160;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 
 /**
  * 
@@ -52,7 +54,7 @@ public class P2PFS
     /**
      * Logger instance
      */
-    private static final Logger   logger = Logger.getLogger("P2PFS.class");
+    private final Logger          logger = LoggerFactory.getLogger(P2PFS.class);
 
     private FSFileMonitor         fsFileMonitor;
 
@@ -204,7 +206,7 @@ public class P2PFS
     public int create(final String path, final ModeWrapper mode, final FileInfoWrapper info) {
 
         if (getPath(path) != null) {
-            logger.info("File on path " + path + " could not be created. A file with the same name already exists (Error code " + -ErrorCodes.EEXIST() + ").");
+            this.logger.warn("File on path " + path + " could not be created. A file with the same name already exists (Error code " + -ErrorCodes.EEXIST() + ").");
             return -ErrorCodes.EEXIST();
         }
         final AMemoryPath parent = getParentPath(path);
@@ -231,19 +233,17 @@ public class P2PFS
                         }
                     }
                 } catch (ClassNotFoundException | InterruptedException | IOException e) {
-                    logger.warning("Failed to add a monitored file '" + path + "'. Check if it exists already in the DHT failed");
+                    this.logger.error("Failed to add a monitored file '" + path + "'. Check if it exists already in the DHT failed. Message: " + e.getMessage());
                     e.printStackTrace();
                 }
             } else {
                 ((MemoryDirectory) parent).mkdir(FSFileUtils.getLastComponent(path));
-                logger.info("Created directory   on path: " + path);
             }
 
-            logger.info("Created file on path: " + path);
             return 0;
         }
 
-        logger.warning("File on path " + path + " could not be created. No such file or directory (Error code " + -ErrorCodes.ENOENT() + ").");
+        this.logger.warn("File on path " + path + " could not be created. No such file or directory (Error code " + -ErrorCodes.ENOENT() + ").");
         return -ErrorCodes.ENOENT();
     }
 
@@ -335,11 +335,11 @@ public class P2PFS
         final AMemoryPath p = getPath(path);
 
         if (p == null) {
-            logger.warning("Failed to read file on " + path + ". No such file or directory (Error code " + -ErrorCodes.ENOENT() + ").");
+            this.logger.warn("Failed to read file on " + path + ". No such file or directory (Error code " + -ErrorCodes.ENOENT() + ").");
             return -ErrorCodes.ENOENT();
         }
         if ((p instanceof MemoryDirectory)) {
-            logger.warning("Failed to read file on " + path + ". Path is a directory (Error code " + -ErrorCodes.EISDIR() + ").");
+            this.logger.warn("Failed to read file on " + path + ". Path is a directory (Error code " + -ErrorCodes.EISDIR() + ").");
             return -ErrorCodes.EISDIR();
         }
 
@@ -353,11 +353,11 @@ public class P2PFS
             buffer.put(bytesRead);
             monitoredFile.position(0); // Rewind
 
-            logger.info("Read contents from file on path '" + path + "' from file monitor");
+            this.logger.info("Read contents from file on path '" + path + "' from file monitor");
             return bytesToRead;
         }
 
-        logger.info("Read file on path " + path);
+        this.logger.info("Read file on path " + path);
         return ((MemoryFile) p).read(buffer, size, offset);
     }
 
@@ -451,17 +451,17 @@ public class P2PFS
     public int symlink(final String path, final String target) {
         final AMemoryPath existingPath = getPath(FSFileUtils.getLastComponent(path));
         if (null == existingPath || target.isEmpty()) {
-            logger.warning("Could not create symlink '" + target + "' on file '" + path + "'. No such file or directory or target path is empty");
+            this.logger.warn("Could not create symlink '" + target + "' on file '" + path + "'. No such file or directory or target path is empty");
             return -ErrorCodes.ENOENT();
         }
 
         final AMemoryPath newParent = getParentPath(target);
         if (newParent == null) {
-            logger.warning("Could not create symlink '" + target + "' on file '" + path + "'. Parent directory does not exist");
+            this.logger.warn("Could not create symlink '" + target + "' on file '" + path + "'. Parent directory does not exist");
             return -ErrorCodes.ENOENT();
         }
         if (!(newParent instanceof MemoryDirectory)) {
-            logger.warning("Could not create symlink '" + target + "' on file '" + path + "'. Parent is not a direcotry");
+            this.logger.warn("Could not create symlink '" + target + "' on file '" + path + "'. Parent is not a direcotry");
             return -ErrorCodes.ENOTDIR();
         }
 
@@ -521,11 +521,11 @@ public class P2PFS
             final FileInfoWrapper wrapper) {
         final AMemoryPath p = getPath(path);
         if (p == null) {
-            logger.warning("Could not write to file on path " + path + ". No such file or directory (Error code " + -ErrorCodes.ENOENT() + ").");
+            this.logger.warn("Could not write to file on path " + path + ". No such file or directory (Error code " + -ErrorCodes.ENOENT() + ").");
             return -ErrorCodes.ENOENT();
         }
         if (!(p instanceof MemoryFile)) {
-            logger.warning("Could not write to file on path " + path + ". Path is a directory (Error code " + -ErrorCodes.EISDIR() + ").");
+            this.logger.warn("Could not write to file on path " + path + ". Path is a directory (Error code " + -ErrorCodes.EISDIR() + ").");
             return -ErrorCodes.EISDIR();
         }
 
@@ -561,7 +561,7 @@ public class P2PFS
             throws FuseException {
         File file = new File(mountPoint);
         if (!file.exists()) {
-            logger.info("Created mount point directory at path " + mountPoint + ".");
+            this.logger.info("Created mount point directory at path " + mountPoint + ".");
             file.mkdir();
         }
 

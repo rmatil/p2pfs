@@ -1,24 +1,26 @@
 package net.f4fs.filesystem.partials;
 
 import java.nio.ByteBuffer;
-import java.util.logging.Logger;
 
 import net.f4fs.fspeer.FSPeer;
 import net.fusejna.StructStat.StatWrapper;
 import net.fusejna.types.TypeMode.NodeType;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 
 public class MemorySymLink
         extends AMemoryPath {
 
-    private Logger      logger   = Logger.getLogger("MemorySymLink.class");
-    private String      target;
-    private AMemoryPath existingPath;
+    private final Logger logger   = LoggerFactory.getLogger(MemorySymLink.class);
+    private String       target;
+    private AMemoryPath  existingPath;
 
     /**
      * Must contain the target file name
      */
-    private ByteBuffer  contents = ByteBuffer.allocate(0);
+    private ByteBuffer   contents = ByteBuffer.allocate(0);
 
 
     /**
@@ -34,7 +36,7 @@ public class MemorySymLink
         super(target, parent, peer);
         this.existingPath = path;
         this.target = target;
-        
+
         // add the target's path as content as required
         // and stated in <code>man ln</code>
         contents = ByteBuffer.wrap(target.getBytes());
@@ -54,11 +56,11 @@ public class MemorySymLink
 
         stat.setMode(NodeType.SYMBOLIC_LINK);
     }
-    
+
     public AMemoryPath getExistingPath() {
         return existingPath;
     }
-    
+
     public void setExistingPath(AMemoryPath existingPath) {
         this.existingPath = existingPath;
     }
@@ -70,7 +72,7 @@ public class MemorySymLink
     public void setTarget(String target) {
         this.target = target;
     }
-    
+
     public ByteBuffer getContents() {
         return this.contents;
     }

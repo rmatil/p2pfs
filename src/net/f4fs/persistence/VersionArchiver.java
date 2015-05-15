@@ -6,11 +6,13 @@ import java.time.format.DateTimeFormatter;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.ArrayBlockingQueue;
-import java.util.logging.Logger;
 
 import net.f4fs.fspeer.FSPeer;
 import net.tomp2p.peers.Number160;
 import net.tomp2p.storage.Data;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 
 /**
@@ -34,7 +36,7 @@ public class VersionArchiver
     protected final String  VERSION_FOLDER_PATH = "version_folder_path";
     protected final String  VERSION_QUEUE_PATH  = "version_queue_path";
 
-    private Logger          logger              = Logger.getLogger("VersionArchiver.class");
+    private final Logger    logger              = LoggerFactory.getLogger(VersionArchiver.class);
 
     /**
      * Access to the DHT
@@ -119,7 +121,7 @@ public class VersionArchiver
         String filePath = this.fsPeer.getPath(pLocationKey);
 
         if (filePath == null) {
-            logger.warning("Could not retrieve filePath for versionFolder.");
+            this.logger.warn("Could not retrieve filePath for versionFolder.");
             throw new IOException("Could not retrieve file path. However, this is needed to create the version folder. Aborting...");
         }
 
@@ -159,11 +161,11 @@ public class VersionArchiver
         String retrievedVersionFolderPath = this.fsPeer.getPath(Number160.createHash(pVersionFolderPath));
 
         if (retrievedVersionFolderPath != null) {
-            logger.info("Version folder does exist already on path '" + pVersionFolderPath + "'");
+            this.logger.info("Version folder does exist already on path '" + pVersionFolderPath + "'");
             return true;
         }
 
-        logger.info("Version folder does not exist on path '" + pVersionFolderPath + "'");
+        this.logger.info("Version folder does not exist on path '" + pVersionFolderPath + "'");
         return false;
     }
 
@@ -190,7 +192,7 @@ public class VersionArchiver
         // Put version folder
         this.fsPeer.putPath(Number160.createHash(pVersionFolderPath), new Data(pVersionFolderPath));
 
-        logger.info("Added version folder on path '" + pVersionFolderPath + "' to the DHT");
+        this.logger.info("Added version folder on path '" + pVersionFolderPath + "' to the DHT");
     }
     
     /**
@@ -274,7 +276,7 @@ public class VersionArchiver
             this.fsPeer.removeData(Number160.createHash(versionToDelete));
             // Remove path
             this.fsPeer.removePath(Number160.createHash(versionToDelete));
-            System.out.println("Pruned version folder");
+            this.logger.info("Pruned version folder");
         }
 
         // put version queue back to version folder
