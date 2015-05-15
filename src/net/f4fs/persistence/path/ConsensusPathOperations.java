@@ -129,7 +129,7 @@ public class ConsensusPathOperations
         }
 
 
-        if (pair == null) {
+        if (pair == null || pair.element1() == null) {
             // Retries are over and peers still didn't agree
             return null;
         }

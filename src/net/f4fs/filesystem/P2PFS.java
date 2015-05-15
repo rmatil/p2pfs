@@ -20,6 +20,7 @@ import net.f4fs.filesystem.partials.MemoryFile;
 import net.f4fs.filesystem.partials.MemorySymLink;
 import net.f4fs.filesystem.util.FSFileUtils;
 import net.f4fs.fspeer.FSPeer;
+import net.f4fs.persistence.VersionArchiver;
 import net.fusejna.DirectoryFiller;
 import net.fusejna.ErrorCodes;
 import net.fusejna.FuseException;
@@ -497,7 +498,19 @@ public class P2PFS
         if (p == null) {
             return -ErrorCodes.ENOENT();
         }
+        
+        // Note: this must be before p.delete() as it will
+        // remove the path from the DHT and the version folder
+        // can not be constructed anymore
+        VersionArchiver archiver = new VersionArchiver();
+        try {
+            archiver.removeVersions(this.peer, Number160.createHash(path));
+        } catch (ClassNotFoundException | IOException | InterruptedException e) {
+            e.printStackTrace();
+        }
+        
         p.delete();
+        
         return 0;
     }
 
