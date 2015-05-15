@@ -237,7 +237,8 @@ public class VersionArchiver
         String pathToArchive = pVersionFolderPath.concat("/").concat(pFilename.replace('.', '_')).concat("_").concat(currentVersion).concat(".").concat(pFileExtension);
 
         // Put data of old version
-        this.fsPeer.putData(Number160.createHash(pathToArchive), pOldFile); //TODO: possible recursion!
+        // Note: no recursion here as long as the the ...DHTOperations does not invoke VersionArchiver
+        this.fsPeer.putData(Number160.createHash(pathToArchive), pOldFile);
         this.fsPeer.putPath(Number160.createHash(pathToArchive), new Data(pathToArchive));
 
         // get version queue from version folder and add new version to queue

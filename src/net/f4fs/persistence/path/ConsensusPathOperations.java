@@ -159,7 +159,7 @@ public class ConsensusPathOperations
         if (fg.data() == null || getPath(pPeer, pContentKey) != null) {
             // Path doesn't exist yet or Path exists and all peers agree -> direct putPath function is used
             directPathOperations.putPath(pPeer, pContentKey, pData);
-            System.out.println("Direct putPath to DHT");
+            logger.info("Direct putPath to DHT");
             return;
         }
 
@@ -177,7 +177,7 @@ public class ConsensusPathOperations
 
         // writing even if they still disagree
         directPathOperations.putPath(pPeer, pContentKey, pData);
-        System.out.println("Direct putPath to DHT");
+        logger.info("Direct putPath to DHT");
 
     }
 
