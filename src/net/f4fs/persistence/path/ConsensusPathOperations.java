@@ -6,7 +6,9 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.Set;
-import java.util.logging.Logger;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import net.f4fs.config.Config;
 import net.f4fs.fspeer.GetListener;
@@ -36,9 +38,9 @@ public class ConsensusPathOperations
     private static final IPathPersistence directPathOperations = PersistenceFactory.getDirectPathOperations();
     private static final int              NUMBER_OF_RETRIES    = 5;
     private static final int              SLEEP_TIME           = 500;
-    private static Logger                 logger               = Logger.getLogger("ConsensusPathOperations.class");
+    private static Logger                 logger               = LoggerFactory.getLogger(ConsensusPathOperations.class);
 
-    
+
     /**
      * Retrieves all path strings from the DHTs master location path key.
      * 
@@ -146,7 +148,7 @@ public class ConsensusPathOperations
      * @param pPeer local DHT of the peer
      * @param pContentKey content key of the data to save
      * @param pData path string wrapped in a Data element
-     * @throws IOException 
+     * @throws IOException
      * @throws ClassNotFoundException
      * @throws InterruptedException
      */
