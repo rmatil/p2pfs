@@ -68,7 +68,7 @@ public class ChunkedDHTOperations
                 FutureGet ft = pPeer.get(chunkHashes.get(i)).start();
                 ft.addListener(new GetListener(
                         pPeer.peerAddress().inetAddress().toString(),
-                        "Get chunk " + i + " of " + (chunkHashes.size() - 1)));
+                        "Get chunk " + (i + 1) + " of " + chunkHashes.size()));
 
                 chunkFutureGets.add(ft);
             }
@@ -80,8 +80,6 @@ public class ChunkedDHTOperations
 
                 chunks.add(i, chunkFutureGets.get(i).data().toBytes());
             }
-
-            // int totalBytes = chunks.stream().mapToInt(c -> c.length).sum();
 
             ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
             chunks.forEach(chunk -> byteArrayOutputStream.write(chunk, 0, chunk.length));
@@ -127,9 +125,9 @@ public class ChunkedDHTOperations
 
         ArrayList<Number160> chunkHashes = new ArrayList<>();
 
-        for (byte[] chunk : chunks) {
+        chunks.stream().forEach(chunk -> {
             chunkHashes.add(Number160.createHash(pLocationKey.toString() + new String(chunk)));
-        }
+        });
 
         ArrayList<FuturePut> futurePuts = new ArrayList<>();
 
