@@ -1,13 +1,10 @@
 package net.f4fs.persistence.vdht;
 
-import java.io.IOException;
-import java.util.Map;
-import java.util.Random;
-
 import net.f4fs.fspeer.PersistenceFactory;
 import net.f4fs.fspeer.RemoveListener;
 import net.f4fs.persistence.IPersistence;
 import net.f4fs.persistence.VersionArchiver;
+import net.f4fs.util.RandomDevice;
 import net.tomp2p.dht.FutureGet;
 import net.tomp2p.dht.FutureRemove;
 import net.tomp2p.dht.PeerDHT;
@@ -16,9 +13,12 @@ import net.tomp2p.peers.Number640;
 import net.tomp2p.peers.PeerAddress;
 import net.tomp2p.storage.Data;
 import net.tomp2p.utils.Pair;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import java.io.IOException;
+import java.util.Map;
+import java.util.Random;
 
 
 /**
@@ -31,7 +31,7 @@ import org.slf4j.LoggerFactory;
 public class VDHTOperations
         implements IPersistence {
 
-    private static final Random       RND                 = new Random(42L);                                // TODO: random device
+    private static final Random       RND                 = RandomDevice.INSTANCE.getRand();
     private static final IPersistence simpleDHTOperations = PersistenceFactory.getDhtOperations();
     private static final int          NUMBER_OF_RETRIES   = 5;
     private static final int          SLEEP_TIME          = 500;

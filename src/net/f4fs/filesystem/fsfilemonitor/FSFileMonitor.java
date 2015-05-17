@@ -144,7 +144,7 @@ public class FSFileMonitor
 
             Map<String, Pair<Integer, ByteBuffer>> notWrittenFiles = new HashMap<>();
             for (Entry<String, Pair<Integer, ByteBuffer>> entry : this.monitoredFiles.entrySet()) {
-                if (!entry.getValue().element0().equals(0)) {
+                if (entry.getValue().element0() > 0) {
                     // file is not ready yet to write to DHT
                     Pair<Integer, ByteBuffer> decreasedCounterPair = entry.getValue().element0(entry.getValue().element0() - 1);
                     notWrittenFiles.put(entry.getKey(), decreasedCounterPair);
