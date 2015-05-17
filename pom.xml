@@ -9,7 +9,7 @@
 		<outputDirectory>target/classes</outputDirectory>
 		<finalName>${project.artifactId}-${project.version}</finalName>
 		<testOutputDirectory>target/test-classes</testOutputDirectory>
-		<sourceDirectory>src/net</sourceDirectory>
+		<sourceDirectory>src</sourceDirectory>
 		<testSourceDirectory>src/test</testSourceDirectory>
 		<resources>
 			<resource>
