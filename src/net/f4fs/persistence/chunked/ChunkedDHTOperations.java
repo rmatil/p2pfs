@@ -36,7 +36,7 @@ import org.slf4j.LoggerFactory;
 public class ChunkedDHTOperations
         implements IPersistence {
 
-    private final static Logger LOGGER = LoggerFactory.getLogger("ChunkeDHTOperations");
+    private final static Logger logger = LoggerFactory.getLogger("ChunkeDHTOperations");
 
     public Data getData(PeerDHT pPeer, Number160 pLocationKey)
             throws InterruptedException {
@@ -79,9 +79,13 @@ public class ChunkedDHTOperations
             // Wait for the chunks to arrive, and store them in the list.
             for (int i = 0; i < chunkFutureGets.size(); i++) {
                 chunkFutureGets.get(i).await();
-                LOGGER.info("Wait for chunk " + (i + 1) + " of " + chunkFutureGets.size());
+                logger.info("Wait for chunk " + (i + 1) + " of " + chunkFutureGets.size());
 
-                chunks.add(i, chunkFutureGets.get(i).data().toBytes());
+                if (null != chunkFutureGets.get(i).data()) {
+                    chunks.add(i, chunkFutureGets.get(i).data().toBytes());
+                } else {
+                    logger.debug("Data chunk is null????");
+                }
             }
 
             ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
