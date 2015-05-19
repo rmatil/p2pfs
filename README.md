@@ -7,8 +7,6 @@ For documentation click [here](https://bitbucket.org/raccc/comsys_challenge_task
 
 ### Build Project to `jar` file
 
-### Download and install Maven for the Command Line
-
 If you do not already have installed maven for the cli (`mvn` should be available as cli command):
 
 * If you are on OS X and have `brew` already installed: Type `brew install maven`
@@ -22,8 +20,9 @@ Then execute the following command
     mvn assembly:assembly -DdescriptorId=jar-with-dependencies
     ```
 
-* To build without tests
+* To build including checking tests
 
-   ```
-   mvn assembly:assembly -DdescriptorId=jar-with-dependencies -DskipTests
-   ```
+    ```
+    mvn assembly:assembly -DdescriptorId=jar-with-dependencies -DskipTests
+    ```
+    
