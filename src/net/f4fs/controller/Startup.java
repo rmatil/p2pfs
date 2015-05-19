@@ -102,6 +102,8 @@ public class Startup {
             // Add shutdown hook so that IP address gets removed from server when
             // user does not terminate program correctly on
             Runtime.getRuntime().addShutdownHook(new ShutdownHookThread(fsPeer.getMyIp(), Config.DEFAULT.getPort()));
+            bootstrapServerAccess.keepAlive.setIp(fsPeer.getIp()).setPort(Config.DEFAULT.getPort());
+            bootstrapServerAccess.feelTheRhythmFeelTheRhyme_ItBobsledTime();
 
             // Set initial size of FS according to the number of connected peers.
             FSStatConfig.RESIZE.initialFsSize(nrOfIpAddresses + 1);

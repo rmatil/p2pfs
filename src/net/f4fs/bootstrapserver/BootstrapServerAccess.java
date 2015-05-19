@@ -18,7 +18,7 @@ import java.net.URL;
  *
  */
 public class BootstrapServerAccess {
-    private KeepAlive keepAlive;
+    public KeepAlive keepAlive;
 
     public BootstrapServerAccess() {
         keepAlive = new KeepAlive();
@@ -169,7 +169,7 @@ public class BootstrapServerAccess {
         keepAlive.exec();
     }
 
-    public void feelTheRhythmFeelTheRhymeItBobsledTime() {
+    public void feelTheRhythmFeelTheRhyme_ItBobsledTime() {
         heartBeat();
     }
 
