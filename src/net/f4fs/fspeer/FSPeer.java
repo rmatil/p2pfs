@@ -22,6 +22,8 @@ import net.tomp2p.p2p.PeerBuilder;
 import net.tomp2p.peers.Number160;
 import net.tomp2p.peers.PeerAddress;
 import net.tomp2p.storage.Data;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 
 /**
@@ -41,11 +43,15 @@ public class FSPeer {
 
     private String                myIp;
 
+    private Logger                logger;
+
     public FSPeer() {
         // this.persistence = PersistenceFactory.getVersionedDhtOperations();
         this.persistence = PersistenceFactory.getChunkedDhtOperations();
         this.pathPersistence = PersistenceFactory.getConsensusPathOperations();
         this.bootstrapServerAccess = new BootstrapServerAccess();
+
+        this.logger = LoggerFactory.getLogger(FSPeer.class);
     }
 
     /**
@@ -64,8 +70,8 @@ public class FSPeer {
         setMyIp();
         postIpPortPair(myIp, Config.DEFAULT.getPort());
 
-        System.out.println("[Peer@" + myIp + "]: Server started listening to: " + DiscoverNetworks.discoverInterfaces(b));
-        System.out.println("[Peer@" + myIp + "]: Address visible to outside is " + peer.peerAddress());
+        logger.info("[Peer@" + myIp + "]: Server started listening to: " + DiscoverNetworks.discoverInterfaces(b));
+        logger.info("[Peer@" + myIp + "]: Address visible to outside is " + peer.peerAddress());
     }
 
     /**
@@ -88,13 +94,13 @@ public class FSPeer {
         setMyIp();
         postIpPortPair(myIp, Config.DEFAULT.getPort());
 
-        System.out.println("[Peer@" + myIp + "]: Client started and listening to: " + DiscoverNetworks.discoverInterfaces(b));
-        System.out.println("[Peer@" + myIp + "]: Address visible to outside is " + peer.peerAddress());
+        logger.info("[Peer@" + myIp + "]: Client started and listening to: " + DiscoverNetworks.discoverInterfaces(b));
+        logger.info("[Peer@" + myIp + "]: Address visible to outside is " + peer.peerAddress());
 
         InetAddress address = Inet4Address.getByName(connectionIpAddress);
         PeerAddress connectionPeerAddress = new PeerAddress(Number160.ZERO, address, connectionPort, connectionPort);
 
-        System.out.println("[Peer@" + myIp + "]: Connected to " + connectionPeerAddress);
+        logger.info("[Peer@" + myIp + "]: Connected to " + connectionPeerAddress);
         bootstrapServerAccess.postIpPortPair(myIp, Config.DEFAULT.getPort());
 
         // Future Discover
@@ -106,15 +112,15 @@ public class FSPeer {
         futureBootstrap.awaitUninterruptibly();
 
         Collection<PeerAddress> addressList = peer.peerBean().peerMap().all();
-        System.out.println("[Peer@" + myIp + "]: Address list size: " + addressList.size());
+        logger.info("[Peer@" + myIp + "]: Address list size: " + addressList.size());
 
         if (futureDiscover.isSuccess()) {
-            System.out.println("[Peer@" + myIp + "]: Outside IP address is " + futureDiscover.peerAddress());
+            logger.info("[Peer@" + myIp + "]: Outside IP address is " + futureDiscover.peerAddress());
             
             return true;
         }
 
-        System.out.println("[Peer@" + myIp + "]: Failed " + futureDiscover.failedReason());
+        logger.info("[Peer@" + myIp + "]: Failed " + futureDiscover.failedReason());
         return false;
     }
 
@@ -135,11 +141,11 @@ public class FSPeer {
     public void printConnectedPeers()
             throws InterruptedException {
 
-        System.out.println("Listing connected peers: ");
+        logger.info("Listing connected peers: ");
         for (PeerAddress pa : peer.peerBean().peerMap().all()) {
-            System.out.println("[ConnectedPeer]: " + pa);
+            logger.info("[ConnectedPeer]: " + pa);
         }
-        System.out.println("Done");
+        logger.info("Done");
     }
 
 
