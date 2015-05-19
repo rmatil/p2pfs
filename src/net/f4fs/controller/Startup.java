@@ -9,6 +9,7 @@ import org.json.simple.parser.ParseException;
 
 import net.f4fs.bootstrapserver.BootstrapServerAccess;
 import net.f4fs.config.Config;
+import net.f4fs.config.FSStatConfig;
 import net.f4fs.filesystem.P2PFS;
 import net.f4fs.fspeer.FSPeer;
 import net.f4fs.util.DhtOperationsCommand;
@@ -102,6 +103,8 @@ public class Startup {
             // user does not terminate program correctly on
             Runtime.getRuntime().addShutdownHook(new ShutdownHookThread(fsPeer.getMyIp(), Config.DEFAULT.getPort()));
 
+            // Set initial size of FS according to the number of connected peers.
+            FSStatConfig.RESIZE.initialFsSize(nrOfIpAddresses + 1);
             // start file system with the connected peer
             new P2PFS(fsPeer).mountAndCreateIfNotExists(Config.DEFAULT.getMountPoint());
 

@@ -115,6 +115,7 @@ public class FSPeer {
 
         if (futureDiscover.isSuccess()) {
             System.out.println("[Peer@" + myIp + "]: Outside IP address is " + futureDiscover.peerAddress());
+            
             return true;
         }
 
@@ -218,9 +219,11 @@ public class FSPeer {
      * @param pValue The data to store
      * 
      * @throws InterruptedException If a failure happened during await of future
+     * @throws IOException 
+     * @throws ClassNotFoundException 
      */
     public void putPath(Number160 pContentKey, Data pValue)
-            throws InterruptedException {
+            throws InterruptedException, ClassNotFoundException, IOException {
         this.pathPersistence.putPath(this.peer, pContentKey, pValue);
     }
 

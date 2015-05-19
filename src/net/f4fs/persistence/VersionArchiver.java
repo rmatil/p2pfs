@@ -6,11 +6,13 @@ import java.time.format.DateTimeFormatter;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.ArrayBlockingQueue;
-import java.util.logging.Logger;
 
 import net.f4fs.fspeer.FSPeer;
 import net.tomp2p.peers.Number160;
 import net.tomp2p.storage.Data;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 
 /**
@@ -33,7 +35,8 @@ public class VersionArchiver
     protected final String  FILE_EXTENSION      = "file_extension";
     protected final String  VERSION_FOLDER_PATH = "version_folder_path";
     protected final String  VERSION_QUEUE_PATH  = "version_queue_path";
-    private Logger          logger              = Logger.getLogger("VersionArchiver.class");
+
+    private final Logger    logger              = LoggerFactory.getLogger(VersionArchiver.class);
 
     /**
      * Access to the DHT
@@ -67,6 +70,33 @@ public class VersionArchiver
         // Make sure the version folder doesn't bloat.
         this.pruneVersionFolder(extractedPaths.get(this.VERSION_QUEUE_PATH));
     }
+    
+    public void removeVersions(FSPeer pFsPeer, Number160 pLocationKey) throws ClassNotFoundException, IOException, InterruptedException{
+        
+        this.fsPeer = pFsPeer;
+
+        // Create paths from locationKey
+        Map<String, String> extractedPaths = this.extractPaths(pLocationKey);
+        
+        if (this.versionFolderExists(extractedPaths.get(this.VERSION_FOLDER_PATH))) {
+            // Version folder exists
+            
+            // Get version queue from version folder
+            @SuppressWarnings("unchecked")
+            ArrayBlockingQueue<String> versionQueue = (ArrayBlockingQueue<String>) this.fsPeer.getData(Number160.createHash(extractedPaths.get(this.VERSION_QUEUE_PATH))).object();
+
+            // Delete all version files
+            while (!versionQueue.isEmpty()){
+                String versionToDelete = versionQueue.remove();
+                this.fsPeer.removePath(Number160.createHash(versionToDelete));
+                this.fsPeer.removeData(Number160.createHash(versionToDelete));
+            }
+            
+            // Delete version queue and version folder
+            removeVersionFolder(extractedPaths.get(this.VERSION_QUEUE_PATH), extractedPaths.get(this.VERSION_FOLDER_PATH));
+            
+        }
+    }
 
     /**
      * Extract paths for the given file of the location key
@@ -91,7 +121,7 @@ public class VersionArchiver
         String filePath = this.fsPeer.getPath(pLocationKey);
 
         if (filePath == null) {
-            logger.warning("Could not retrieve filePath for versionFolder.");
+            this.logger.warn("Could not retrieve filePath for versionFolder.");
             throw new IOException("Could not retrieve file path. However, this is needed to create the version folder. Aborting...");
         }
 
@@ -131,11 +161,11 @@ public class VersionArchiver
         String retrievedVersionFolderPath = this.fsPeer.getPath(Number160.createHash(pVersionFolderPath));
 
         if (retrievedVersionFolderPath != null) {
-            logger.info("Version folder does exist already on path '" + pVersionFolderPath + "'");
+            this.logger.info("Version folder does exist already on path '" + pVersionFolderPath + "'");
             return true;
         }
 
-        logger.info("Version folder does not exist on path '" + pVersionFolderPath + "'");
+        this.logger.info("Version folder does not exist on path '" + pVersionFolderPath + "'");
         return false;
     }
 
@@ -158,9 +188,34 @@ public class VersionArchiver
 
         // Put version queue
         this.fsPeer.putData(Number160.createHash(pVersionQueuePath), new Data(versionQueue));
+        
+        // Put version folder
         this.fsPeer.putPath(Number160.createHash(pVersionFolderPath), new Data(pVersionFolderPath));
 
-        logger.info("Added version folder on path '" + pVersionFolderPath + "' to the DHT");
+        this.logger.info("Added version folder on path '" + pVersionFolderPath + "' to the DHT");
+    }
+    
+    /**
+     * Removes the version folder on the given path.
+     * The version queue gets stored in the DHT on the path given
+     * 
+     * @param pVersionQueuePath The path to the version queue in the DHT
+     * @param pVersionFolderPath The path of the version folder
+     * 
+     * @throws IOException If an error happened during getting the path of the file
+     * @throws ClassNotFoundException If an error happened during getting the path of the file
+     * @throws InterruptedException If an error happened during getting the path of the file
+     */
+    protected void removeVersionFolder(String pVersionQueuePath, String pVersionFolderPath)
+            throws InterruptedException, IOException, ClassNotFoundException {
+
+        // Remove version queue
+        this.fsPeer.removeData(Number160.createHash(pVersionQueuePath));
+        
+        // Remove version folder
+        this.fsPeer.removePath(Number160.createHash(pVersionFolderPath));
+        
+        logger.info("Removed version folder/queue on path '" + pVersionFolderPath + "' from the DHT");
     }
 
 
@@ -184,6 +239,7 @@ public class VersionArchiver
         String pathToArchive = pVersionFolderPath.concat("/").concat(pFilename.replace('.', '_')).concat("_").concat(currentVersion).concat(".").concat(pFileExtension);
 
         // Put data of old version
+        // Note: no recursion here as long as the the ...DHTOperations does not invoke VersionArchiver
         this.fsPeer.putData(Number160.createHash(pathToArchive), pOldFile);
         this.fsPeer.putPath(Number160.createHash(pathToArchive), new Data(pathToArchive));
 
@@ -220,7 +276,7 @@ public class VersionArchiver
             this.fsPeer.removeData(Number160.createHash(versionToDelete));
             // Remove path
             this.fsPeer.removePath(Number160.createHash(versionToDelete));
-            System.out.println("Pruned version folder");
+            this.logger.info("Pruned version folder");
         }
 
         // put version queue back to version folder

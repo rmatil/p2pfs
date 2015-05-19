@@ -4,7 +4,8 @@ import net.f4fs.persistence.IPathPersistence;
 import net.f4fs.persistence.IPersistence;
 import net.f4fs.persistence.chunked.ChunkedDHTOperations;
 import net.f4fs.persistence.dht.DHTOperations;
-import net.f4fs.persistence.path.PathOperations;
+import net.f4fs.persistence.path.ConsensusPathOperations;
+import net.f4fs.persistence.path.DirectPathOperations;
 import net.f4fs.persistence.vdht.VDHTOperations;
 import net.f4fs.persistence.versioned.VersionedDHTOperations;
 
@@ -20,6 +21,8 @@ public class PersistenceFactory {
     private static VersionedDHTOperations versionedDhtOperations;
     private static PathOperations         pathOperations;
     private static ChunkedDHTOperations   chunkedDHTOperations;
+    private static DirectPathOperations    directPathOperations;
+    private static ConsensusPathOperations consensusPathOperations;
 
     private PersistenceFactory() {
     }
@@ -46,7 +49,7 @@ public class PersistenceFactory {
 
         return vDhtOperations;
     }
-    
+
     public synchronized static IPersistence getVersionedDhtOperations() {
         if (null == versionedDhtOperations) {
             versionedDhtOperations = new VersionedDHTOperations();
@@ -65,15 +68,30 @@ public class PersistenceFactory {
 
     /**
      * Returns an adapter to store, get and remove
-     * paths of files in the DHT
+     * paths of files directly from the DHT
      * 
      * @return The adapter
      */
-    public synchronized static IPathPersistence getPathPersistence() {
-        if (null == pathOperations) {
-            pathOperations = new PathOperations();
+    public synchronized static IPathPersistence getDirectPathOperations() {
+        if (null == directPathOperations) {
+            directPathOperations = new DirectPathOperations();
         }
 
-        return pathOperations;
+        return directPathOperations;
+    }
+
+    /**
+     * Returns an adapter to store, get and remove
+     * paths of files through a consensus mechanism from the DHT,
+     * i.e. peers agree on the returned value or the value is null
+     * 
+     * @return The adapter
+     */
+    public synchronized static IPathPersistence getConsensusPathOperations() {
+        if (null == consensusPathOperations) {
+            consensusPathOperations = new ConsensusPathOperations();
+        }
+
+        return consensusPathOperations;
     }
 }
