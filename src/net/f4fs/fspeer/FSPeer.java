@@ -114,6 +114,7 @@ public class FSPeer {
 
         if (futureDiscover.isSuccess()) {
             System.out.println("[Peer@" + myIp + "]: Outside IP address is " + futureDiscover.peerAddress());
+            
             return true;
         }
 

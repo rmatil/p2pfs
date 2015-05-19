@@ -19,6 +19,7 @@ import net.f4fs.filesystem.partials.MemoryFile;
 import net.f4fs.filesystem.partials.MemorySymLink;
 import net.f4fs.filesystem.util.FSFileUtils;
 import net.f4fs.fspeer.FSPeer;
+import net.f4fs.fspeer.FSResizePeerMapChangeListener;
 import net.f4fs.persistence.VersionArchiver;
 import net.fusejna.DirectoryFiller;
 import net.fusejna.ErrorCodes;
@@ -98,7 +99,10 @@ public class P2PFS
         // on the ExecutionException).
         // See http://stackoverflow.com/questions/3929342/choose-between-executorservices-submit-and-executorservices-execute
         this.executorService.execute(this.fsFileMonitor);
-
+        
+        
+        // Enables dynamic resizing of the FS.
+        dynamicFsSize();
         super.log(false);
     }
 
@@ -536,15 +540,16 @@ public class P2PFS
 
         return returnCode;
     }
+    
 
     @Override
     public int statfs(final String path, final StatvfsWrapper wrapper) {
-        wrapper.bsize(FSStatConfig.BIGGER.getBsize()); // block size of 4000 bytes
-        wrapper.blocks(FSStatConfig.BIGGER.getBlocks()); // TODO: manually update this, when a new peer joins
-        wrapper.bfree(FSStatConfig.BIGGER.getBfree());
-        wrapper.bavail(FSStatConfig.BIGGER.getBavail());
-        wrapper.files(FSStatConfig.BIGGER.getFiles());
-        wrapper.ffree(FSStatConfig.BIGGER.getFfree());
+        wrapper.bsize(FSStatConfig.RESIZE.getBsize()); // block size of 4000 bytes
+        wrapper.blocks(FSStatConfig.RESIZE.getBlocks()); 
+        wrapper.bfree(FSStatConfig.RESIZE.getBfree());
+        wrapper.bavail(FSStatConfig.RESIZE.getBavail());
+        wrapper.files(FSStatConfig.RESIZE.getFiles());
+        wrapper.ffree(FSStatConfig.RESIZE.getFfree());
         return 0;
     }
 
@@ -611,5 +616,10 @@ public class P2PFS
         }
 
         return allPaths;
+    }
+    
+    private void dynamicFsSize() {
+        FSResizePeerMapChangeListener peerMapChangeListener = new FSResizePeerMapChangeListener(peer.getPeerDHT());
+        peer.getPeerDHT().peerBean().peerMap().addPeerMapChangeListener(peerMapChangeListener);
     }
 }
