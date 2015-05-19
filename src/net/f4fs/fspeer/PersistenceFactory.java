@@ -19,7 +19,6 @@ public class PersistenceFactory {
     private static DHTOperations          dhtOperations;
     private static VDHTOperations         vDhtOperations;
     private static VersionedDHTOperations versionedDhtOperations;
-    private static PathOperations         pathOperations;
     private static ChunkedDHTOperations   chunkedDHTOperations;
     private static DirectPathOperations    directPathOperations;
     private static ConsensusPathOperations consensusPathOperations;

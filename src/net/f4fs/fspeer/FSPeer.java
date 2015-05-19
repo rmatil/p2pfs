@@ -44,7 +44,7 @@ public class FSPeer {
     public FSPeer() {
         // this.persistence = PersistenceFactory.getVersionedDhtOperations();
         this.persistence = PersistenceFactory.getChunkedDhtOperations();
-        this.pathPersistence = PersistenceFactory.getPathPersistence();
+        this.pathPersistence = PersistenceFactory.getConsensusPathOperations();
         this.bootstrapServerAccess = new BootstrapServerAccess();
     }
 
