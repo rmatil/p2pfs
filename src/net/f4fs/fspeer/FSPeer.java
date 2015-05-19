@@ -50,10 +50,7 @@ public class FSPeer {
 
     /**
      * Starts this peer as the first, i.e. bootstrap peer
-     * 
-     * @param myIP The IP Address of this peer
-     * @param myPort The corresponding port
-     * 
+     *
      * @throws Exception
      */
     public void startAsBootstrapPeer()
@@ -74,8 +71,6 @@ public class FSPeer {
     /**
      * Starts this peer with the given parameters
      * 
-     * @param myIP The IP address of this peer
-     * @param myPort The port of this peer
      * @param connectionIpAddress The IP address to which this peer should be connected
      * @param connectionPort The port to which this peer should be connected
      * @return True, if started successfully, false otherwise
@@ -182,7 +177,6 @@ public class FSPeer {
     /**
      * Gets all keys of all files stored in the dht
      * 
-     * @param pLocationKey
      * @return keys List with all keys to the files in the dht
      * 
      * @throws IOException
@@ -214,7 +208,6 @@ public class FSPeer {
     /**
      * Stores the given data with the given content key on the default location key
      * 
-     * @param pLocationKey The key on which machine to store
      * @param pContentKey The key to store the data
      * @param pValue The data to store
      * 
@@ -242,7 +235,6 @@ public class FSPeer {
     /**
      * Removes the file key from the file keys which are stored with the default location key
      * 
-     * @param pLocationKey
      * @param pContentKey
      * 
      * @throws InterruptedException If a failure happened during await of future
