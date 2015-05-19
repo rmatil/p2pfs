@@ -22,6 +22,8 @@ import net.tomp2p.storage.Data;
 
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * Chunks the data before storage and dechunks them on retrieval.
@@ -34,7 +36,8 @@ import com.google.gson.reflect.TypeToken;
 public class ChunkedDHTOperations
         implements IPersistence {
 
-    @Override
+    private final static Logger LOGGER = LoggerFactory.getLogger("ChunkeDHTOperations");
+
     public Data getData(PeerDHT pPeer, Number160 pLocationKey)
             throws InterruptedException {
         // Get chunk list
@@ -76,7 +79,7 @@ public class ChunkedDHTOperations
             // Wait for the chunks to arrive, and store them in the list.
             for (int i = 0; i < chunkFutureGets.size(); i++) {
                 chunkFutureGets.get(i).await();
-                System.out.println("Wait for chunk " + (i + 1) + " of " + chunkFutureGets.size());
+                LOGGER.info("Wait for chunk " + (i + 1) + " of " + chunkFutureGets.size());
 
                 chunks.add(i, chunkFutureGets.get(i).data().toBytes());
             }
