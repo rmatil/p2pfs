@@ -7,7 +7,7 @@ import java.util.HashSet;
 import java.util.Set;
 
 import net.f4fs.fspeer.FSPeer;
-import net.f4fs.persistence.PathOperations;
+import net.f4fs.persistence.path.DirectPathOperations;
 import net.tomp2p.dht.PeerDHT;
 import net.tomp2p.peers.Number160;
 import net.tomp2p.storage.Data;
@@ -18,9 +18,6 @@ import org.junit.Test;
 
 public class PathOperationsTest {
 
-    private static String         TEST_IP            = "";
-    private static int            TEST_PORT          = 4000;
-
     private static Number160      TEST_DATA_DIR_KEY = null;
     private static Data           TEST_DATA_DIR      = null;
 
@@ -28,17 +25,16 @@ public class PathOperationsTest {
     private static Data           TEST_DATA_FILE     = null;
 
     private static PeerDHT        peerDht            = null;
-    private static PathOperations pathOperations     = null;
+    private static DirectPathOperations pathOperations     = null;
 
     @BeforeClass
     public static void initTest()
             throws Exception {
-        pathOperations = new PathOperations();
+        pathOperations = new DirectPathOperations();
 
         FSPeer fsPeer = new FSPeer();
-        TEST_IP = fsPeer.findLocalIp();
 
-        fsPeer.startAsBootstrapPeer(TEST_IP, TEST_PORT);
+        fsPeer.startAsBootstrapPeer();
         peerDht = fsPeer.getPeerDHT();
 
         TEST_DATA_DIR_KEY = Number160.createHash("/this/is/a/path");

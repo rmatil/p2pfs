@@ -5,7 +5,7 @@ import static org.junit.Assert.assertEquals;
 import java.io.IOException;
 
 import net.f4fs.fspeer.FSPeer;
-import net.f4fs.persistence.DHTOperations;
+import net.f4fs.persistence.dht.DHTOperations;
 import net.tomp2p.dht.PeerDHT;
 import net.tomp2p.peers.Number160;
 import net.tomp2p.storage.Data;
@@ -16,9 +16,6 @@ import org.junit.Test;
 
 
 public class DHTOperationsTest {
-
-    private static String        TEST_IP       = "";
-    private static int           TEST_PORT     = 4000;
 
     private static Number160     TEST_KEY      = null;
     private static Data          TEST_DATA     = null;
@@ -33,9 +30,8 @@ public class DHTOperationsTest {
         dhtOperations = new DHTOperations();
 
         fsPeer = new FSPeer();
-        TEST_IP = fsPeer.findLocalIp();
-
-        fsPeer.startAsBootstrapPeer(TEST_IP, TEST_PORT);
+       
+        fsPeer.startAsBootstrapPeer();
         peerDht = fsPeer.getPeerDHT();
 
         TEST_KEY = Number160.createHash(2);
