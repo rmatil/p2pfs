@@ -51,9 +51,11 @@ public interface IPathPersistence {
      * @param pValue The path which should get stored
      * 
      * @throws InterruptedException If a failure happened during await of future
+     * @throws IOException 
+     * @throws ClassNotFoundException 
      */
     public void putPath(PeerDHT pPeer, Number160 pContentKey, Data pValue)
-            throws InterruptedException;
+            throws InterruptedException, ClassNotFoundException, IOException;
 
     /**
      * Removes a path from the DHT which is identified by the given key

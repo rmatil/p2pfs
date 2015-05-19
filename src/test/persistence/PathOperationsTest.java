@@ -7,7 +7,7 @@ import java.util.HashSet;
 import java.util.Set;
 
 import net.f4fs.fspeer.FSPeer;
-import net.f4fs.persistence.path.PathOperations;
+import net.f4fs.persistence.path.DirectPathOperations;
 import net.tomp2p.dht.PeerDHT;
 import net.tomp2p.peers.Number160;
 import net.tomp2p.storage.Data;
@@ -25,12 +25,12 @@ public class PathOperationsTest {
     private static Data           TEST_DATA_FILE     = null;
 
     private static PeerDHT        peerDht            = null;
-    private static PathOperations pathOperations     = null;
+    private static DirectPathOperations pathOperations     = null;
 
     @BeforeClass
     public static void initTest()
             throws Exception {
-        pathOperations = new PathOperations();
+        pathOperations = new DirectPathOperations();
 
         FSPeer fsPeer = new FSPeer();
 

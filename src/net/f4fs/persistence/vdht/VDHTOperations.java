@@ -1,16 +1,11 @@
 package net.f4fs.persistence.vdht;
 
-import java.io.IOException;
-import java.util.Map;
-import java.util.Random;
-import java.util.logging.Logger;
-
 import net.f4fs.fspeer.PersistenceFactory;
 import net.f4fs.fspeer.RemoveListener;
 import net.f4fs.persistence.IPersistence;
 import net.f4fs.persistence.VersionArchiver;
+import net.f4fs.util.RandomDevice;
 import net.tomp2p.dht.FutureGet;
-import net.tomp2p.dht.FuturePut;
 import net.tomp2p.dht.FutureRemove;
 import net.tomp2p.dht.PeerDHT;
 import net.tomp2p.peers.Number160;
@@ -18,6 +13,12 @@ import net.tomp2p.peers.Number640;
 import net.tomp2p.peers.PeerAddress;
 import net.tomp2p.storage.Data;
 import net.tomp2p.utils.Pair;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import java.io.IOException;
+import java.util.Map;
+import java.util.Random;
 
 
 /**
@@ -30,11 +31,11 @@ import net.tomp2p.utils.Pair;
 public class VDHTOperations
         implements IPersistence {
 
-    private static final Random       RND                 = new Random(42L);                            // TODO: random device
+    private static final Random       RND                 = RandomDevice.INSTANCE.getRand();
     private static final IPersistence simpleDHTOperations = PersistenceFactory.getDhtOperations();
     private static final int          NUMBER_OF_RETRIES   = 5;
     private static final int          SLEEP_TIME          = 500;
-    private static Logger             logger              = Logger.getLogger("VDHTOperations.class");
+    private final Logger              logger              = LoggerFactory.getLogger(VDHTOperations.class);
 
 
 
@@ -53,8 +54,8 @@ public class VDHTOperations
 
 //        for (int i = 0; i < NUMBER_OF_RETRIES; i++) {
 //            FutureGet fg = pPeer.get(pLocationKey).getLatest().start().awaitUninterruptibly();
-            return simpleDHTOperations.getData(pPeer, pLocationKey);
-            
+        return simpleDHTOperations.getData(pPeer, pLocationKey);
+
 //            // check if all the peers agree on the same latest version, if not
 //            // wait a little and try again
 //            pair = checkVersions(fg.rawData());
@@ -115,7 +116,7 @@ public class VDHTOperations
     public void putData(PeerDHT pPeer, Number160 pLocationKey, Data pData)
             throws InterruptedException, ClassNotFoundException, IOException {
         Pair<Number640, Byte> pair2 = null;
-        
+
         // Check if location key already exists
         FutureGet fg = pPeer.get(pLocationKey).getLatest().start().awaitUninterruptibly();
         if (fg.data() == null) { // TODO: is there a better check for this? What if it generally exists but hasn't spread to this peer yet?
@@ -124,9 +125,9 @@ public class VDHTOperations
             System.out.println("put to dht");
             return;
         }
-        
+
         System.out.println("put to vdht");
-        
+
         // Archive old file with VDHTArchiver
         VersionArchiver archiver = new VersionArchiver();
         throw new IOException("Breaking changes introduced here. Archiving not possible. Aborting...");
@@ -210,7 +211,7 @@ public class VDHTOperations
      * @throws ClassNotFoundException
      * @throws IOException
      */
-    private static Pair<Number160, Data> getAndUpdate(PeerDHT peerDHT, Number160 pLocationKey, Data pFileData)
+    private Pair<Number160, Data> getAndUpdate(PeerDHT peerDHT, Number160 pLocationKey, Data pFileData)
             throws InterruptedException, ClassNotFoundException, IOException {
 
         Pair<Number640, Data> oldFile = null;

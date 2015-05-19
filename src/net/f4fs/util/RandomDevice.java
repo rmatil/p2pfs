@@ -2,12 +2,13 @@ package net.f4fs.util;
 
 import java.util.Random;
 
+
 /**
  * RandomDevice for global usage of pseudo-random numbers.
  *
  * Usage:
  *
- *  RandomDevice.INSTANCE.nextLong
+ * RandomDevice.INSTANCE.nextLong
  *
  * Created by samuel on 31.03.15.
  */

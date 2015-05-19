@@ -10,17 +10,19 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 
+
 /**
  * Util class to send a keep-alive message to a certain node in the network.
  * <p>
  * Created by samuel on 31.03.15.
  */
 public class KeepAlive {
-    private final int _period;
-    private final TimeUnit _period_t;
+
+    private final int                _period;
+    private final TimeUnit           _period_t;
     private ScheduledExecutorService _scheduler;
-    private String _targetIp;
-    private int _targetPort;
+    private String                   _targetIp;
+    private int                      _targetPort;
 
     public KeepAlive(int period, TimeUnit period_t, String targetIp, int targetPort) {
         _period = period;
