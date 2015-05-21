@@ -7,9 +7,6 @@ import java.util.Iterator;
 import java.util.Map;
 import java.util.Set;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import net.f4fs.config.Config;
 import net.f4fs.fspeer.GetListener;
 import net.f4fs.fspeer.PersistenceFactory;
@@ -25,6 +22,9 @@ import net.tomp2p.peers.PeerAddress;
 import net.tomp2p.storage.Data;
 import net.tomp2p.utils.Pair;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 
 /**
  * ConsensusPathOperations retrieves and stores path keys only after all other peers agree on the latest content.
@@ -36,7 +36,7 @@ public class ConsensusPathOperations
 
     private static final RandomDevice     RND                  = RandomDevice.INSTANCE;
     private static final IPathPersistence directPathOperations = PersistenceFactory.getDirectPathOperations();
-    private static final int              NUMBER_OF_RETRIES    = 5;
+    private static final int              NUMBER_OF_RETRIES    = 10;
     private static final int              SLEEP_TIME           = 500;
     private static Logger                 logger               = LoggerFactory.getLogger(ConsensusPathOperations.class);
 
@@ -75,7 +75,7 @@ public class ConsensusPathOperations
             }
 
             logger.info("getAllPath: Peers did not agree on version - Retry :" + i + " of " + NUMBER_OF_RETRIES);
-            Thread.sleep(RND.nextInt(SLEEP_TIME));
+            Thread.sleep(SLEEP_TIME);
         }
 
         if (pair == null) {
@@ -127,7 +127,7 @@ public class ConsensusPathOperations
             }
 
             logger.info("getPath: Peers did not agree on version - Retry :" + i + " of " + NUMBER_OF_RETRIES);
-            Thread.sleep(RND.nextInt(SLEEP_TIME));
+            Thread.sleep(SLEEP_TIME);
         }
 
 
@@ -174,7 +174,7 @@ public class ConsensusPathOperations
             }
 
             logger.info("putPath: Peers did not agree on version - Retry :" + i + " of " + NUMBER_OF_RETRIES);
-            Thread.sleep(RND.nextInt(SLEEP_TIME));
+            Thread.sleep(SLEEP_TIME);
         }
 
         // writing even if they still disagree
