@@ -3,26 +3,25 @@ package net.f4fs.filesystem.partials;
 import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.nio.charset.StandardCharsets;
-import java.util.logging.Logger;
 
 import net.f4fs.config.FSStatConfig;
 import net.f4fs.fspeer.FSPeer;
 import net.fusejna.ErrorCodes;
 import net.fusejna.StructStat.StatWrapper;
 import net.fusejna.types.TypeMode.NodeType;
-import net.tomp2p.dht.FutureGet;
-import net.tomp2p.dht.FuturePut;
-import net.tomp2p.dht.FutureRemove;
 import net.tomp2p.peers.Number160;
 import net.tomp2p.storage.Data;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 
 public class MemoryFile
         extends AMemoryPath {
 
-    private ByteBuffer contents = ByteBuffer.allocate(0);
+    private ByteBuffer   contents = ByteBuffer.allocate(0);
 
-    private Logger     logger   = Logger.getLogger("MemoryFile.class");
+    private final Logger logger   = LoggerFactory.getLogger(MemoryFile.class);
 
     /**
      * Creates a new instance of this file in the DHT
@@ -32,7 +31,7 @@ public class MemoryFile
      */
     public MemoryFile(final String name, FSPeer peer) {
         super(name, peer);
-        logger.info("Created File with name '" + name + "' without parent");
+        this.logger.info("Created File with name '" + name + "' without parent");
     }
 
     /**
@@ -45,7 +44,7 @@ public class MemoryFile
      */
     public MemoryFile(final String name, final MemoryDirectory parent, final FSPeer peer) {
         super(name, parent, peer);
-        logger.info("Created File with name '" + name + "' on path '" + getPath() + "'.");
+        this.logger.info("Created File with name '" + name + "' on path '" + getPath() + "'.");
     }
 
     /**
@@ -65,44 +64,41 @@ public class MemoryFile
             // only update value on the content key because file was already
             // created in parent constructor
             String stringContent = new String(contents.array(), StandardCharsets.UTF_8);
-            FuturePut futurePut = super.getPeer().putData(Number160.createHash(getPath()), new Data(stringContent));
-            futurePut.await();
+            super.getPeer().putData(Number160.createHash(getPath()), new Data(stringContent));
+
             logger.info("Created File with name '" + name + "' on path '" + getPath() + "'.");
 
-        } catch (final IOException | InterruptedException e) {
-            logger.warning("Could not create file with name '" + name + "' on path '" + getPath() + "'. Message: " + e.getMessage());
-
+        } catch (final IOException | InterruptedException | ClassNotFoundException e) {
+            logger.error("Could not create file with name '" + name + "' on path '" + getPath() + "'. Message: " + e.getMessage());
+            e.printStackTrace();
             try {
                 // remove file (also the content key in the location keys)
-                FutureRemove futureRemove = super.getPeer().removeData(Number160.createHash(getPath()));
-                futureRemove.await();
-                futureRemove = super.getPeer().removePath(Number160.createHash(getPath()));
-                futureRemove.await();
+                super.getPeer().removeData(Number160.createHash(getPath()));
+                super.getPeer().removePath(Number160.createHash(getPath()));
             } catch (InterruptedException e1) {
-                logger.warning("Could not create file with name '" + name + "' on path '" + getPath() + "'. Message: " + e.getMessage());
+                logger.error("Could not create file with name '" + name + "' on path '" + getPath() + "'. Message: " + e.getMessage());
+                e.printStackTrace();
             }
         }
     }
 
     @Override
     public void getattr(final StatWrapper stat) {
-        long currentUnixTimestamp = System.currentTimeMillis() / 1000l;
-
-        // time of last access
-        stat.atime(currentUnixTimestamp);
-        // time of last data modification
-        stat.mtime(currentUnixTimestamp);
+        // time of modification time
+        stat.atime(super.getLastModificationTimestamp());
+        // time of last access time
+        stat.mtime(super.getLastAccessTimestamp());
         // Time when file status was last changed (inode data modification).
         // Changed by the chmod(2), chown(2), link(2), mknod(2), rename(2), unlink(2), utimes(2) and write(2) system calls.
-        stat.ctime(currentUnixTimestamp);
+        stat.ctime(super.getLastModificationTimestamp());
 
-        // sets the optimal transfer block size: 
+        // sets the optimal transfer block size:
         // usually the one of the FS
         stat.blksize(FSStatConfig.BIGGER.getBsize());
-        // The actual number of blocks allocated for the file in 512-byte units. 
+        // The actual number of blocks allocated for the file in 512-byte units.
         // As short symbolic links are stored in the inode, this number may be zero.
         stat.blocks(contents.capacity() / 512l);
-        
+
         // ID of device containing file
         // stat.dev(dev);
 
@@ -112,25 +108,25 @@ public class MemoryFile
         // Group ID of the file
         // stat.gid(gid);
 
-        // Note: if ino and rdev are taken together, they uniquely 
+        // Note: if ino and rdev are taken together, they uniquely
         // identify the file among multiple filesystems
         // File serial number
         // stat.ino(ino); // only unique on the current FS
         // Device ID
-        // stat.rdev(rdev); 
-                
+        // stat.rdev(rdev);
+
         // Number of hard links which link to this file
         // Hard links are multiple directory entries which link to the same file -> created by link system call.
         // From man link: "A hard link to a file is indistinguishable from the original directory entry; any changes to a file are effectively inde-
-        // pendent of the name used to reference the file.  Hard links may not normally refer to directories and may not span file systems."
+        // pendent of the name used to reference the file. Hard links may not normally refer to directories and may not span file systems."
         // TODO: how do we check these?
         // stat.nlink(0);
-        
+
         // set access modes
         stat.setMode(NodeType.FILE, true, true, true, true, true, true, true, true, true);
         stat.size(contents.capacity());
-        
-        // NOTE: according to the manual entry of man 2 stat these fields should not be changed 
+
+        // NOTE: according to the manual entry of man 2 stat these fields should not be changed
         // RESERVED: DO NOT USE!
         // stat.lspare(lspare);
         // RESERVED: DO NOT USE!
@@ -147,24 +143,25 @@ public class MemoryFile
      * @return Number of bytes which got read
      */
     public int read(final ByteBuffer buffer, final long size, final long offset) {
+        super.setLastAccessTimestamp((System.currentTimeMillis() / 1000l));
         final int bytesToRead = (int) Math.min(contents.capacity() - offset, size);
         final byte[] bytesRead = new byte[bytesToRead];
 
         synchronized (this) {
             try {
-                FutureGet futureGet = super.getPeer().getData(Number160.createHash(getPath()));
-                futureGet.await();
+                Data data = super.getPeer().getData(Number160.createHash(getPath()));
 
-                if (null == futureGet.data()) {
-                    logger.warning("Could not read file on path '" + getPath() + "' from the DHT. Data was null");
+                if (null == data) {
+                    logger.warn("Could not read file on path '" + getPath() + "' from the DHT. Data was null");
                     return -ErrorCodes.EIO();
                 }
 
                 // replace current content with the content stored in the DHT
-                contents = ByteBuffer.wrap(futureGet.data().toBytes());
+                contents = ByteBuffer.wrap(data.toBytes());
 
             } catch (ClassNotFoundException | IOException | InterruptedException e) {
-                logger.warning("Could not read contents of file on path '" + getPath() + "'. Message: " + e.getMessage());
+                logger.error("Could not read contents of file on path '" + getPath() + "'. StackTrace: " + e.getMessage());
+                e.printStackTrace();
                 return -ErrorCodes.EIO();
             }
 
@@ -187,6 +184,7 @@ public class MemoryFile
      * @param size The size to which it should be truncated
      */
     public synchronized void truncate(final long size) {
+        super.setLastModificationTimestamp((System.currentTimeMillis() / 1000l));
         if (size < contents.capacity()) {
             // Need to create a new, smaller buffer
             final ByteBuffer newContents = ByteBuffer.allocate((int) size);
@@ -195,17 +193,11 @@ public class MemoryFile
             // writes as much bytes of contents into bytesRead
             contents.get(bytesRead);
 
-            try {
-                // try to update the shortened value
-                FuturePut futurePut = super.getPeer().putData(Number160.createHash(getPath()), new Data(bytesRead));
-                futurePut.await();
-
-                // only if DHT update succeeds update the value on disk
-                newContents.put(bytesRead);
-                contents = newContents;
-            } catch (InterruptedException e) {
-                logger.warning("Could not truncate the contents of the file on path '" + getPath() + "'. Message: " + e.getMessage());
-            }
+            // update the value on disk
+            newContents.put(bytesRead);
+            contents = newContents;
+            
+            this.logger.info("Truncated '" + this.getPath() + "' to '" + size + "' bytes");
         }
     }
 
@@ -222,6 +214,7 @@ public class MemoryFile
      * @return ErrorCode if failed, <i>bufSize</i> if succeeded
      */
     public int write(final ByteBuffer buffer, final long bufSize, final long writeOffset) {
+        super.setLastModificationTimestamp((System.currentTimeMillis() / 1000l));
         final int maxWriteIndex = (int) (writeOffset + bufSize);
         final byte[] bytesToWrite = new byte[(int) bufSize];
         synchronized (this) {
@@ -233,23 +226,13 @@ public class MemoryFile
             }
             buffer.get(bytesToWrite, 0, (int) bufSize);
 
-            try {
-                // NOTE: this must be before the data gets stored in the DHT
-                // because otherwise the latest chunk of data will not be stored in there
-                contents.position((int) writeOffset);
-                contents.put(bytesToWrite);
-                contents.position(0); // Rewind
-
-                // NOTE: write gets called multiple times for the same file, because
-                // it is written in chunks. Because we do not now, when everything of a certain file is
-                // written, overwrite the contents in the DHT
-                FuturePut futurePut = super.getPeer().putData(Number160.createHash(getPath()), new Data(contents.array()));
-                futurePut.await();
-            } catch (InterruptedException e) {
-                logger.warning("Could not write to file on path '" + getPath() + "'. Message; " + e.getMessage());
-                return -ErrorCodes.EIO();
-            }
+            // update with this chunk
+            contents.position((int) writeOffset);
+            contents.put(bytesToWrite);
+            contents.position(0); // Rewind
         }
+        
+        this.logger.info("Wrote '" + bufSize + "' bytes starting at offset '" + writeOffset + "' to file on path '" + this.getPath() + "'");
 
         return (int) bufSize;
     }

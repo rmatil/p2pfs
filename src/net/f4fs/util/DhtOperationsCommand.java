@@ -35,7 +35,7 @@ public class DhtOperationsCommand {
         System.out.println();
         System.out.println("> starting input console...");
         System.out.println("> usage: put:<key>:<value>, get:<key> or 'q' for quit");
-        
+
         while (!input.equals(QUIT)) {
             System.out.print("> ");
             input = scanner.nextLine();
@@ -48,7 +48,7 @@ public class DhtOperationsCommand {
                         System.out.println("usage: put:<key>:<value>");
                         continue;
                     }
-                    
+
                     peer.putData(new Number160().createHash(inputArray[1]), new Data(inputArray[2]));
                 } else if (inputArray[0].equals("get")) {
                     if (inputArray.length < 2) {
@@ -63,7 +63,7 @@ public class DhtOperationsCommand {
                 } else {
                     System.out.println("usage: put:<key>:<value>, get:<key> or 'q' for quit");
                 }
-            } catch (IOException | ClassNotFoundException pEx) {
+            } catch (IOException | ClassNotFoundException | InterruptedException pEx) {
                 pEx.printStackTrace();
             }
         }

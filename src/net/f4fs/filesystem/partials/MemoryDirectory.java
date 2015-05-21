@@ -2,28 +2,31 @@ package net.f4fs.filesystem.partials;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.logging.Logger;
 
 import net.f4fs.fspeer.FSPeer;
 import net.fusejna.DirectoryFiller;
 import net.fusejna.StructStat.StatWrapper;
 import net.fusejna.types.TypeMode.NodeType;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 
 public class MemoryDirectory
         extends AMemoryPath {
 
-    private Logger                  logger   = Logger.getLogger("MemoryDirectory.class");
+    private final Logger            logger   = LoggerFactory.getLogger(MemoryDirectory.class);
+
     private final List<AMemoryPath> contents = new ArrayList<AMemoryPath>();
 
     public MemoryDirectory(final String name, FSPeer peer) {
         super(name, peer);
-        logger.info("Created Directory '" + name + "' without parent on path '" + getPath() + "'.");
+        this.logger.info("Created Directory '" + name + "' without parent on path '" + getPath() + "'.");
     }
 
     public MemoryDirectory(final String name, final MemoryDirectory parent, FSPeer peer) {
         super(name, parent, peer);
-        logger.info("Created Directory '" + name + "' on path '" + getPath() + "'.");
+        this.logger.info("Created Directory '" + name + "' on path '" + getPath() + "'.");
     }
 
     public synchronized void deleteChild(final AMemoryPath child) {
@@ -60,15 +63,13 @@ public class MemoryDirectory
 
     @Override
     public void getattr(final StatWrapper stat) {
-        long currentUnixTimestamp = System.currentTimeMillis() / 1000l;
-
-        // time of last access
-        stat.atime(currentUnixTimestamp);
-        // time of last data modification
-        stat.mtime(currentUnixTimestamp);
+        // time of modification time
+        stat.atime(super.getLastModificationTimestamp());
+        // time of last access time
+        stat.mtime(super.getLastAccessTimestamp());
         // Time when file status was last changed (inode data modification).
         // Changed by the chmod(2), chown(2), link(2), mknod(2), rename(2), unlink(2), utimes(2) and write(2) system calls.
-        stat.ctime(currentUnixTimestamp);
+        stat.ctime(super.getLastModificationTimestamp());
 
         // ID of device containing file
         // stat.dev(dev);
@@ -107,15 +108,18 @@ public class MemoryDirectory
         // stores also the new directory in the DHT with the correct path
         // because this element was set as parent in the constructor
         contents.add(new MemoryDirectory(lastComponent, this, super.getPeer()));
+        this.logger.info("Created subdirectory '" + lastComponent + "' in '" + this.getPath() + "'");
     }
 
     public synchronized void mkfile(final String lastComponent) {
         // stores also the new file in the DHT with the correct path
         // because this element was set as parent in the constructor
         contents.add(new MemoryFile(lastComponent, this, super.getPeer()));
+        this.logger.info("Created file '" + lastComponent + "' in '" + this.getPath() + "'");
     }
 
     public synchronized void read(final DirectoryFiller filler) {
+        super.setLastAccessTimestamp((System.currentTimeMillis() / 1000l));
         for (final AMemoryPath p : contents) {
             filler.add(p.getName());
         }
@@ -132,6 +136,7 @@ public class MemoryDirectory
         // stores also the new directory in the DHT with the correct path
         // because this element was set as parent in the constructor
         contents.add(new MemorySymLink(path, target, this, super.getPeer()));
+        this.logger.info("Created symlink '" + target + "' in '" + this.getPath() + "'");
     }
 
     public List<AMemoryPath> getContents() {

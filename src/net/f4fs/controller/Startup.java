@@ -9,6 +9,7 @@ import org.json.simple.parser.ParseException;
 
 import net.f4fs.bootstrapserver.BootstrapServerAccess;
 import net.f4fs.config.Config;
+import net.f4fs.config.FSStatConfig;
 import net.f4fs.filesystem.P2PFS;
 import net.f4fs.fspeer.FSPeer;
 import net.f4fs.util.DhtOperationsCommand;
@@ -25,12 +26,10 @@ public class Startup {
 
     private BootstrapServerAccess bootstrapServerAccess;
     private FSPeer                fsPeer;
-    private String                myIP;
 
     public Startup() {
         bootstrapServerAccess = new BootstrapServerAccess();
         fsPeer = new FSPeer();
-        myIP = fsPeer.findLocalIp();
     }
 
     /**
@@ -76,29 +75,25 @@ public class Startup {
      */
     private void start(List<Map<String, String>> ipList) {
         int nrOfIpAddresses = ipList.size();
-        bootstrapServerAccess.postIpPortPair(myIP, Config.DEFAULT.getPort());
 
         // Connect to other peers if any are available, otherwise start as bootstrap peer
         try {
             boolean success = false;
 
             if (nrOfIpAddresses == 0) {
-                fsPeer.startAsBootstrapPeer(myIP, Config.DEFAULT.getPort());
+                fsPeer.startAsBootstrapPeer();
                 success = true;
             } else {
                 int counter = 0;
 
                 while (!success && (counter < nrOfIpAddresses)) {
-                    success = fsPeer.startPeer(myIP,
-                            Config.DEFAULT.getPort(),
-                            ipList.get(counter).get("address"),
+                    success = fsPeer.startPeer(ipList.get(counter).get("address"),
                             Integer.parseInt(ipList.get(counter).get("port")));
                     counter++;
                 }
             }
 
             if (!success) {
-                bootstrapServerAccess.removeIpPortPair(myIP, Config.DEFAULT.getPort());
                 fsPeer.shutdown();
                 System.out.println("[Shutdown]: Bootstrap failed");
                 System.exit(1);
@@ -106,8 +101,10 @@ public class Startup {
 
             // Add shutdown hook so that IP address gets removed from server when
             // user does not terminate program correctly on
-            Runtime.getRuntime().addShutdownHook(new ShutdownHookThread(myIP, Config.DEFAULT.getPort()));
+            Runtime.getRuntime().addShutdownHook(new ShutdownHookThread(fsPeer.getMyIp(), Config.DEFAULT.getPort()));
 
+            // Set initial size of FS according to the number of connected peers.
+            FSStatConfig.RESIZE.initialFsSize(nrOfIpAddresses + 1);
             // start file system with the connected peer
             new P2PFS(fsPeer).mountAndCreateIfNotExists(Config.DEFAULT.getMountPoint());
 
@@ -116,8 +113,6 @@ public class Startup {
                 DhtOperationsCommand.startCommandLineInterface(fsPeer);
             }
 
-
-            bootstrapServerAccess.removeIpPortPair(myIP, Config.DEFAULT.getPort());
             fsPeer.shutdown();
         } catch (Exception pEx) {
             pEx.printStackTrace();
