@@ -9,8 +9,6 @@ import java.util.concurrent.TimeUnit;
 public enum Config {
     DEFAULT("http", "188.226.178.35", 4000, "tabequals4", "ip-addresses", "ip-addresses/new", "ip-addresses/remove", "keepAlive", 5, TimeUnit.MINUTES, "./P2PFS", false, "keys", 4096),
     CLI("http", "188.226.178.35", 4000, "tabequals4", "ip-addresses", "ip-addresses/new", "ip-addresses/remove", "keepAlive", 5, TimeUnit.MINUTES, "./P2PFS", true, "keys", 4096);
-   
-
 
     private String   _protocol;
 
@@ -71,7 +69,7 @@ public enum Config {
     /**
      * Size of chunks in bytes.
      */
-    private int _chunkSizeBytes;
+    private int      _chunkSizeBytes;
 
     Config(String protocol, String host, int port, String authToken, String getPath, String postPath, String removePath, String keepAlivePath, int keepAliveMsgPeriod,
             TimeUnit keepAliveMsgPeriod_T, String mountPoint, boolean startCommandLineInterface, String masterLocationPathsKey, int chunkSizeBytes) {
@@ -147,5 +145,7 @@ public enum Config {
         return _masterLocationPathsKey;
     }
 
-    public int getChunkSizeBytes() { return _chunkSizeBytes; }
+    public int getChunkSizeBytes() {
+        return _chunkSizeBytes;
+    }
 }

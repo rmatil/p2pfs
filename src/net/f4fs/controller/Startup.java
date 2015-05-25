@@ -51,8 +51,8 @@ public class Startup {
     /**
      * Starts the system if the IP and port of the bootstrap peer is known in advance
      * 
-     * @param The IP address of the bootstrap peer
-     * @param The port of the bootstrap peer
+     * @param connectionIP The IP address of the bootstrap peer
+     * @param connectionPort The port of the bootstrap peer
      */
     public void startWithoutBootstrapServer(String connectionIP, String connectionPort) {
         List<Map<String, String>> ipList = new ArrayList<Map<String, String>>();
@@ -71,7 +71,7 @@ public class Startup {
      * or connect the peer to the DHT if the size of the IP list > 0
      * and start the file system
      * 
-     * @param List of IP/port pairs of peers connected to the DHT
+     * @param ipList of IP/port pairs of peers connected to the DHT
      */
     private void start(List<Map<String, String>> ipList) {
         int nrOfIpAddresses = ipList.size();
@@ -101,7 +101,11 @@ public class Startup {
 
             // Add shutdown hook so that IP address gets removed from server when
             // user does not terminate program correctly on
-            Runtime.getRuntime().addShutdownHook(new ShutdownHookThread(fsPeer.getMyIp(), Config.DEFAULT.getPort()));
+            Runtime.getRuntime().addShutdownHook(new ShutdownHookThread(fsPeer.getIp(), Config.DEFAULT.getPort()));
+            
+            // send keep alive messages to bootstrap server to update entries in available peers
+            bootstrapServerAccess.keepAlive.setIp(fsPeer.getIp()).setPort(Config.DEFAULT.getPort());
+            bootstrapServerAccess.feelTheRhythmFeelTheRhyme_ItBobsledTime();
 
             // Set initial size of FS according to the number of connected peers.
             FSStatConfig.RESIZE.initialFsSize(nrOfIpAddresses + 1);
