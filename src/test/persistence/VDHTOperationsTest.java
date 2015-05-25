@@ -11,8 +11,8 @@ import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.CountDownLatch;
 
 import net.f4fs.config.Config;
-import net.f4fs.persistence.dht.DHTOperations;
-import net.f4fs.persistence.vdht.VDHTOperations;
+import net.f4fs.persistence.data.DHTOperations;
+import net.f4fs.persistence.data.VDHTOperations;
 import net.tomp2p.dht.FutureGet;
 import net.tomp2p.dht.FuturePut;
 import net.tomp2p.dht.PeerDHT;
@@ -20,7 +20,6 @@ import net.tomp2p.peers.Number160;
 import net.tomp2p.storage.Data;
 
 import org.junit.BeforeClass;
-import org.junit.Test;
 
 
 /**

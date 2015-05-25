@@ -1,13 +1,13 @@
-package net.f4fs.fspeer;
+package net.f4fs.persistence;
 
-import net.f4fs.persistence.IPathPersistence;
-import net.f4fs.persistence.IPersistence;
-import net.f4fs.persistence.chunked.ChunkedDHTOperations;
-import net.f4fs.persistence.dht.DHTOperations;
+import net.f4fs.persistence.data.ChunkedDHTOperations;
+import net.f4fs.persistence.data.DHTOperations;
+import net.f4fs.persistence.data.IDataPersistence;
+import net.f4fs.persistence.data.VDHTOperations;
+import net.f4fs.persistence.data.VersionedDHTOperations;
 import net.f4fs.persistence.path.ConsensusPathOperations;
 import net.f4fs.persistence.path.DirectPathOperations;
-import net.f4fs.persistence.vdht.VDHTOperations;
-import net.f4fs.persistence.versioned.VersionedDHTOperations;
+import net.f4fs.persistence.path.IPathPersistence;
 
 
 /**
@@ -33,7 +33,7 @@ public class PersistenceFactory {
      * 
      * @return An adapter to store data without versions
      */
-    public synchronized static IPersistence getDhtOperations() {
+    public synchronized static IDataPersistence getDhtOperations() {
         if (null == dhtOperations) {
             dhtOperations = new DHTOperations();
         }
@@ -41,7 +41,7 @@ public class PersistenceFactory {
         return dhtOperations;
     }
 
-    public synchronized static IPersistence getVdhtOperations() {
+    public synchronized static IDataPersistence getVdhtOperations() {
         if (null == vDhtOperations) {
             vDhtOperations = new VDHTOperations();
         }
@@ -49,7 +49,7 @@ public class PersistenceFactory {
         return vDhtOperations;
     }
 
-    public synchronized static IPersistence getVersionedDhtOperations() {
+    public synchronized static IDataPersistence getVersionedDhtOperations() {
         if (null == versionedDhtOperations) {
             versionedDhtOperations = new VersionedDHTOperations();
         }
@@ -57,7 +57,7 @@ public class PersistenceFactory {
         return versionedDhtOperations;
     }
 
-    public synchronized static IPersistence getChunkedDhtOperations() {
+    public synchronized static IDataPersistence getChunkedDhtOperations() {
         if (null == chunkedDHTOperations) {
             chunkedDHTOperations = new ChunkedDHTOperations();
         }

@@ -1,4 +1,4 @@
-package net.f4fs.persistence;
+package net.f4fs.persistence.data;
 
 import java.io.IOException;
 
@@ -7,7 +7,7 @@ import net.tomp2p.peers.Number160;
 import net.tomp2p.storage.Data;
 
 
-public interface IPersistence {
+public interface IDataPersistence {
     
     /**
      * Get (latest) data from the peer with the given location key

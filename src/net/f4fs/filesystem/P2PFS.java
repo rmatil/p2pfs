@@ -20,7 +20,7 @@ import net.f4fs.filesystem.partials.MemorySymLink;
 import net.f4fs.filesystem.util.FSFileUtils;
 import net.f4fs.fspeer.FSPeer;
 import net.f4fs.fspeer.FSResizePeerMapChangeListener;
-import net.f4fs.persistence.VersionArchiver;
+import net.f4fs.persistence.archive.VersionArchiver;
 import net.fusejna.DirectoryFiller;
 import net.fusejna.ErrorCodes;
 import net.fusejna.FuseException;

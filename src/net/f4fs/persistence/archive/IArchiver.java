@@ -1,4 +1,4 @@
-package net.f4fs.persistence;
+package net.f4fs.persistence.archive;
 
 import java.io.IOException;
 

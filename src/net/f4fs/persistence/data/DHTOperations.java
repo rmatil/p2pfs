@@ -1,9 +1,9 @@
-package net.f4fs.persistence.versioned;
+package net.f4fs.persistence.data;
 
 import net.f4fs.fspeer.GetListener;
 import net.f4fs.fspeer.PutListener;
 import net.f4fs.fspeer.RemoveListener;
-import net.f4fs.persistence.IPersistence;
+import net.f4fs.persistence.data.IDataPersistence;
 import net.tomp2p.dht.FutureGet;
 import net.tomp2p.dht.FuturePut;
 import net.tomp2p.dht.FutureRemove;
@@ -16,8 +16,8 @@ import net.tomp2p.storage.Data;
  * <br>
  * <b>Note:</b> No versions of stored data are supported
  */
-public class VersionedDHTOperations
-        implements IPersistence {
+public class DHTOperations
+        implements IDataPersistence {
 
     @Override
     public Data getData(PeerDHT pPeer, Number160 pLocationKey)

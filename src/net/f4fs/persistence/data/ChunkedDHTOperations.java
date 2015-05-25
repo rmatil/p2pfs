@@ -1,4 +1,4 @@
-package net.f4fs.persistence.chunked;
+package net.f4fs.persistence.data;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
@@ -12,7 +12,6 @@ import net.f4fs.config.Config;
 import net.f4fs.fspeer.GetListener;
 import net.f4fs.fspeer.PutListener;
 import net.f4fs.fspeer.RemoveListener;
-import net.f4fs.persistence.IPersistence;
 import net.tomp2p.dht.FutureGet;
 import net.tomp2p.dht.FuturePut;
 import net.tomp2p.dht.FutureRemove;
@@ -20,10 +19,11 @@ import net.tomp2p.dht.PeerDHT;
 import net.tomp2p.peers.Number160;
 import net.tomp2p.storage.Data;
 
-import com.google.gson.Gson;
-import com.google.gson.reflect.TypeToken;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import com.google.gson.Gson;
+import com.google.gson.reflect.TypeToken;
 
 /**
  * Chunks the data before storage and dechunks them on retrieval.
@@ -34,7 +34,7 @@ import org.slf4j.LoggerFactory;
  * Where `chunk` is the byte array of that specific chunk.
  */
 public class ChunkedDHTOperations
-        implements IPersistence {
+        implements IDataPersistence {
 
     private final static Logger logger = LoggerFactory.getLogger("ChunkedDHTOperations");
 

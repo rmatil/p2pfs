@@ -9,10 +9,8 @@ import java.util.Set;
 
 import net.f4fs.config.Config;
 import net.f4fs.fspeer.GetListener;
-import net.f4fs.fspeer.PersistenceFactory;
 import net.f4fs.fspeer.RemoveListener;
-import net.f4fs.persistence.IPathPersistence;
-import net.f4fs.util.RandomDevice;
+import net.f4fs.persistence.PersistenceFactory;
 import net.tomp2p.dht.FutureGet;
 import net.tomp2p.dht.FutureRemove;
 import net.tomp2p.dht.PeerDHT;
@@ -34,7 +32,6 @@ import org.slf4j.LoggerFactory;
 public class ConsensusPathOperations
         implements IPathPersistence {
 
-    private static final RandomDevice     RND                  = RandomDevice.INSTANCE;
     private static final IPathPersistence directPathOperations = PersistenceFactory.getDirectPathOperations();
     private static final int              NUMBER_OF_RETRIES    = 10;
     private static final int              SLEEP_TIME           = 500;
