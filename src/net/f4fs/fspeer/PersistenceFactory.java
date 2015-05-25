@@ -2,6 +2,7 @@ package net.f4fs.fspeer;
 
 import net.f4fs.persistence.IPathPersistence;
 import net.f4fs.persistence.IPersistence;
+import net.f4fs.persistence.chunked.ChunkedDHTOperations;
 import net.f4fs.persistence.dht.DHTOperations;
 import net.f4fs.persistence.path.ConsensusPathOperations;
 import net.f4fs.persistence.path.DirectPathOperations;
@@ -15,9 +16,10 @@ import net.f4fs.persistence.versioned.VersionedDHTOperations;
  */
 public class PersistenceFactory {
 
-    private static DHTOperations           dhtOperations;
-    private static VDHTOperations          vDhtOperations;
-    private static VersionedDHTOperations  versionedDhtOperations;
+    private static DHTOperations          dhtOperations;
+    private static VDHTOperations         vDhtOperations;
+    private static VersionedDHTOperations versionedDhtOperations;
+    private static ChunkedDHTOperations   chunkedDHTOperations;
     private static DirectPathOperations    directPathOperations;
     private static ConsensusPathOperations consensusPathOperations;
 
@@ -53,6 +55,14 @@ public class PersistenceFactory {
         }
 
         return versionedDhtOperations;
+    }
+
+    public synchronized static IPersistence getChunkedDhtOperations() {
+        if (null == chunkedDHTOperations) {
+            chunkedDHTOperations = new ChunkedDHTOperations();
+        }
+
+        return chunkedDHTOperations;
     }
 
     /**

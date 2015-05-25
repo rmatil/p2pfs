@@ -42,7 +42,8 @@ public class FSPeer {
     private String                myIp;
 
     public FSPeer() {
-        this.persistence = PersistenceFactory.getVersionedDhtOperations();
+        // this.persistence = PersistenceFactory.getVersionedDhtOperations();
+        this.persistence = PersistenceFactory.getChunkedDhtOperations();
         this.pathPersistence = PersistenceFactory.getConsensusPathOperations();
         this.bootstrapServerAccess = new BootstrapServerAccess();
     }
