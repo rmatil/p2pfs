@@ -1,4 +1,4 @@
-package net.f4fs.persistence;
+package net.f4fs.persistence.path;
 
 import java.io.IOException;
 import java.util.Set;

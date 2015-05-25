@@ -14,7 +14,6 @@ import net.f4fs.config.Config;
 import net.f4fs.fspeer.GetListener;
 import net.f4fs.persistence.PersistenceFactory;
 import net.f4fs.fspeer.RemoveListener;
-import net.f4fs.persistence.IPathPersistence;
 import net.f4fs.util.RandomDevice;
 import net.tomp2p.dht.FutureGet;
 import net.tomp2p.dht.FutureRemove;

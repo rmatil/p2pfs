@@ -1,8 +1,7 @@
-package net.f4fs.persistence.vdht;
+package net.f4fs.persistence.data;
 
 import net.f4fs.persistence.PersistenceFactory;
 import net.f4fs.fspeer.RemoveListener;
-import net.f4fs.persistence.IPersistence;
 import net.f4fs.persistence.archive.VersionArchiver;
 import net.f4fs.util.RandomDevice;
 import net.tomp2p.dht.FutureGet;
@@ -29,10 +28,10 @@ import java.util.Random;
  * @author Christian
  */
 public class VDHTOperations
-        implements IPersistence {
+        implements IDataPersistence {
 
     private static final Random       RND                 = RandomDevice.INSTANCE.getRand();
-    private static final IPersistence simpleDHTOperations = PersistenceFactory.getDhtOperations();
+    private static final IDataPersistence simpleDHTOperations = PersistenceFactory.getDhtOperations();
     private static final int          NUMBER_OF_RETRIES   = 5;
     private static final int          SLEEP_TIME          = 500;
     private final Logger              logger              = LoggerFactory.getLogger(VDHTOperations.class);

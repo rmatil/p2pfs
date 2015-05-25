@@ -8,7 +8,6 @@ import java.util.Map;
 import java.util.concurrent.ArrayBlockingQueue;
 
 import net.f4fs.fspeer.FSPeer;
-import net.f4fs.persistence.IArchiver;
 import net.tomp2p.peers.Number160;
 import net.tomp2p.storage.Data;
 
