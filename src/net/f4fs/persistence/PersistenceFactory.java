@@ -1,4 +1,4 @@
-package net.f4fs.fspeer;
+package net.f4fs.persistence;
 
 import net.f4fs.persistence.IPathPersistence;
 import net.f4fs.persistence.IPersistence;

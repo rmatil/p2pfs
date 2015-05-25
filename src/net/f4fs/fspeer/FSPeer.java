@@ -10,6 +10,7 @@ import net.f4fs.bootstrapserver.BootstrapServerAccess;
 import net.f4fs.config.Config;
 import net.f4fs.persistence.IPathPersistence;
 import net.f4fs.persistence.IPersistence;
+import net.f4fs.persistence.PersistenceFactory;
 import net.f4fs.util.RandomDevice;
 import net.tomp2p.connection.Bindings;
 import net.tomp2p.connection.DiscoverNetworks;

@@ -12,7 +12,7 @@ import org.slf4j.LoggerFactory;
 
 import net.f4fs.config.Config;
 import net.f4fs.fspeer.GetListener;
-import net.f4fs.fspeer.PersistenceFactory;
+import net.f4fs.persistence.PersistenceFactory;
 import net.f4fs.fspeer.RemoveListener;
 import net.f4fs.persistence.IPathPersistence;
 import net.f4fs.util.RandomDevice;

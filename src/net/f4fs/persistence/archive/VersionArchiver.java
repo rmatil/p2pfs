@@ -1,4 +1,4 @@
-package net.f4fs.persistence;
+package net.f4fs.persistence.archive;
 
 import java.io.IOException;
 import java.time.LocalDateTime;
@@ -8,6 +8,7 @@ import java.util.Map;
 import java.util.concurrent.ArrayBlockingQueue;
 
 import net.f4fs.fspeer.FSPeer;
+import net.f4fs.persistence.IArchiver;
 import net.tomp2p.peers.Number160;
 import net.tomp2p.storage.Data;
 

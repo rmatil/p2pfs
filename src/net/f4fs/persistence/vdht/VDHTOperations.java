@@ -1,9 +1,9 @@
 package net.f4fs.persistence.vdht;
 
-import net.f4fs.fspeer.PersistenceFactory;
+import net.f4fs.persistence.PersistenceFactory;
 import net.f4fs.fspeer.RemoveListener;
 import net.f4fs.persistence.IPersistence;
-import net.f4fs.persistence.VersionArchiver;
+import net.f4fs.persistence.archive.VersionArchiver;
 import net.f4fs.util.RandomDevice;
 import net.tomp2p.dht.FutureGet;
 import net.tomp2p.dht.FutureRemove;
