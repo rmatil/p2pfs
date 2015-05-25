@@ -36,7 +36,7 @@ import org.slf4j.LoggerFactory;
 public class ChunkedDHTOperations
         implements IPersistence {
 
-    private final static Logger logger = LoggerFactory.getLogger("ChunkeDHTOperations");
+    private final static Logger logger = LoggerFactory.getLogger("ChunkedDHTOperations");
 
     public Data getData(PeerDHT pPeer, Number160 pLocationKey)
             throws InterruptedException {
