@@ -27,6 +27,7 @@ import net.fusejna.FuseException;
 import net.fusejna.StructFuseFileInfo.FileInfoWrapper;
 import net.fusejna.StructStat.StatWrapper;
 import net.fusejna.StructStatvfs.StatvfsWrapper;
+import net.fusejna.StructTimeBuffer;
 import net.fusejna.types.TypeMode.ModeWrapper;
 import net.fusejna.util.FuseFilesystemAdapterFull;
 import net.tomp2p.peers.Number160;
@@ -594,7 +595,6 @@ public class P2PFS
 
         return returnCode;
     }
-    
 
     @Override
     public int statfs(final String path, final StatvfsWrapper wrapper) {
@@ -604,6 +604,28 @@ public class P2PFS
         wrapper.bavail(FSStatConfig.RESIZE.getBavail());
         wrapper.files(FSStatConfig.RESIZE.getFiles());
         wrapper.ffree(FSStatConfig.RESIZE.getFfree());
+        return 0;
+    }
+
+    /**
+     * Change the access and modification times of a file with nanosecond resolution
+     *
+     * @param path to file
+     * @param wrapper of time
+     * @return
+     */
+    @Override
+    public int utimens(String path, StructTimeBuffer.TimeBufferWrapper wrapper) {
+        AMemoryPath p = getPath(path);
+
+        if (null == p) {
+            this.logger.warn("Could not touch file on path '" + path + "'. No such file found.");
+            return -ErrorCodes.ENOENT();
+        }
+
+        p.setLastAccessTimestamp(wrapper.ac_sec());
+        p.setLastModificationTimestamp(wrapper.ac_sec());
+
         return 0;
     }
 
