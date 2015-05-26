@@ -419,7 +419,32 @@ public class P2PFS
         if (!(newParent instanceof MemoryDirectory)) {
             return -ErrorCodes.ENOTDIR();
         }
-        p.rename(newName.substring(newName.lastIndexOf("/")));
+        
+        // remove old file if still contained in fileMonitor
+        if (this.fsFileMonitor.getMonitoredFilePaths().contains(p.getPath())) {
+            this.fsFileMonitor.removeMonitoredFile(p.getPath());
+        }
+        
+        try {
+            this.peer.removePath(Number160.createHash(p.getPath()));
+            this.peer.removeData(Number160.createHash(p.getPath()));
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+        
+        p.rename(newName.substring(newName.lastIndexOf("/")));        
+        
+        // put renamed file
+        if (p instanceof MemoryDirectory) {
+            this.fsFileMonitor.addMonitoredFile(p.getPath(), ByteBuffer.allocate(0));
+        } else if (p instanceof MemorySymLink) {
+            MemorySymLink symLink = (MemorySymLink) p;
+            this.fsFileMonitor.addMonitoredFile(symLink.getPath(), symLink.getContents());
+        } else if (p instanceof MemoryFile) {
+            MemoryFile file = (MemoryFile) p;
+            this.fsFileMonitor.addMonitoredFile(file.getPath(), file.getContent());
+        }
+        
         return 0;
     }
 
@@ -437,7 +462,14 @@ public class P2PFS
             return -ErrorCodes.ENOTEMPTY();
         }
 
-        p.delete();
+        // remove file from fsMonitor to prevent store it after deletion
+        if (this.fsFileMonitor.getMonitoredFilePaths().contains(p.getPath())) {
+            this.fsFileMonitor.removeMonitoredFile(p.getPath());
+        }
+        
+        // remove file from the DHT
+        p.delete();        
+        
         return 0;
     }
 
@@ -515,6 +547,11 @@ public class P2PFS
             }
         }
 
+        // remove file from fsMonitor to prevent store it after deletion
+        if (this.fsFileMonitor.getMonitoredFilePaths().contains(p.getPath())) {
+            this.fsFileMonitor.removeMonitoredFile(p.getPath());
+        }
+       
         p.delete();
 
         return 0;
