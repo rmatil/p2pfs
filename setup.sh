@@ -40,6 +40,8 @@ for entry in $ODROIDS; do
   ssh -i ~/.ssh/odroid root@$entry "mkdir -p ~/$DEPLOY_TARGET_DIR"
   echo "Deploy $LOCAL_TARGET_DIR/$LOCAL_TARGET_NAME to ODroid with IP:  $entry"
   scp -i ~/.ssh/odroid $LOCAL_TARGET_DIR/$LOCAL_TARGET_NAME root@$entry:~/$DEPLOY_TARGET_DIR/$DEPLOY_TARGET_NAME
+  echo "Remove Filesystem target dir and lofgile if exists"
+  ssh -i ~/.ssh/odroid root@$entry "rm -rf ~/$DEPLOY_TARGET_DIR/P2PFS; rm ~/$DEPLOY_TARGET_DIR/logfile.log"
   echo "Execute jar file and write console output to $DEPLOY_LOG_FILE"
   ssh -i ~/.ssh/odroid root@$entry "cd ~/$DEPLOY_TARGET_DIR; nohup java -jar $DEPLOY_TARGET_NAME >> $DEPLOY_LOG_FILE &"
 
