@@ -1,16 +1,17 @@
 #!/bin/bash
 
 # List of ODroids"
-ODROIDS="192.168.1.113
-192.168.1.107
+ODROIDS="192.168.1.107
+192.168.1.113
+192.168.1.112
 192.168.1.100
-192.168.1.108
-192.168.1.114
-192.168.1.110
-192.168.1.119
 192.168.1.101
-192.168.1.105
-192.168.1.115"
+192.168.1.110
+192.168.1.108
+192.168.1.119
+192.168.1.114
+192.168.1.115
+192.168.1.105"
 
 # Deploy target name
 LOCAL_TARGET_DIR="target"
@@ -37,6 +38,8 @@ for entry in $ODROIDS; do
   ssh -i ~/.ssh/odroid root@$entry "mkdir -p ~/$DEPLOY_TARGET_DIR"
   echo "Deploy $LOCAL_TARGET_DIR/$LOCAL_TARGET_NAME to ODroid with IP:  $entry"
   scp -i ~/.ssh/odroid $LOCAL_TARGET_DIR/$LOCAL_TARGET_NAME root@$entry:~/$DEPLOY_TARGET_DIR/$DEPLOY_TARGET_NAME
+  echo "Remove Filesystem target dir and lofgile if exists"
+  ssh -i ~/.ssh/odroid root@$entry "rm -rf ~/$DEPLOY_TARGET_DIR/P2PFS; rm ~/$DEPLOY_TARGET_DIR/logfile.log"
   echo "Execute jar file and write console output to $DEPLOY_LOG_FILE"
   ssh -i ~/.ssh/odroid root@$entry "cd ~/$DEPLOY_TARGET_DIR; nohup java -jar $DEPLOY_TARGET_NAME >> $DEPLOY_LOG_FILE &"
 

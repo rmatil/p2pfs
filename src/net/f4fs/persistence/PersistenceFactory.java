@@ -1,9 +1,9 @@
 package net.f4fs.persistence;
 
 import net.f4fs.persistence.data.ChunkedDHTOperations;
+import net.f4fs.persistence.data.ConsensusDHTOperations;
 import net.f4fs.persistence.data.DHTOperations;
 import net.f4fs.persistence.data.IDataPersistence;
-import net.f4fs.persistence.data.VDHTOperations;
 import net.f4fs.persistence.data.VersionedDHTOperations;
 import net.f4fs.persistence.path.ConsensusPathOperations;
 import net.f4fs.persistence.path.DirectPathOperations;
@@ -17,8 +17,8 @@ import net.f4fs.persistence.path.IPathPersistence;
 public class PersistenceFactory {
 
     private static DHTOperations          dhtOperations;
-    private static VDHTOperations         vDhtOperations;
     private static VersionedDHTOperations versionedDhtOperations;
+    private static ConsensusDHTOperations consensusDhtOperations;
     private static ChunkedDHTOperations   chunkedDHTOperations;
     private static DirectPathOperations    directPathOperations;
     private static ConsensusPathOperations consensusPathOperations;
@@ -41,14 +41,6 @@ public class PersistenceFactory {
         return dhtOperations;
     }
 
-    public synchronized static IDataPersistence getVdhtOperations() {
-        if (null == vDhtOperations) {
-            vDhtOperations = new VDHTOperations();
-        }
-
-        return vDhtOperations;
-    }
-
     public synchronized static IDataPersistence getVersionedDhtOperations() {
         if (null == versionedDhtOperations) {
             versionedDhtOperations = new VersionedDHTOperations();
@@ -63,6 +55,14 @@ public class PersistenceFactory {
         }
 
         return chunkedDHTOperations;
+    }
+    
+    public synchronized static IDataPersistence getConsensuDhtOperations() {
+        if (null == consensusDhtOperations) {
+            consensusDhtOperations = new ConsensusDHTOperations();
+        }
+        
+        return consensusDhtOperations;
     }
 
     /**
