@@ -18,8 +18,10 @@ public interface IDataPersistence {
      * @return The fetched file as Data 
      * 
      * @throws InterruptedException If a failure happened during await of future
+     * @throws IOException 
+     * @throws ClassNotFoundException 
      */
-    public Data getData(PeerDHT pPeer, Number160 pLocationKey) throws InterruptedException;
+    public Data getData(PeerDHT pPeer, Number160 pLocationKey) throws InterruptedException, ClassNotFoundException, IOException;
     
     /**
      * Get the specified version of the file identified by its key.
