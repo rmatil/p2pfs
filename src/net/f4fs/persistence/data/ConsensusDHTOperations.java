@@ -31,7 +31,7 @@ import org.slf4j.LoggerFactory;
  * @author Christian
  */
 public class ConsensusDHTOperations
-        implements IDataPersistence {
+implements IDataPersistence {
 
     private static final IDataPersistence directDHTOperations = PersistenceFactory.getDhtOperations();
     private static final int              NUMBER_OF_RETRIES   = 10;
@@ -54,34 +54,14 @@ public class ConsensusDHTOperations
     public Data getData(PeerDHT pPeer, Number160 pLocationKey)
             throws InterruptedException, ClassNotFoundException, IOException {
 
-        Pair<Number640, Data> pair = null;
 
-        for (int i = 0; i < NUMBER_OF_RETRIES; i++) {
+        FutureGet futureGet = pPeer.get(pLocationKey).start();
+        futureGet.addListener(new GetListener(pPeer.peerAddress().inetAddress().toString(), "Get data for location key " + pLocationKey.toString(true)));
+        futureGet.await();
 
-            FutureGet futureGet = pPeer.get(pLocationKey).start();
-            futureGet.addListener(new GetListener(pPeer.peerAddress().inetAddress().toString(), "Get data for location key " + pLocationKey.toString(true)));
-            futureGet.await();
-
-            // Check if all the peers agree on the same latest version, if no wait for a while and try again
-            pair = checkVersions(futureGet.rawData());
-
-            if (pair != null) {
-                // Peers already agree
-                break;
-            }
-
-            logger.info("getData: Peers did not agree on version - Retry :" + i + " of " + NUMBER_OF_RETRIES);
-            Thread.sleep(SLEEP_TIME);
-        }
-
-
-        if (pair == null || pair.element1() == null) {
-            // Retries are over and peers still didn't agree
-            return null;
-        }
 
         // Peers agreed with the following data
-        return pair.element1();
+        return futureGet.data();
     }
 
 
@@ -185,7 +165,7 @@ public class ConsensusDHTOperations
     public void removeDataOfVersion(PeerDHT pPeer, Number160 pKey, Number160 pVersionKey)
             throws InterruptedException {
         // unused
-        
+
     }
 
 }
