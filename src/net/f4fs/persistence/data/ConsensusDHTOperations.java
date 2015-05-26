@@ -81,7 +81,7 @@ public class ConsensusDHTOperations
         }
 
         // Peers agreed with the following data
-        return (Data) pair.element1().object();
+        return pair.element1();
     }
 
 
