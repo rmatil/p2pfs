@@ -47,7 +47,7 @@ public class FSPeer {
     private Logger                logger;
 
     public FSPeer() {
-        this.persistence = PersistenceFactory.getVersionedDhtOperations();
+        this.persistence = PersistenceFactory.getConsensuDhtOperations();
         this.pathPersistence = PersistenceFactory.getConsensusPathOperations();
         this.bootstrapServerAccess = new BootstrapServerAccess();
 

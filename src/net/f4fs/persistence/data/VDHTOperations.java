@@ -53,7 +53,8 @@ public class VDHTOperations
 
 //        for (int i = 0; i < NUMBER_OF_RETRIES; i++) {
 //            FutureGet fg = pPeer.get(pLocationKey).getLatest().start().awaitUninterruptibly();
-        return simpleDHTOperations.getData(pPeer, pLocationKey);
+        throw new InterruptedException();
+//        return simpleDHTOperations.getData(pPeer, pLocationKey);
 
 //            // check if all the peers agree on the same latest version, if not
 //            // wait a little and try again

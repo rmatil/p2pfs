@@ -1,6 +1,7 @@
 package net.f4fs.persistence;
 
 import net.f4fs.persistence.data.ChunkedDHTOperations;
+import net.f4fs.persistence.data.ConsensusDHTOperations;
 import net.f4fs.persistence.data.DHTOperations;
 import net.f4fs.persistence.data.IDataPersistence;
 import net.f4fs.persistence.data.VDHTOperations;
@@ -19,6 +20,7 @@ public class PersistenceFactory {
     private static DHTOperations          dhtOperations;
     private static VDHTOperations         vDhtOperations;
     private static VersionedDHTOperations versionedDhtOperations;
+    private static ConsensusDHTOperations consensusDhtOperations;
     private static ChunkedDHTOperations   chunkedDHTOperations;
     private static DirectPathOperations    directPathOperations;
     private static ConsensusPathOperations consensusPathOperations;
@@ -63,6 +65,14 @@ public class PersistenceFactory {
         }
 
         return chunkedDHTOperations;
+    }
+    
+    public synchronized static IDataPersistence getConsensuDhtOperations() {
+        if (null == consensusDhtOperations) {
+            consensusDhtOperations = new ConsensusDHTOperations();
+        }
+        
+        return consensusDhtOperations;
     }
 
     /**
