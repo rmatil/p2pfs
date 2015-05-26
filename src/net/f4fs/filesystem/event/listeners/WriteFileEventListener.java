@@ -5,7 +5,7 @@ import java.io.IOException;
 import net.f4fs.filesystem.event.events.AEvent;
 import net.f4fs.filesystem.event.events.CompleteWriteEvent;
 import net.f4fs.filesystem.util.FSFileUtils;
-import net.f4fs.persistence.VersionArchiver;
+import net.f4fs.persistence.archive.VersionArchiver;
 import net.tomp2p.peers.Number160;
 import net.tomp2p.storage.Data;
 

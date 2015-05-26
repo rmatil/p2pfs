@@ -65,7 +65,7 @@ public abstract class AMemoryPath {
             Data data = peer.getData(Number160.createHash(getPath()));
 
             if (null != data) {
-                logger.debug("MemoryPath with name '" + name + "' already existed in the DHT on path '" + getPath() + "'. Creating it locallay...");
+                logger.debug("MemoryPath with name '" + name + "' already existed in the DHT on path '" + getPath() + "'. Creating it locally...");
                 return;
             }
 

@@ -8,8 +8,9 @@ import java.util.Set;
 
 import net.f4fs.bootstrapserver.BootstrapServerAccess;
 import net.f4fs.config.Config;
-import net.f4fs.persistence.IPathPersistence;
-import net.f4fs.persistence.IPersistence;
+import net.f4fs.persistence.path.IPathPersistence;
+import net.f4fs.persistence.data.IDataPersistence;
+import net.f4fs.persistence.PersistenceFactory;
 import net.f4fs.util.RandomDevice;
 import net.tomp2p.connection.Bindings;
 import net.tomp2p.connection.DiscoverNetworks;
@@ -22,6 +23,8 @@ import net.tomp2p.p2p.PeerBuilder;
 import net.tomp2p.peers.Number160;
 import net.tomp2p.peers.PeerAddress;
 import net.tomp2p.storage.Data;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 
 /**
@@ -33,26 +36,27 @@ public class FSPeer {
 
     private PeerDHT               peer;
 
-    private IPersistence          persistence;
+    private IDataPersistence persistence;
 
     private IPathPersistence      pathPersistence;
 
     private BootstrapServerAccess bootstrapServerAccess;
 
-    private String                myIp;
+    private String                ip;
+
+    private Logger                logger;
 
     public FSPeer() {
-        this.persistence = PersistenceFactory.getVersionedDhtOperations();
+        this.persistence = PersistenceFactory.getConsensusDhtOperations();
         this.pathPersistence = PersistenceFactory.getConsensusPathOperations();
         this.bootstrapServerAccess = new BootstrapServerAccess();
+
+        this.logger = LoggerFactory.getLogger(FSPeer.class);
     }
 
     /**
      * Starts this peer as the first, i.e. bootstrap peer
-     * 
-     * @param myIP The IP Address of this peer
-     * @param myPort The corresponding port
-     * 
+     *
      * @throws Exception
      */
     public void startAsBootstrapPeer()
@@ -63,18 +67,18 @@ public class FSPeer {
 
         // b.addInterface("eth0");
         peer = new PeerBuilderDHT(new PeerBuilder(new Number160(RandomDevice.INSTANCE.getRand())).ports(Config.DEFAULT.getPort()).bindings(b).start()).start();
-        setMyIp();
-        postIpPortPair(myIp, Config.DEFAULT.getPort());
 
-        System.out.println("[Peer@" + myIp + "]: Server started listening to: " + DiscoverNetworks.discoverInterfaces(b));
-        System.out.println("[Peer@" + myIp + "]: Address visible to outside is " + peer.peerAddress());
+        ip = peer.peerAddress().inetAddress().getHostAddress();
+
+        bootstrapServerAccess.postIpPortPair(ip, Config.DEFAULT.getPort());
+
+        logger.info("[Peer@" + ip + "]: Server started listening to: " + DiscoverNetworks.discoverInterfaces(b));
+        logger.info("[Peer@" + ip + "]: Address visible to outside is " + peer.peerAddress());
     }
 
     /**
      * Starts this peer with the given parameters
      * 
-     * @param myIP The IP address of this peer
-     * @param myPort The port of this peer
      * @param connectionIpAddress The IP address to which this peer should be connected
      * @param connectionPort The port to which this peer should be connected
      * @return True, if started successfully, false otherwise
@@ -84,22 +88,19 @@ public class FSPeer {
     public boolean startPeer(String connectionIpAddress, int connectionPort)
             throws Exception {
 
-        Bindings b = new Bindings().addProtocol(StandardProtocolFamily.INET).addAddress(
-                Inet4Address.getLocalHost());
+        peer = PeerFactory.DHTPeer();
 
-        // b.addInterface("eth0");
-        peer = new PeerBuilderDHT(new PeerBuilder(new Number160(RandomDevice.INSTANCE.getRand())).ports(Config.DEFAULT.getPort()).bindings(b).start()).start();
-        setMyIp();
-        postIpPortPair(myIp, Config.DEFAULT.getPort());
+        ip = peer.peerAddress().inetAddress().getHostAddress();
 
-        System.out.println("[Peer@" + myIp + "]: Client started and listening to: " + DiscoverNetworks.discoverInterfaces(b));
-        System.out.println("[Peer@" + myIp + "]: Address visible to outside is " + peer.peerAddress());
+        bootstrapServerAccess.postIpPortPair(ip, Config.DEFAULT.getPort());
+
+        logger.info("[Peer@" + ip + "]: Address visible to outside is " + peer.peerAddress());
 
         InetAddress address = Inet4Address.getByName(connectionIpAddress);
         PeerAddress connectionPeerAddress = new PeerAddress(Number160.ZERO, address, connectionPort, connectionPort);
 
-        System.out.println("[Peer@" + myIp + "]: Connected to " + connectionPeerAddress);
-        bootstrapServerAccess.postIpPortPair(myIp, Config.DEFAULT.getPort());
+        logger.info("[Peer@" + ip + "]: Connected to " + connectionPeerAddress);
+        bootstrapServerAccess.postIpPortPair(ip, Config.DEFAULT.getPort());
 
         // Future Discover
         FutureDiscover futureDiscover = peer.peer().discover().inetAddress(address).ports(connectionPort).start();
@@ -110,15 +111,15 @@ public class FSPeer {
         futureBootstrap.awaitUninterruptibly();
 
         Collection<PeerAddress> addressList = peer.peerBean().peerMap().all();
-        System.out.println("[Peer@" + myIp + "]: Address list size: " + addressList.size());
+        logger.info("[Peer@" + ip + "]: Address list size: " + addressList.size());
 
         if (futureDiscover.isSuccess()) {
-            System.out.println("[Peer@" + myIp + "]: Outside IP address is " + futureDiscover.peerAddress());
-            
+            logger.info("[Peer@" + ip + "]: Outside IP address is " + futureDiscover.peerAddress());
+
             return true;
         }
 
-        System.out.println("[Peer@" + myIp + "]: Failed " + futureDiscover.failedReason());
+        logger.info("[Peer@" + ip + "]: Failed " + futureDiscover.failedReason());
         return false;
     }
 
@@ -139,11 +140,11 @@ public class FSPeer {
     public void printConnectedPeers()
             throws InterruptedException {
 
-        System.out.println("Listing connected peers: ");
+        logger.info("Listing connected peers: ");
         for (PeerAddress pa : peer.peerBean().peerMap().all()) {
-            System.out.println("[ConnectedPeer]: " + pa);
+            logger.info("[ConnectedPeer]: " + pa);
         }
-        System.out.println("Done");
+        logger.info("Done");
     }
 
 
@@ -181,7 +182,6 @@ public class FSPeer {
     /**
      * Gets all keys of all files stored in the dht
      * 
-     * @param pLocationKey
      * @return keys List with all keys to the files in the dht
      * 
      * @throws IOException
@@ -213,13 +213,12 @@ public class FSPeer {
     /**
      * Stores the given data with the given content key on the default location key
      * 
-     * @param pLocationKey The key on which machine to store
      * @param pContentKey The key to store the data
      * @param pValue The data to store
      * 
      * @throws InterruptedException If a failure happened during await of future
-     * @throws IOException 
-     * @throws ClassNotFoundException 
+     * @throws IOException
+     * @throws ClassNotFoundException
      */
     public void putPath(Number160 pContentKey, Data pValue)
             throws InterruptedException, ClassNotFoundException, IOException {
@@ -241,7 +240,6 @@ public class FSPeer {
     /**
      * Removes the file key from the file keys which are stored with the default location key
      * 
-     * @param pLocationKey
      * @param pContentKey
      * 
      * @throws InterruptedException If a failure happened during await of future
@@ -255,21 +253,17 @@ public class FSPeer {
         return this.peer;
     }
 
-    private void postIpPortPair(String ip, int port) {
-        bootstrapServerAccess.postIpPortPair(ip, port);
-    }
-
     private void removeIpPortPair(String ip, int port) {
         bootstrapServerAccess.removeIpPortPair(ip, port);
     }
 
-    private void setMyIp() {
+    private void setIp() {
         if (peer != null) {
-            myIp = peer.peerAddress().inetAddress().getHostAddress();
+            ip = peer.peerAddress().inetAddress().getHostAddress();
         }
     }
 
-    public String getMyIp() {
-        return myIp;
+    public String getIp() {
+        return ip;
     }
 }
