@@ -85,34 +85,16 @@ public class ConsensusPathOperations
     public String getPath(PeerDHT pPeer, Number160 pContentKey)
             throws InterruptedException, ClassNotFoundException, IOException {
 
-        Pair<Number640, Data> pair = null;
-
-        for (int i = 0; i < NUMBER_OF_RETRIES; i++) {
-
-            FutureGet futureGet = pPeer.get(Number160.createHash(Config.DEFAULT.getMasterLocationPathsKey())).contentKey(pContentKey).start();
-            futureGet.addListener(new GetListener(pPeer.peerAddress().inetAddress().toString(), "Get path for content key " + pContentKey.toString(true)));
-            futureGet.await();
-
-            // Check if all the peers agree on the same latest version, if no wait for a while and try again
-            pair = checkVersions(futureGet.rawData());
-
-            if (pair != null) {
-                // Peers already agree
-                break;
-            }
-
-            logger.info("getPath: Peers did not agree on version - Retry :" + i + " of " + NUMBER_OF_RETRIES);
-            Thread.sleep(SLEEP_TIME);
-        }
-
-
-        if (pair == null || pair.element1() == null) {
-            // Retries are over and peers still didn't agree
+        FutureGet futureGet = pPeer.get(Number160.createHash(Config.DEFAULT.getMasterLocationPathsKey())).contentKey(pContentKey).start();
+        futureGet.addListener(new GetListener(pPeer.peerAddress().inetAddress().toString(), "Get path for content key " + pContentKey.toString(true)));
+        
+        futureGet.await();
+        
+        if (null == futureGet.data()) {
             return null;
         }
-
-        // Peers agreed with the following data
-        return (String) pair.element1().object();
+        
+        return (String) futureGet.data().object();
     }
 
 
