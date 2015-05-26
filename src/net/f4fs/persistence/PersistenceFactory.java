@@ -57,7 +57,7 @@ public class PersistenceFactory {
         return chunkedDHTOperations;
     }
     
-    public synchronized static IDataPersistence getConsensuDhtOperations() {
+    public synchronized static IDataPersistence getConsensusDhtOperations() {
         if (null == consensusDhtOperations) {
             consensusDhtOperations = new ConsensusDHTOperations();
         }
