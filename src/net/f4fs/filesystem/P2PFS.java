@@ -406,9 +406,15 @@ public class P2PFS
         return 0;
     }
 
+    /**
+     * Renames the element on path to newName
+     * 
+     * @param path Old absolute path to file
+     * @param newName New absolute path to file
+     */
     @Override
     public int rename(final String path, final String newName) {
-        final AMemoryPath p = getPath(path);
+        AMemoryPath p = getPath(path);
         if (p == null) {
             return -ErrorCodes.ENOENT();
         }
@@ -419,6 +425,10 @@ public class P2PFS
         if (!(newParent instanceof MemoryDirectory)) {
             return -ErrorCodes.ENOTDIR();
         }
+
+        MemoryDirectory oldParentDir = p.getParent();
+        oldParentDir.deleteChild(p);
+        p.setParent(null);
         
         // remove old file if still contained in fileMonitor
         if (this.fsFileMonitor.getMonitoredFilePaths().contains(p.getPath())) {
@@ -426,13 +436,18 @@ public class P2PFS
         }
         
         try {
-            this.peer.removePath(Number160.createHash(p.getPath()));
-            this.peer.removeData(Number160.createHash(p.getPath()));
+            this.peer.removePath(Number160.createHash(path));
+            this.peer.removeData(Number160.createHash(path));
         } catch (InterruptedException e) {
             e.printStackTrace();
         }
         
-        p.rename(newName.substring(newName.lastIndexOf("/")));        
+        // Add old memoryPath to new directory (parent)
+        MemoryDirectory newParentDir = (MemoryDirectory) newParent;
+        p.setName(FSFileUtils.getLastComponent(newName));
+        newParentDir.addMemoryPath(p);
+        p.setParent(newParentDir);
+        
         
         // put renamed file
         if (p instanceof MemoryDirectory) {
@@ -444,6 +459,8 @@ public class P2PFS
             MemoryFile file = (MemoryFile) p;
             this.fsFileMonitor.addMonitoredFile(file.getPath(), file.getContent());
         }
+        
+        logger.info("Moved file from '" + path + "' to '" + newName + "'");
         
         return 0;
     }
