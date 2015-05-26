@@ -117,6 +117,11 @@ public class MemoryDirectory
         contents.add(new MemoryFile(lastComponent, this, super.getPeer()));
         this.logger.info("Created file '" + lastComponent + "' in '" + this.getPath() + "'");
     }
+    
+    public synchronized void addMemoryPath(final AMemoryPath pMemoryPath) {
+        contents.add(pMemoryPath);
+        this.logger.info("Created file '" + pMemoryPath.getName() + "' in '" + this.getPath() + "'");
+    }
 
     public synchronized void read(final DirectoryFiller filler) {
         super.setLastAccessTimestamp((System.currentTimeMillis() / 1000l));

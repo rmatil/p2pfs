@@ -164,16 +164,7 @@ public abstract class AMemoryPath {
                 content = ByteBuffer.wrap(data.toBytes()); // content stores some bytes as string
             }
 
-            // remove content key and the corresponding value from the dht
-            // Note: remove path first to prevent inconsistent state
-            peer.removePath(Number160.createHash(getPath()));
-            peer.removeData(Number160.createHash(getPath()));
-
             this.name = newName;
-
-            // update content key and store the files content on the updated key again
-            peer.putData(Number160.createHash(getPath()), new Data(content.array()));
-            peer.putPath(Number160.createHash(getPath()), new Data(getPath()));
 
             logger.info("Renamed file with name '" + oldName + "' to '" + newName + "' on path '" + getPath() + "'.");
         } catch (InterruptedException | ClassNotFoundException | IOException e) {

@@ -406,9 +406,15 @@ public class P2PFS
         return 0;
     }
 
+    /**
+     * Renames the element on path to newName
+     * 
+     * @param path Old absolute path to file
+     * @param newName New absolute path to file
+     */
     @Override
     public int rename(final String path, final String newName) {
-        final AMemoryPath p = getPath(path);
+        AMemoryPath p = getPath(path);
         if (p == null) {
             return -ErrorCodes.ENOENT();
         }
@@ -419,7 +425,43 @@ public class P2PFS
         if (!(newParent instanceof MemoryDirectory)) {
             return -ErrorCodes.ENOTDIR();
         }
-        p.rename(newName.substring(newName.lastIndexOf("/")));
+
+        MemoryDirectory oldParentDir = p.getParent();
+        oldParentDir.deleteChild(p);
+        p.setParent(null);
+        
+        // remove old file if still contained in fileMonitor
+        if (this.fsFileMonitor.getMonitoredFilePaths().contains(p.getPath())) {
+            this.fsFileMonitor.removeMonitoredFile(p.getPath());
+        }
+        
+        try {
+            this.peer.removePath(Number160.createHash(path));
+            this.peer.removeData(Number160.createHash(path));
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+        
+        // Add old memoryPath to new directory (parent)
+        MemoryDirectory newParentDir = (MemoryDirectory) newParent;
+        p.setName(FSFileUtils.getLastComponent(newName));
+        newParentDir.addMemoryPath(p);
+        p.setParent(newParentDir);
+        
+        
+        // put renamed file
+        if (p instanceof MemoryDirectory) {
+            this.fsFileMonitor.addMonitoredFile(p.getPath(), ByteBuffer.allocate(0));
+        } else if (p instanceof MemorySymLink) {
+            MemorySymLink symLink = (MemorySymLink) p;
+            this.fsFileMonitor.addMonitoredFile(symLink.getPath(), symLink.getContents());
+        } else if (p instanceof MemoryFile) {
+            MemoryFile file = (MemoryFile) p;
+            this.fsFileMonitor.addMonitoredFile(file.getPath(), file.getContent());
+        }
+        
+        logger.info("Moved file from '" + path + "' to '" + newName + "'");
+        
         return 0;
     }
 
@@ -437,7 +479,14 @@ public class P2PFS
             return -ErrorCodes.ENOTEMPTY();
         }
 
-        p.delete();
+        // remove file from fsMonitor to prevent store it after deletion
+        if (this.fsFileMonitor.getMonitoredFilePaths().contains(p.getPath())) {
+            this.fsFileMonitor.removeMonitoredFile(p.getPath());
+        }
+        
+        // remove file from the DHT
+        p.delete();        
+        
         return 0;
     }
 
@@ -515,6 +564,11 @@ public class P2PFS
             }
         }
 
+        // remove file from fsMonitor to prevent store it after deletion
+        if (this.fsFileMonitor.getMonitoredFilePaths().contains(p.getPath())) {
+            this.fsFileMonitor.removeMonitoredFile(p.getPath());
+        }
+       
         p.delete();
 
         return 0;

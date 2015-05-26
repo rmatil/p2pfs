@@ -107,6 +107,10 @@ public class FSFileMonitor
         this.monitoredFiles.put(pPath, pair);
         this.logger.info("Wrote chunk to file on path '" + pPath + "' containing '" + pContents.capacity() + "' bytes to FSFileMonitor");
     }
+    
+    public synchronized void removeMonitoredFile(String pPath) {
+        this.monitoredFiles.remove(pPath);
+    }
 
     /**
      * Returns the current written file contents of the file located at <code>pPath</code>
