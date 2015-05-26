@@ -560,10 +560,15 @@ public class P2PFS
             try {
                 VersionArchiver archiver = new VersionArchiver();
                 archiver.removeVersions(this.peer, Number160.createHash(path));
+
+                // remove version folder on local disk
+                String versionFolder = archiver.getVersionFolder(Number160.createHash(path));
+                p.getParent().deleteChild(p.getParent().find(versionFolder));
             } catch (ClassNotFoundException | IOException | InterruptedException e) {
                 e.printStackTrace();
             }
         }
+
 
         // remove file from fsMonitor to prevent store it after deletion
         if (this.fsFileMonitor.getMonitoredFilePaths().contains(p.getPath())) {
