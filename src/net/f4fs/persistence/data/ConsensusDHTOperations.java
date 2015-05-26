@@ -26,7 +26,7 @@ import org.slf4j.LoggerFactory;
 
 
 /**
- * ConsensusPathOperations retrieves and stores path keys only after all other peers agree on the latest content.
+ * ConsensusDHTOperations retrieves and stores data into the DHT only after all other peers agree on the latest content.
  * 
  * @author Christian
  */
@@ -40,12 +40,12 @@ public class ConsensusDHTOperations
 
 
     /**
-     * Retrieves the path string to a requested content key from the DHTs master location path key.
+     * Retrieves the data to a requested location key from the DHT.
      * 
      * @param pPeer local DHT of the peer
-     * @param pLocationKey content key of the requested entry
+     * @param pLocationKey location key of the requested entry
      * 
-     * @return String with path that all peers agree on otherwise null.
+     * @return Data with data that all peers agree on otherwise null.
      * @throws InterruptedException
      * @throws IOException 
      * @throws ClassNotFoundException 
@@ -86,12 +86,12 @@ public class ConsensusDHTOperations
 
 
     /**
-     * Stores a path entry in the DHT under the master location path key.
+     * Stores a data entry in the DHT under the location key.
      * If there is an inconsistency the function attempts to wait before writing.
      * 
      * @param pPeer local DHT of the peer
-     * @param pLocationKey content key of the data to save
-     * @param pData path string wrapped in a Data element
+     * @param pLocationKey location key of the data to save
+     * @param pData Data element
      * @throws IOException
      * @throws ClassNotFoundException
      * @throws InterruptedException
@@ -129,10 +129,10 @@ public class ConsensusDHTOperations
 
 
     /**
-     * Removes the path of a specific content key
+     * Removes the data entry of a specific location key
      * 
      * @param pPeer local DHT of the peer
-     * @param pLocationKey content key of the path to be removed
+     * @param pLocationKey location key of the data to be removed
      */
     @Override
     public void removeData(PeerDHT pPeer, Number160 pLocationKey)
