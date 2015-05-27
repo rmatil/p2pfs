@@ -7,6 +7,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.ArrayBlockingQueue;
 
+import net.f4fs.filesystem.partials.MemoryDirectory;
 import net.f4fs.fspeer.FSPeer;
 import net.tomp2p.peers.Number160;
 import net.tomp2p.storage.Data;
@@ -70,7 +71,13 @@ public class VersionArchiver
         // Make sure the version folder doesn't bloat.
         this.pruneVersionFolder(extractedPaths.get(this.VERSION_QUEUE_PATH));
     }
-    
+
+    public String getVersionFolder(Number160 pLocationKey)
+            throws ClassNotFoundException, IOException, InterruptedException {
+        Map<String, String> extractedPaths = this.extractPaths(pLocationKey);
+        return extractedPaths.get(this.VERSION_FOLDER_PATH);
+    }
+
     public void removeVersions(FSPeer pFsPeer, Number160 pLocationKey) throws ClassNotFoundException, IOException, InterruptedException{
         
         this.fsPeer = pFsPeer;
