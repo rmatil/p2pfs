@@ -175,7 +175,7 @@ public class FSFileMonitor
             this.monitoredFiles = notWrittenFiles;
 
             try {
-                Thread.sleep(1000);
+                Thread.sleep(2000);
             } catch (InterruptedException e) {
                 this.logger.error(e.getMessage());
                 e.printStackTrace();

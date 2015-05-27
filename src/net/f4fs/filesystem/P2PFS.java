@@ -431,8 +431,8 @@ public class P2PFS
         p.setParent(null);
         
         // remove old file if still contained in fileMonitor
-        if (this.fsFileMonitor.getMonitoredFilePaths().contains(p.getPath())) {
-            this.fsFileMonitor.removeMonitoredFile(p.getPath());
+        if (this.fsFileMonitor.getMonitoredFilePaths().contains(path)) {
+            this.fsFileMonitor.removeMonitoredFile(path);
         }
         
         try {
