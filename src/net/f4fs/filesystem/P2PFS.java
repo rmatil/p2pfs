@@ -210,7 +210,7 @@ public class P2PFS
     @Override
     public int create(final String path, final ModeWrapper mode, final FileInfoWrapper info) {
 
-        if (path.matches("\\.fuse_hidden")) {
+        if (path.matches(".*\\.fuse_hidden.+")) {
             return 0;
         }
 
