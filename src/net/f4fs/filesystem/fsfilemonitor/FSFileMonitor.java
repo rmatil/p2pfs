@@ -105,7 +105,7 @@ public class FSFileMonitor
 
         Pair<Integer, ByteBuffer> pair = new Pair<>(new Integer(1), pContents);
         this.monitoredFiles.put(pPath, pair);
-        this.logger.info("Wrote chunk to file on path '" + pPath + "' containing '" + pContents.capacity() + "' bytes to FSFileMonitor");
+        this.logger.trace("Wrote chunk to file on path '" + pPath + "' containing '" + pContents.capacity() + "' bytes to FSFileMonitor");
     }
     
     public synchronized void removeMonitoredFile(String pPath) {
