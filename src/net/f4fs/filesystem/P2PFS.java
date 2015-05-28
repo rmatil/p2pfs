@@ -210,10 +210,6 @@ public class P2PFS
     @Override
     public int create(final String path, final ModeWrapper mode, final FileInfoWrapper info) {
 
-        if (path.matches(".*\\.fuse_hidden.+")) {
-            return 0;
-        }
-
         if (getPath(path) != null) {
             this.logger.warn("File on path " + path + " could not be created. A file with the same name already exists (Error code " + -ErrorCodes.EEXIST() + ").");
             return -ErrorCodes.EEXIST();
