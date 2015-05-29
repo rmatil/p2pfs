@@ -1,6 +1,6 @@
 # README
 
-For documentation click [here](https://bitbucket.org/raccc/comsys_challenge_task/wiki/Home)
+For documentation click [here](https://github.com/rmatil/p2pfs/wiki)
 
 
 ## Project Setup
