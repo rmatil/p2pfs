@@ -20,7 +20,7 @@ Then execute the following command
     mvn assembly:assembly -DdescriptorId=jar-with-dependencies
     ```
 
-* To build including checking tests
+* To build without checking tests
 
     ```
     mvn assembly:assembly -DdescriptorId=jar-with-dependencies -DskipTests
