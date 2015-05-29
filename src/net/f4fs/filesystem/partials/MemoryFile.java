@@ -232,7 +232,7 @@ public class MemoryFile
             contents.position(0); // Rewind
         }
         
-        this.logger.info("Wrote '" + bufSize + "' bytes starting at offset '" + writeOffset + "' to file on path '" + this.getPath() + "'");
+        this.logger.trace("Wrote '" + bufSize + "' bytes starting at offset '" + writeOffset + "' to file on path '" + this.getPath() + "'");
 
         return (int) bufSize;
     }
