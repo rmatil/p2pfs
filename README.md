@@ -1,7 +1,7 @@
 # README
 
 For documentation click [here](https://github.com/rmatil/p2pfs/wiki)
-
+For the bootstrap-server click [here](https://github.com/rmatil/p2pfs-bootstrap-server)
 
 ## Project Setup
 
